@@ -1,12 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="pi-arcweld mark">
   <style>
-    :root { --outer: #216f6a; --seam: #9b6c07; --core: #007ea7; --field: #f3f4f1; }
+    :root { --field: #f2f0e8; --ink: #151914; --seam: #c83c24; --spark: #567300; }
     @media (prefers-color-scheme: dark) {
-      :root { --outer: #8abeb7; --seam: #f0c674; --core: #00d7ff; --field: #18181e; }
+      :root { --field: #11140f; --ink: #f1f0e8; --seam: #ff795c; --spark: #d8ff4f; }
     }
+    .frame, .pi, .seam { fill: none; }
+    .frame { stroke: var(--ink); opacity: .34; }
+    .pi { stroke: var(--ink); stroke-width: 3.4; stroke-linecap: square; }
+    .seam { stroke: var(--seam); stroke-width: 3; stroke-linecap: square; stroke-dasharray: 44; animation: draw 1.2s cubic-bezier(.22,.8,.24,1) forwards; }
+    .spark { fill: var(--spark); transform-origin: 32px 32px; animation: pulse 2.8s ease-in-out 1s infinite; }
+    @keyframes draw { from { stroke-dashoffset: 44; } to { stroke-dashoffset: 0; } }
+    @keyframes pulse { 0%,100% { opacity: .45; transform: scale(.7); } 45% { opacity: 1; transform: scale(1.45); } 55% { opacity: .7; transform: scale(.9); } }
+    @media (prefers-reduced-motion: reduce) { .seam, .spark { animation: none; } }
   </style>
-  <rect x="9" y="9" width="46" height="46" fill="var(--field)" transform="rotate(45 32 32)"/>
-  <rect x="14.5" y="14.5" width="35" height="35" stroke="var(--outer)" stroke-width="3" transform="rotate(45 32 32)"/>
-  <path d="m20 43 10-10 6 6 10-10" stroke="var(--seam)" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>
-  <rect x="27" y="27" width="10" height="10" fill="var(--core)" stroke="var(--seam)" stroke-width="2" transform="rotate(45 32 32)"/>
+  <rect width="64" height="64" rx="10" fill="var(--field)"/>
+  <rect class="frame" x="8" y="8" width="48" height="48" transform="rotate(45 32 32)"/>
+  <path class="pi" d="M14 21h36M21 21v29M43 21v29"/>
+  <path class="seam" d="m13 38 8-8 7 7 8-10 7 7 8-8"/>
+  <circle class="spark" cx="32" cy="32" r="3.6"/>
 </svg>

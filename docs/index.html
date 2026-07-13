@@ -3,136 +3,115 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="pi-arcweld is a clean local workspace for a curated Pi agent environment, with focused extensions and a reproducible runtime.">
-  <meta id="theme-color" name="theme-color" content="#18181e">
-  <meta property="og:title" content="pi-arcweld — A clean local Pi workspace">
-  <meta property="og:description" content="A curated Pi agent environment with user-level extensions, system-instruction guidance, and a reproducible local runtime.">
-  <title>pi-arcweld — A clean local Pi workspace</title>
+  <meta name="description" content="pi-arcweld is an auditable local workspace for a curated Pi agent environment: pinned upstream source, focused extensions, and a reproducible external runtime.">
+  <meta name="keywords" content="Pi coding agent, AI agent workspace, agent extensions, MCP client, model context protocol, cache-safe plan mode, reproducible runtime, local AI tooling">
+  <meta name="author" content="appautomaton">
+  <meta name="application-name" content="pi-arcweld">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <meta id="theme-color" name="theme-color" content="#11140f">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="pi-arcweld">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="pi-arcweld | Keep Pi upstream. Make it yours.">
+  <meta property="og:description" content="A disciplined local layer for Pi extensions, system guidance, MCP tooling, and an external runtime.">
+  <meta property="og:url" content="https://appautomaton.github.io/pi-arcweld/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="pi-arcweld | Keep Pi upstream. Make it yours.">
+  <meta name="twitter:description" content="An auditable local workspace for curated Pi extensions, bounded MCP tooling, and a reproducible external runtime.">
+  <title>pi-arcweld | Keep Pi upstream. Make it yours.</title>
+  <link rel="canonical" href="https://appautomaton.github.io/pi-arcweld/">
   <link rel="icon" type="image/svg+xml" href="arcweld-mark.svg">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      "name": "pi-arcweld",
+      "description": "An auditable local workspace for Pi with pinned upstream source, curated extensions, bounded MCP tooling, and a reproducible external runtime.",
+      "url": "https://appautomaton.github.io/pi-arcweld/",
+      "codeRepository": "https://github.com/appautomaton/pi-arcweld",
+      "license": "https://github.com/appautomaton/pi-arcweld/blob/main/LICENSE",
+      "programmingLanguage": ["TypeScript", "Shell", "HTML"],
+      "runtimePlatform": "Node.js",
+      "isPartOf": {
+        "@type": "SoftwareApplication",
+        "name": "Pi",
+        "url": "https://pi.dev"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "appautomaton",
+        "url": "https://github.com/appautomaton"
+      }
+    }
+  </script>
+
   <script>
     (() => {
-      const root = document.documentElement;
-      const colorMeta = document.getElementById("theme-color");
-      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-      let choice = "system";
-
-      try {
-        const stored = window.localStorage.getItem("pi-arcweld-theme");
-        if (["system", "dark", "light"].includes(stored)) choice = stored;
-      } catch {}
-
-      if (choice !== "system") root.dataset.theme = choice;
-      const effectiveTheme = choice === "system" ? (darkScheme.matches ? "dark" : "light") : choice;
-      colorMeta?.setAttribute("content", effectiveTheme === "dark" ? "#18181e" : "#f3f4f1");
+      const stored = (() => {
+        try { return localStorage.getItem("pi-arcweld-theme"); } catch { return null; }
+      })();
+      const theme = stored === "light" || stored === "dark"
+        ? stored
+        : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.dataset.theme = theme;
+      document.getElementById("theme-color")?.setAttribute("content", theme === "dark" ? "#11140f" : "#f2f0e8");
     })();
   </script>
 
   <link rel="preconnect" href="https://api.fontshare.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=array@400,500,600,700&f[]=zodiak@400,500,600&display=swap">
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,600,700,800&f[]=gambetta@400,500,600&display=swap">
 
   <style>
     :root {
       color-scheme: dark;
-      --ink: #d4d4d4;
-      --ink-soft: #aeb4bb;
-      --ink-faint: #747b85;
-      --ground: #18181e;
-      --ground-deep: #111217;
-      --plane: #202129;
-      --plane-raised: #2a313b;
-      --rule: rgba(212, 212, 212, 0.16);
-      --rule-strong: rgba(138, 190, 183, 0.48);
-      --teal: #8abeb7;
-      --arc: #00d7ff;
-      --gold: #f0c674;
-      --green: #b5bd68;
-      --danger: #cc6666;
-      --shadow: rgba(0, 0, 0, 0.34);
-      --terminal-ground: #111217;
-      --terminal-ink: #e7e8e1;
-      --terminal-muted: #9aa4ac;
-      --terminal-rule: rgba(212, 212, 212, 0.22);
-      --terminal-accent: #8abeb7;
-      --terminal-prompt: #f0c674;
-      --terminal-action: #00d7ff;
-      --type-display: "Array", "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
-      --type-reading: "Zodiak", Georgia, "Times New Roman", serif;
-      --type-utility: "Array", "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
-      --page-pad: clamp(1rem, 3vw, 3rem);
-      --content-max: 76rem;
-      --nav-height: 5rem;
+      --bg: #11140f;
+      --bg-elevated: #181c16;
+      --bg-soft: #20251d;
+      --ink: #f1f0e8;
+      --ink-soft: #b8bdb0;
+      --ink-faint: #7f8878;
+      --line: rgba(241, 240, 232, 0.15);
+      --line-strong: rgba(241, 240, 232, 0.34);
+      --acid: #d8ff4f;
+      --coral: #ff795c;
+      --on-coral: #16120f;
+      --aqua: #92e7dc;
+      --terminal: #090b08;
+      --shadow: rgba(0, 0, 0, 0.42);
+      --display: "Cabinet Grotesk", "Helvetica Neue", Arial, sans-serif;
+      --serif: "Gambetta", Georgia, serif;
+      --utility: "Cabinet Grotesk", "Helvetica Neue", Arial, sans-serif;
+      --content: 88rem;
+      --gutter: clamp(1rem, 3vw, 3.25rem);
+      --header: 4.5rem;
     }
-
-    :root[data-theme="dark"] { color-scheme: dark; }
 
     :root[data-theme="light"] {
       color-scheme: light;
-      --ink: #17212b;
-      --ink-soft: #41505e;
-      --ink-faint: #647382;
-      --ground: #f3f4f1;
-      --ground-deep: #e6e8e4;
-      --plane: #fbfcf9;
-      --plane-raised: #e5e9e4;
-      --rule: rgba(23, 33, 43, 0.16);
-      --rule-strong: rgba(46, 112, 108, 0.52);
-      --teal: #216f6a;
-      --arc: #007ea7;
-      --gold: #9b6c07;
-      --green: #4f7b2e;
-      --danger: #a34343;
-      --shadow: rgba(27, 39, 36, 0.14);
-    }
-
-    @media (prefers-color-scheme: light) {
-      :root:not([data-theme]) {
-        color-scheme: light;
-        --ink: #17212b;
-        --ink-soft: #41505e;
-        --ink-faint: #647382;
-        --ground: #f3f4f1;
-        --ground-deep: #e6e8e4;
-        --plane: #fbfcf9;
-        --plane-raised: #e5e9e4;
-        --rule: rgba(23, 33, 43, 0.16);
-        --rule-strong: rgba(46, 112, 108, 0.52);
-        --teal: #216f6a;
-        --arc: #007ea7;
-        --gold: #9b6c07;
-        --green: #4f7b2e;
-        --danger: #a34343;
-        --shadow: rgba(27, 39, 36, 0.14);
-      }
-    }
-
-    @media (prefers-contrast: more) {
-      :root {
-        --ink: #ffffff;
-        --ink-soft: #d5dbe0;
-        --rule: rgba(255, 255, 255, 0.42);
-        --rule-strong: var(--arc);
-      }
-
-      :root[data-theme="light"] {
-        --ink: #000000;
-        --ink-soft: #17212b;
-        --rule: rgba(0, 0, 0, 0.46);
-      }
-
-      @media (prefers-color-scheme: light) {
-        :root:not([data-theme]) {
-          --ink: #000000;
-          --ink-soft: #17212b;
-          --rule: rgba(0, 0, 0, 0.46);
-        }
-      }
+      --bg: #f2f0e8;
+      --bg-elevated: #e9e7dd;
+      --bg-soft: #deddd2;
+      --ink: #151914;
+      --ink-soft: #4f594c;
+      --ink-faint: #737d70;
+      --line: rgba(21, 25, 20, 0.16);
+      --line-strong: rgba(21, 25, 20, 0.34);
+      --acid: #567300;
+      --coral: #c83c24;
+      --on-coral: #f2f0e8;
+      --aqua: #007b70;
+      --terminal: #151914;
+      --shadow: rgba(42, 48, 38, 0.15);
     }
 
     * { box-sizing: border-box; }
 
     html {
+      min-width: 20rem;
       scroll-behavior: smooth;
+      scroll-padding-top: calc(var(--header) + 1.5rem);
       overflow-x: clip;
     }
 
@@ -140,1050 +119,947 @@
       min-width: 20rem;
       margin: 0;
       color: var(--ink);
-      background:
-        linear-gradient(90deg, transparent 0, transparent calc(50% - 0.5px), var(--rule) calc(50% - 0.5px), var(--rule) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-        var(--ground);
-      font-family: var(--type-reading);
-      font-size: clamp(1rem, 0.2vw + 0.95rem, 1.12rem);
-      line-height: 1.6;
+      background: var(--bg);
+      font-family: var(--serif);
+      font-size: 1rem;
+      line-height: 1.55;
       overflow-x: clip;
+      transition: color 220ms ease, background-color 220ms ease;
     }
 
     body::before {
       position: fixed;
-      z-index: -2;
-      inset: 0;
-      pointer-events: none;
-      content: "";
-      background:
-        repeating-linear-gradient(0deg, transparent 0 47px, color-mix(in srgb, var(--rule) 48%, transparent) 48px, transparent 49px 96px),
-        linear-gradient(115deg, color-mix(in srgb, var(--teal) 5%, transparent), transparent 38%, color-mix(in srgb, var(--gold) 4%, transparent));
-      mask-image: linear-gradient(to bottom, black, transparent 85%);
-    }
-
-    body::after {
-      position: fixed;
       z-index: -1;
       inset: 0;
-      pointer-events: none;
       content: "";
-      opacity: 0.2;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
-      mix-blend-mode: soft-light;
+      pointer-events: none;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 4.5rem 4.5rem;
+      opacity: 0.16;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
     }
 
-    ::selection {
-      color: var(--ground-deep);
-      background: var(--gold);
-    }
-
+    ::selection { color: var(--bg); background: var(--acid); }
     a { color: inherit; }
+    button, input, select { font: inherit; }
 
     a:focus-visible,
-    button:focus-visible,
-    select:focus-visible,
-    summary:focus-visible {
-      outline: 3px solid var(--arc);
+    button:focus-visible {
+      outline: 2px solid var(--acid);
       outline-offset: 4px;
     }
 
     .skip-link {
       position: fixed;
-      z-index: 20;
-      top: 0.8rem;
-      left: 0.8rem;
-      padding: 0.7rem 0.9rem;
-      color: var(--ground-deep);
-      background: var(--gold);
-      font-family: var(--type-utility);
-      font-size: 0.78rem;
+      z-index: 100;
+      top: 0.75rem;
+      left: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      color: var(--bg);
+      background: var(--acid);
+      font-family: var(--utility);
+      font-size: 0.75rem;
       font-weight: 700;
-      letter-spacing: 0.06em;
       text-decoration: none;
-      text-transform: uppercase;
       transform: translateY(-160%);
       transition: transform 150ms ease;
     }
 
     .skip-link:focus { transform: translateY(0); }
 
-    .site-header {
-      position: sticky;
-      z-index: 10;
-      top: 0;
-      min-height: var(--nav-height);
-      border-bottom: 1px solid var(--rule);
-      background: color-mix(in srgb, var(--ground) 87%, transparent);
-      backdrop-filter: blur(16px);
-    }
-
-    .header-inner,
-    .section-shell,
-    .footer-inner {
-      width: min(100% - (var(--page-pad) * 2), var(--content-max));
+    .shell {
+      width: min(calc(100% - (var(--gutter) * 2)), var(--content));
       margin-inline: auto;
     }
 
+    .site-header {
+      position: fixed;
+      z-index: 50;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: var(--header);
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: blur(18px) saturate(130%);
+    }
+
     .header-inner {
-      display: flex;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
-      justify-content: space-between;
-      min-height: var(--nav-height);
-      gap: 1rem;
+      height: 100%;
+      gap: 1.25rem;
     }
 
     .brand {
       display: inline-flex;
       align-items: center;
-      min-height: 2.75rem;
+      gap: 0.65rem;
+      width: max-content;
       color: var(--ink);
-      font-family: var(--type-display);
-      font-size: clamp(1rem, 0.35vw + 0.88rem, 1.26rem);
-      font-weight: 600;
-      letter-spacing: -0.07em;
+      font-family: var(--display);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
       text-decoration: none;
-      white-space: nowrap;
     }
 
     .brand-mark {
-      width: 2.1rem;
-      height: 2.1rem;
+      width: 2rem;
+      height: 2rem;
       flex: none;
-      margin-right: 0.52rem;
       overflow: visible;
     }
 
-    .brand-mark__field { fill: var(--ground); }
-    .brand-mark__outer { stroke: var(--teal); }
-    .brand-mark__seam {
+    .mark-frame,
+    .mark-pi,
+    .mark-seam {
       fill: none;
-      stroke: var(--gold);
-      stroke-linecap: square;
-      stroke-linejoin: miter;
+      vector-effect: non-scaling-stroke;
     }
-    .brand-mark__core { fill: var(--arc); stroke: var(--gold); }
+
+    .mark-frame { stroke: var(--line-strong); stroke-width: 1; }
+    .mark-pi { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: square; }
+    .mark-seam { stroke: var(--coral); stroke-width: 2; stroke-linecap: square; }
+    .mark-spark { fill: var(--acid); }
 
     @media (prefers-reduced-motion: no-preference) {
-      .brand-mark__seam {
-        stroke-dasharray: 40;
-        stroke-dashoffset: 40;
-        animation: draw-brand-seam 880ms cubic-bezier(.2, .8, .2, 1) 160ms forwards;
+      .mark-seam {
+        stroke-dasharray: 34;
+        stroke-dashoffset: 34;
+        animation: draw-seam 1s cubic-bezier(.22, .8, .24, 1) 180ms forwards;
       }
 
-      .brand-mark__core {
-        animation: arcweld-core 3.2s ease-in-out 1.05s infinite;
+      .mark-spark {
+        animation: spark 2.8s ease-in-out 1s infinite;
+        transform-origin: 23px 23px;
       }
-
-      .brand:hover .brand-mark__seam,
-      .brand:focus-visible .brand-mark__seam { animation-duration: 480ms; }
     }
 
-    @keyframes draw-brand-seam { to { stroke-dashoffset: 0; } }
-
-    @keyframes arcweld-core {
-      0%, 100% { opacity: 0.72; filter: none; }
-      50% { opacity: 1; filter: drop-shadow(0 0 0.28rem color-mix(in srgb, var(--arc) 72%, transparent)); }
+    @keyframes draw-seam { to { stroke-dashoffset: 0; } }
+    @keyframes spark {
+      0%, 100% { opacity: 0.45; transform: scale(0.7); }
+      45% { opacity: 1; transform: scale(1.4); }
+      55% { opacity: 0.7; transform: scale(0.9); }
     }
 
-    .desktop-nav,
-    .nav-links,
-    .external-links {
+    .primary-nav {
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.2rem;
     }
 
-    .nav-links { margin-left: auto; }
-
-    .theme-control {
-      display: none;
-      align-items: center;
-      min-height: 2.75rem;
-      margin-left: 0.3rem;
-    }
-
-    .js .theme-control { display: inline-flex; }
-
-    .theme-select {
-      min-height: 2.75rem;
-      max-width: 7.8rem;
-      padding: 0.55rem 0.55rem;
-      border: 1px solid var(--rule);
-      border-radius: 0;
-      color: var(--ink-soft);
-      background: var(--plane);
-      font-family: var(--type-utility);
-      font-size: 0.67rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .theme-select:hover { border-color: var(--teal); color: var(--ink); }
-
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    .nav-link,
-    .external-link {
+    .nav-link {
+      position: relative;
       display: inline-flex;
       align-items: center;
       min-height: 2.75rem;
-      padding: 0.55rem 0.75rem;
+      padding-inline: 0.85rem;
       color: var(--ink-soft);
-      border: 1px solid transparent;
-      font-family: var(--type-utility);
-      font-size: 0.69rem;
+      font-family: var(--utility);
+      font-size: 0.78rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
       line-height: 1;
       text-decoration: none;
-      text-transform: uppercase;
-      transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+    }
+
+    .nav-link::after {
+      position: absolute;
+      right: 0.85rem;
+      bottom: 0.45rem;
+      left: 0.85rem;
+      height: 2px;
+      content: "";
+      background: var(--acid);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 180ms ease;
     }
 
     .nav-link:hover,
-    .nav-link[aria-current="true"] {
+    .nav-link[aria-current="true"] { color: var(--ink); }
+    .nav-link[aria-current="true"]::after { transform: scaleX(1); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .icon-button {
+      position: relative;
+      display: inline-grid;
+      width: 2.75rem;
+      height: 2.75rem;
+      flex: none;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 50%;
       color: var(--ink);
-      border-color: var(--rule-strong);
-      background: color-mix(in srgb, var(--teal) 10%, transparent);
+      background: transparent;
+      cursor: pointer;
+      place-items: center;
+      transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease, transform 160ms ease;
     }
 
-    .external-link {
-      color: var(--gold);
-      border-color: color-mix(in srgb, var(--gold) 43%, transparent);
+    .icon-button:hover {
+      color: var(--bg);
+      border-color: var(--acid);
+      background: var(--acid);
+      transform: translateY(-2px);
     }
 
-    .external-link:hover {
-      color: var(--ground-deep);
-      background: var(--gold);
+    .icon-button svg { width: 1.05rem; height: 1.05rem; stroke-width: 1.8; }
+
+    [data-tooltip]::after {
+      position: absolute;
+      top: calc(100% + 0.55rem);
+      right: 0;
+      width: max-content;
+      max-width: 12rem;
+      padding: 0.45rem 0.6rem;
+      color: var(--bg);
+      background: var(--ink);
+      content: attr(data-tooltip);
+      font-family: var(--utility);
+      font-size: 0.7rem;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-0.2rem);
+      transition: opacity 150ms ease, transform 150ms ease;
     }
 
-    .menu-detail { display: none; }
+    [data-tooltip]:hover::after,
+    [data-tooltip]:focus-visible::after { opacity: 1; transform: translateY(0); }
+
+    @media (hover: none) {
+      [data-tooltip]::after { display: none; }
+    }
+
+    .menu-button { display: none; }
 
     main { display: block; }
+    section { scroll-margin-top: calc(var(--header) + 1rem); }
 
-    section { scroll-margin-top: calc(var(--nav-height) + 1.25rem); }
+    .hero {
+      position: relative;
+      min-height: min(54rem, calc(100svh - 1.5rem));
+      padding-top: var(--header);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
 
-    .eyebrow,
-    .index-label,
-    .micro-label,
-    .source-link,
-    .chip,
-    .command-prefix,
-    .footer-label {
-      font-family: var(--type-utility);
-      font-size: 0.69rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      line-height: 1.25;
+    .hero::after {
+      position: absolute;
+      top: 14%;
+      right: -12%;
+      width: 44vw;
+      max-width: 42rem;
+      aspect-ratio: 1;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+      box-shadow: inset 0 0 0 5rem color-mix(in srgb, var(--aqua) 3%, transparent);
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(24rem, 0.98fr);
+      align-items: center;
+      min-height: calc(min(54rem, 100svh - 1.5rem) - var(--header));
+      gap: clamp(2.5rem, 6vw, 7rem);
+      padding-block: clamp(3rem, 7vw, 6.5rem) clamp(4.5rem, 8vw, 7rem);
+    }
+
+    .hero-content { position: relative; z-index: 2; }
+
+    .overline,
+    .section-index,
+    .status-label,
+    .component-number,
+    .terminal-label,
+    .footer-meta {
+      font-family: var(--utility);
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1.2;
       text-transform: uppercase;
     }
 
-    .eyebrow {
+    .overline {
       display: flex;
       align-items: center;
       gap: 0.7rem;
-      margin: 0 0 1.15rem;
-      color: var(--teal);
+      margin: 0 0 1.4rem;
+      color: var(--aqua);
     }
 
-    .eyebrow::before {
+    .overline::before {
       width: 2.5rem;
       height: 1px;
       content: "";
       background: currentColor;
     }
 
-    .hero {
-      position: relative;
-      isolation: isolate;
-      padding-block: clamp(5rem, 11vw, 9.5rem) clamp(4.25rem, 7vw, 6.5rem);
-      overflow: clip;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(17rem, 0.7fr);
-      align-items: end;
-      gap: clamp(2rem, 6vw, 7rem);
-    }
-
-    .hero h1,
-    .section-heading,
-    .capability-title,
-    .start-heading {
-      margin: 0;
-      font-family: var(--type-display);
-      font-weight: 500;
-      letter-spacing: -0.07em;
-      line-height: 0.93;
-    }
-
     .hero h1 {
-      max-width: 14ch;
-      font-size: clamp(3.45rem, 8vw, 8.4rem);
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(4.1rem, 9.2vw, 9.25rem);
+      font-weight: 500;
+      line-height: 0.78;
     }
 
-    .headline-accent {
-      color: var(--teal);
-      text-decoration: underline;
-      text-decoration-color: var(--gold);
-      text-decoration-thickness: 0.08em;
-      text-underline-offset: 0.08em;
-    }
+    .hero h1 span { display: block; }
+    .hero h1 .hero-arc { color: var(--acid); }
 
-    .hero-copy {
-      max-width: 35rem;
-      margin: 1.9rem 0 0;
+    .hero-statement {
+      max-width: 29rem;
+      margin: clamp(1.8rem, 4vw, 3.2rem) 0 0 clamp(0rem, 8vw, 7rem);
       color: var(--ink-soft);
-      font-size: clamp(1.1rem, 1.05vw + 0.8rem, 1.48rem);
+      font-size: clamp(1.12rem, 1vw + 0.85rem, 1.45rem);
       line-height: 1.45;
     }
 
-    .hero-copy strong { color: var(--ink); font-weight: 500; }
+    .hero-statement strong { color: var(--ink); font-weight: 500; }
 
-    .action-row {
+    .hero-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 2.25rem;
+      gap: 0.7rem;
+      margin: 2rem 0 0 clamp(0rem, 8vw, 7rem);
     }
 
     .button {
       display: inline-flex;
+      min-height: 3rem;
       align-items: center;
       justify-content: center;
-      min-height: 2.9rem;
+      gap: 0.55rem;
       padding: 0.75rem 1rem;
-      border: 1px solid var(--teal);
-      color: var(--ground-deep);
-      background: var(--teal);
-      font-family: var(--type-utility);
-      font-size: 0.72rem;
+      border: 1px solid var(--acid);
+      color: var(--bg);
+      background: var(--acid);
+      font-family: var(--utility);
+      font-size: 0.76rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
       line-height: 1;
       text-decoration: none;
-      text-transform: uppercase;
       transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
     }
 
-    .button:hover {
-      color: var(--ground-deep);
-      border-color: var(--gold);
-      background: var(--gold);
-      transform: translateY(-2px);
-    }
+    .button:hover { color: var(--bg); border-color: var(--coral); background: var(--coral); transform: translateY(-2px); }
+    .button--ghost { color: var(--ink); border-color: var(--line-strong); background: transparent; }
+    .button--ghost:hover { color: var(--ink); border-color: var(--aqua); background: color-mix(in srgb, var(--aqua) 10%, transparent); }
+    .button svg { width: 1rem; height: 1rem; }
 
-    .button--quiet {
-      color: var(--ink);
-      background: transparent;
-    }
-
-    .button--quiet:hover {
-      color: var(--ink);
-      border-color: var(--arc);
-      background: color-mix(in srgb, var(--arc) 12%, transparent);
-    }
-
-    .architecture-card {
+    .system-stage {
       position: relative;
-      padding: clamp(1.25rem, 2.5vw, 2rem);
-      border: 1px solid var(--rule-strong);
-      background: color-mix(in srgb, var(--plane) 84%, transparent);
-      box-shadow: 0 1.3rem 3.5rem var(--shadow);
+      z-index: 2;
+      min-height: 34rem;
+      perspective: 900px;
     }
 
-    .architecture-card::before {
+    .stage-surface {
       position: absolute;
-      top: -1px;
-      left: -1px;
-      width: 35%;
-      height: 3px;
-      content: "";
-      background: var(--gold);
+      inset: 0;
+      border-top: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line-strong);
+      transform-style: preserve-3d;
+      transition: transform 180ms ease-out;
     }
 
-    .architecture-title {
-      margin: 0 0 1.4rem;
+    .stage-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 2.6rem 2.6rem;
+      opacity: 0.42;
+      mask-image: linear-gradient(90deg, transparent, black 14%, black 86%, transparent);
+    }
+
+    .stage-head,
+    .stage-foot {
+      position: absolute;
+      right: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
       color: var(--ink-faint);
+      font-family: var(--utility);
+      font-size: 0.7rem;
+      font-weight: 600;
     }
 
-    .architecture-list {
-      display: grid;
-      gap: 1.1rem;
-      margin: 0;
-      padding: 0;
-      list-style: none;
+    .stage-head { top: 1rem; }
+    .stage-foot { bottom: 1rem; }
+
+    .live-dot {
+      display: inline-block;
+      width: 0.48rem;
+      height: 0.48rem;
+      margin-right: 0.45rem;
+      border-radius: 50%;
+      background: var(--acid);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--acid) 60%, transparent);
+      vertical-align: 0.02rem;
     }
 
-    .architecture-list li {
-      display: grid;
-      grid-template-columns: 1.65rem 1fr;
-      gap: 0.8rem;
-      align-items: start;
+    @media (prefers-reduced-motion: no-preference) {
+      .live-dot { animation: live-pulse 2s ease-out infinite; }
     }
 
-    .architecture-token {
+    @keyframes live-pulse { 50% { box-shadow: 0 0 0 0.4rem transparent; } }
+
+    .stage-lines {
+      position: absolute;
+      inset: 3.5rem 0;
+      width: 100%;
+      height: calc(100% - 7rem);
+      overflow: visible;
+    }
+
+    .stage-lines path { fill: none; vector-effect: non-scaling-stroke; }
+    .stage-line-guide { stroke: var(--line-strong); stroke-width: 1; }
+    .stage-line-active { stroke: var(--coral); stroke-width: 2; }
+    .stage-line-runtime { stroke: var(--aqua); stroke-width: 2; }
+
+    .stage-node {
+      position: absolute;
       display: grid;
-      width: 1.65rem;
-      height: 1.65rem;
-      color: var(--ground-deep);
-      background: var(--teal);
-      font-family: var(--type-utility);
-      font-size: 0.66rem;
+      min-width: 9.5rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 0;
+      color: var(--ink);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      cursor: pointer;
+      text-align: left;
+      box-shadow: 0 1rem 2.5rem transparent;
+      transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    }
+
+    .stage-node:hover,
+    .stage-node[aria-pressed="true"] {
+      border-color: var(--acid);
+      background: var(--bg-elevated);
+      box-shadow: 0 1rem 2.5rem var(--shadow);
+      transform: translateY(-3px);
+    }
+
+    .stage-node small {
+      color: var(--ink-faint);
+      font-family: var(--utility);
+      font-size: 0.62rem;
       font-weight: 700;
-      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .stage-node strong {
+      margin-top: 0.15rem;
+      font-family: var(--display);
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+
+    .stage-node--upstream { top: 16%; left: 0; }
+    .stage-node--local { top: 41%; right: 0; }
+    .stage-node--runtime { bottom: 16%; left: 12%; }
+
+    .stage-core {
+      position: absolute;
+      top: 38%;
+      left: 40%;
+      display: grid;
+      width: 5.4rem;
+      aspect-ratio: 1;
+      border: 1px solid var(--coral);
+      color: var(--bg);
+      background: var(--acid);
       place-items: center;
       transform: rotate(45deg);
+      box-shadow: 0 0 0 0.75rem color-mix(in srgb, var(--acid) 8%, transparent);
     }
 
-    .architecture-token > span { transform: rotate(-45deg); }
-    .architecture-list li:nth-child(2) .architecture-token { background: var(--gold); }
-    .architecture-list li:nth-child(3) .architecture-token { background: var(--green); }
-
-    .architecture-term {
-      display: block;
-      margin-bottom: 0.12rem;
-      color: var(--ink);
-      font-family: var(--type-utility);
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.025em;
+    .stage-core span {
+      font-family: var(--display);
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+      transform: rotate(-45deg);
     }
 
-    .architecture-detail {
-      display: block;
+    .stage-readout {
+      position: absolute;
+      right: 0;
+      bottom: 3.3rem;
+      width: min(16rem, 58%);
+      margin: 0;
       color: var(--ink-soft);
       font-size: 0.9rem;
-      line-height: 1.35;
+      line-height: 1.4;
+      text-align: right;
     }
 
-    .hero-seam {
-      position: absolute;
-      z-index: -1;
-      top: 25%;
-      right: max(calc((100vw - var(--content-max)) / 2), var(--page-pad));
-      width: min(35vw, 32rem);
-      height: 80%;
-      color: var(--teal);
-      pointer-events: none;
-      opacity: 0.72;
+    .stage-readout strong { display: block; color: var(--ink); font-family: var(--utility); font-size: 0.78rem; }
+
+    .signal-strip {
+      border-bottom: 1px solid var(--line);
+      background: var(--acid);
+      color: var(--bg);
+      overflow: hidden;
     }
 
-    .hero-seam path { fill: none; stroke: currentColor; }
-    .hero-seam .ghost-line { stroke: color-mix(in srgb, var(--teal) 32%, transparent); stroke-width: 1; }
-    .hero-seam .arc-line { stroke: var(--gold); stroke-width: 2; }
-    .hero-seam circle { fill: var(--ground); stroke: var(--arc); stroke-width: 1.5; }
+    .signal-track {
+      display: flex;
+      width: max-content;
+      min-height: 3rem;
+      align-items: center;
+      gap: 2.2rem;
+      padding-inline: 1.1rem;
+      font-family: var(--utility);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
 
-    .section-shell { position: relative; }
+    .signal-track span::before { margin-right: 2.2rem; content: "/"; color: var(--coral); }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .signal-track { animation: ticker 28s linear infinite; }
+      .signal-strip:hover .signal-track { animation-play-state: paused; }
+    }
+
+    @keyframes ticker { to { transform: translateX(-50%); } }
 
     .boundary {
       position: relative;
-      padding-block: clamp(4.5rem, 8vw, 7.5rem);
-      border-top: 1px solid var(--rule);
-      border-bottom: 1px solid var(--rule);
-      background: color-mix(in srgb, var(--ground-deep) 35%, transparent);
+      padding-block: clamp(5rem, 10vw, 10rem);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
     }
 
-    .boundary-layout {
+    .boundary::before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      content: "";
+      background: var(--line);
+    }
+
+    .section-index { margin: 0 0 1.25rem; color: var(--coral); }
+
+    .boundary-title,
+    .components-title,
+    .setup-title,
+    .closing-title {
+      margin: 0;
+      font-family: var(--display);
+      font-weight: 500;
+      line-height: 0.9;
+    }
+
+    .boundary-title { max-width: 11ch; font-size: clamp(3.4rem, 7.5vw, 7.8rem); }
+    .boundary-title em { color: var(--acid); font-family: var(--serif); font-weight: 400; }
+
+    .boundary-grid {
       display: grid;
-      grid-template-columns: minmax(0, 0.9fr) minmax(18rem, 1.1fr);
-      gap: clamp(2rem, 8vw, 9rem);
-      align-items: start;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+      gap: clamp(3rem, 10vw, 11rem);
     }
 
-    .section-heading {
-      max-width: 10ch;
-      font-size: clamp(2.7rem, 5vw, 5.5rem);
-    }
-
-    .boundary-copy {
-      display: grid;
-      gap: 1.35rem;
-      max-width: 43rem;
-      color: var(--ink-soft);
-    }
-
-    .boundary-copy p { margin: 0; }
+    .boundary-copy { align-self: end; padding-bottom: 0.5rem; }
+    .boundary-copy > p { max-width: 35rem; margin: 0; color: var(--ink-soft); font-size: clamp(1.15rem, 1.4vw, 1.4rem); }
     .boundary-copy strong { color: var(--ink); font-weight: 500; }
 
-    .source-cluster {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.55rem;
-      margin-top: 0.2rem;
+    .boundary-ledger {
+      display: grid;
+      margin: 2.6rem 0 0;
+      border-top: 1px solid var(--line-strong);
     }
 
-    .source-link {
+    .ledger-row {
+      display: grid;
+      grid-template-columns: 7.5rem 1fr;
+      gap: 1rem;
+      padding-block: 0.85rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .ledger-row dt {
+      color: var(--ink-faint);
+      font-family: var(--utility);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .ledger-row dd { margin: 0; color: var(--ink); font-family: var(--utility); font-size: 0.9rem; }
+
+    .text-link {
       display: inline-flex;
       align-items: center;
-      min-height: 2.5rem;
-      padding: 0.55rem 0.7rem;
-      color: var(--teal);
-      border: 1px solid color-mix(in srgb, var(--teal) 45%, transparent);
-      text-decoration: none;
-      transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
-    }
-
-    .source-link::before {
-      margin-right: 0.45rem;
-      content: "↗";
-      color: var(--gold);
-      font-size: 0.9rem;
-    }
-
-    .source-link:hover {
-      color: var(--ground-deep);
-      border-color: var(--teal);
-      background: var(--teal);
-    }
-
-    .source-link:hover::before { color: var(--ground-deep); }
-
-    .boundary-map {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 0.6rem;
-      align-items: center;
-      padding-top: 0.4rem;
-    }
-
-    .map-unit {
-      min-height: 8.75rem;
-      padding: 1.25rem;
-      border: 1px solid var(--rule);
-      background: var(--plane);
-    }
-
-    .map-unit--local {
-      border-color: var(--gold);
-      background: color-mix(in srgb, var(--gold) 7%, var(--plane));
-    }
-
-    .map-unit--runtime {
-      grid-column: 2;
-      width: min(13rem, 100%);
-      margin: 0 auto;
-      border-color: var(--teal);
-      background: color-mix(in srgb, var(--teal) 8%, var(--plane));
-    }
-
-    .map-label {
-      display: block;
-      color: var(--ink);
-      font-family: var(--type-utility);
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-
-    .map-detail {
-      display: block;
-      margin-top: 0.55rem;
-      color: var(--ink-soft);
-      font-size: 0.84rem;
-      line-height: 1.35;
-    }
-
-    .map-link {
-      width: 2.35rem;
-      height: 1px;
-      background: linear-gradient(to right, var(--teal), var(--gold));
-    }
-
-    .capabilities {
-      position: relative;
-      padding-block: clamp(5rem, 10vw, 9rem);
-      overflow: clip;
-    }
-
-    .capabilities-intro {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.42fr);
-      gap: 2rem;
-      align-items: end;
-      margin-bottom: clamp(3.5rem, 8vw, 7rem);
-    }
-
-    .capabilities-intro .section-heading { max-width: 12ch; }
-
-    .intro-note {
-      margin: 0;
-      color: var(--ink-soft);
-      font-size: 1.04rem;
-      line-height: 1.45;
-    }
-
-    .seam-rail {
-      position: absolute;
-      top: clamp(16rem, 24vw, 23rem);
-      bottom: clamp(6rem, 12vw, 12rem);
-      left: 50%;
-      width: 5rem;
-      overflow: visible;
-      pointer-events: none;
-      transform: translateX(-50%);
-    }
-
-    .seam-rail svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-
-    .seam-rail .seam-guide {
-      fill: none;
-      stroke: color-mix(in srgb, var(--teal) 30%, transparent);
-      stroke-width: 1;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .seam-rail .seam-path {
-      fill: none;
-      stroke: var(--gold);
-      stroke-linecap: round;
-      stroke-width: 2;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .seam-marker {
-      position: absolute;
-      left: var(--marker-x);
-      top: var(--marker-y);
-      display: grid;
-      width: clamp(0.76rem, 1.35vw, 1.08rem);
-      aspect-ratio: 1;
-      place-items: center;
-      transform: translate(-50%, -50%);
-    }
-
-    .seam-marker__dot {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border: 2px solid var(--teal);
-      border-radius: 50%;
-      background: var(--ground);
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--ground) 72%, transparent);
-      transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
-    }
-
-    html[data-active-seam="runtime"] #seam-runtime .seam-marker__dot,
-    html[data-active-seam="plan"] #seam-plan .seam-marker__dot,
-    html[data-active-seam="mcp"] #seam-mcp .seam-marker__dot,
-    html[data-active-seam="clarify"] #seam-clarify .seam-marker__dot,
-    html[data-active-seam="append"] #seam-append .seam-marker__dot {
-      border-color: var(--gold);
-      background: var(--arc);
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 52%, transparent);
-      filter: drop-shadow(0 0 0.55rem color-mix(in srgb, var(--arc) 75%, transparent));
-    }
-
-    .capability-list {
-      display: grid;
-      gap: clamp(2rem, 6vw, 5.5rem);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .capability {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(3rem, 9rem) minmax(0, 1fr);
-      align-items: center;
-    }
-
-    .capability:nth-child(odd) .capability-card { grid-column: 1; }
-    .capability:nth-child(even) .capability-card { grid-column: 3; }
-
-    .capability-card {
-      position: relative;
-      min-height: 17rem;
-      padding: clamp(1.4rem, 3vw, 2.3rem);
-      border: 1px solid var(--rule);
-      background: color-mix(in srgb, var(--plane) 94%, transparent);
-      box-shadow: 0 1.15rem 2.25rem color-mix(in srgb, var(--shadow) 42%, transparent);
-      transition: border-color 180ms ease, transform 180ms ease, background-color 180ms ease;
-    }
-
-    .capability:nth-child(1) .capability-card { margin-right: clamp(0rem, 3vw, 2.75rem); }
-    .capability:nth-child(2) .capability-card { margin-left: clamp(0rem, 5vw, 4.75rem); }
-    .capability:nth-child(3) .capability-card { margin-right: clamp(0rem, 6vw, 5.5rem); }
-    .capability:nth-child(4) .capability-card { margin-left: clamp(0rem, 2vw, 1.8rem); }
-    .capability:nth-child(5) .capability-card { margin-right: clamp(0rem, 1vw, 1rem); }
-
-    .capability-card::before {
-      position: absolute;
-      top: -1px;
-      width: 3.25rem;
-      height: 3px;
-      content: "";
-      background: var(--gold);
-    }
-
-    .capability:nth-child(odd) .capability-card::before { left: -1px; }
-    .capability:nth-child(even) .capability-card::before { right: -1px; }
-
-    .capability-card:hover,
-    .capability-card:focus-within {
-      border-color: var(--teal);
-      background: color-mix(in srgb, var(--teal) 7%, var(--plane));
-      transform: translateY(-4px);
-    }
-
-    .card-topline {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-
-    .index-label { color: var(--gold); }
-    .chip { color: var(--ink-faint); }
-
-    .capability-title {
-      max-width: 13ch;
-      font-size: clamp(1.9rem, 3vw, 3.25rem);
-    }
-
-    .capability-copy {
-      max-width: 34rem;
-      margin: 1.2rem 0 1.55rem;
-      color: var(--ink-soft);
-      font-size: 1rem;
-      line-height: 1.5;
-    }
-
-    .evidence-list {
-      display: grid;
       gap: 0.45rem;
-      margin: 0 0 1.65rem;
-      padding: 0;
-      color: var(--ink-soft);
-      font-size: 0.86rem;
-      list-style: none;
+      margin-top: 1.8rem;
+      color: var(--aqua);
+      font-family: var(--utility);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.3rem;
     }
 
-    .evidence-list li {
-      position: relative;
-      padding-left: 1.2rem;
+    .text-link:hover { color: var(--acid); }
+    .text-link svg { width: 1rem; height: 1rem; }
+
+    .components {
+      padding-block: clamp(5rem, 9vw, 9rem);
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-elevated);
     }
 
-    .evidence-list li::before {
-      position: absolute;
-      left: 0;
-      color: var(--teal);
-      content: "◆";
-      font-size: 0.57rem;
-      transform: translateY(0.32rem);
-    }
-
-    .capability .source-link { min-height: 2.35rem; }
-
-    .start {
-      position: relative;
-      padding-block: clamp(5rem, 10vw, 8.5rem);
-      border-top: 1px solid var(--rule);
-      background: color-mix(in srgb, var(--ground-deep) 48%, transparent);
-    }
-
-    .start-grid {
+    .components-head {
       display: grid;
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-      gap: clamp(2rem, 7vw, 8rem);
-      align-items: start;
+      grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.4fr);
+      align-items: end;
+      gap: 3rem;
+      margin-bottom: clamp(3.5rem, 7vw, 6.5rem);
     }
 
-    .start-heading {
-      max-width: 8ch;
-      font-size: clamp(2.8rem, 5vw, 5.6rem);
+    .components-title { max-width: 12ch; font-size: clamp(3rem, 6vw, 6rem); }
+    .components-intro { margin: 0; color: var(--ink-soft); font-size: 1.05rem; }
+
+    .component-browser {
+      display: grid;
+      grid-template-columns: minmax(14rem, 0.36fr) minmax(0, 1fr);
+      min-height: 31rem;
+      border-top: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line-strong);
     }
 
-    .start-copy {
-      max-width: 28rem;
-      margin: 1.55rem 0 0;
+    .component-tabs {
+      display: grid;
+      align-content: start;
+      border-right: 1px solid var(--line-strong);
+    }
+
+    .component-tab {
+      display: grid;
+      grid-template-columns: 2rem 1fr auto;
+      align-items: center;
+      gap: 0.7rem;
+      min-height: 4.5rem;
+      padding: 0.8rem 1rem;
+      border: 0;
+      border-bottom: 1px solid var(--line);
       color: var(--ink-soft);
-    }
-
-    .command-shell {
-      position: relative;
-      border: 1px solid var(--terminal-accent);
-      color: var(--terminal-ink);
-      background: var(--terminal-ground);
-      box-shadow: 0 1.5rem 3rem var(--shadow);
-    }
-
-    .command-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 3.3rem;
-      padding: 0.55rem 0.65rem 0.55rem 1rem;
-      border-bottom: 1px solid var(--terminal-rule);
-    }
-
-    .command-prefix { color: var(--terminal-accent); }
-
-    .copy-button {
-      display: none;
-      align-items: center;
-      min-height: 2.35rem;
-      padding: 0.55rem 0.75rem;
-      border: 1px solid var(--terminal-accent);
-      color: var(--terminal-accent);
       background: transparent;
       cursor: pointer;
-      font-family: var(--type-utility);
-      font-size: 0.66rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      line-height: 1;
-      text-transform: uppercase;
+      text-align: left;
       transition: color 160ms ease, background-color 160ms ease;
     }
 
-    .js .copy-button { display: inline-flex; }
+    .component-tab:hover,
+    .component-tab[aria-selected="true"] { color: var(--ink); background: color-mix(in srgb, var(--acid) 9%, transparent); }
+    .component-tab[aria-selected="true"] .component-number { color: var(--coral); }
+    .component-tab svg { width: 0.95rem; height: 0.95rem; color: var(--acid); opacity: 0; transform: translateX(-0.35rem); transition: opacity 160ms ease, transform 160ms ease; }
+    .component-tab[aria-selected="true"] svg { opacity: 1; transform: translateX(0); }
+    .component-tab-name { font-family: var(--display); font-size: 1rem; font-weight: 600; }
+    .component-number { color: var(--ink-faint); font-size: 0.65rem; }
 
-    .copy-button:hover {
-      color: var(--terminal-ground);
-      background: var(--terminal-accent);
+    .component-panels { position: relative; min-width: 0; }
+    .component-panel { min-height: 100%; padding: clamp(2rem, 5vw, 5rem); }
+    .component-panel[hidden] { display: none; }
+
+    .panel-kicker {
+      margin: 0 0 1.5rem;
+      color: var(--aqua);
+      font-family: var(--utility);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
     }
 
-    .command-shell pre {
-      max-width: 100%;
+    .panel-title {
+      max-width: 13ch;
       margin: 0;
-      padding: clamp(1.25rem, 3vw, 2rem);
-      overflow-x: auto;
-      color: var(--terminal-ink);
-      font-family: var(--type-utility);
-      font-size: clamp(0.76rem, 1.2vw, 0.94rem);
-      line-height: 1.9;
-      tab-size: 2;
+      font-family: var(--display);
+      font-size: clamp(2.6rem, 5vw, 5.4rem);
+      font-weight: 500;
+      line-height: 0.9;
     }
 
-    .command-shell code { font-family: inherit; }
-    .prompt { color: var(--terminal-prompt); user-select: none; }
-    .comment { color: var(--terminal-muted); }
+    .panel-copy { max-width: 42rem; margin: 1.5rem 0 0; color: var(--ink-soft); font-size: 1.08rem; }
 
-    .command-footnote {
-      margin: 0;
-      padding: 1rem clamp(1.25rem, 3vw, 2rem) 1.35rem;
-      border-top: 1px solid var(--terminal-rule);
-      color: var(--terminal-muted);
+    .panel-facts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin: clamp(2.5rem, 5vw, 4.5rem) 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .panel-facts li {
+      padding-top: 0.9rem;
+      border-top: 2px solid var(--line-strong);
+      color: var(--ink-soft);
       font-size: 0.88rem;
       line-height: 1.4;
     }
 
-    .command-footnote a {
-      color: var(--terminal-action);
-      text-decoration-color: color-mix(in srgb, var(--terminal-action) 45%, transparent);
-      text-underline-offset: 0.2em;
+    .panel-facts li:nth-child(1) { border-color: var(--acid); }
+    .panel-facts li:nth-child(2) { border-color: var(--coral); }
+    .panel-facts li:nth-child(3) { border-color: var(--aqua); }
+
+    code {
+      color: var(--ink);
+      font-family: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
+      font-size: 0.88em;
     }
 
-    .command-footnote a:hover { color: var(--terminal-prompt); }
-
-    .status-message {
-      min-height: 1.35rem;
-      margin: 0.85rem 0 0;
-      color: var(--teal);
-      font-family: var(--type-utility);
-      font-size: 0.7rem;
-      letter-spacing: 0.04em;
+    .setup {
+      position: relative;
+      padding-block: clamp(5rem, 10vw, 10rem);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
     }
 
-    .principle {
-      padding-block: clamp(3.75rem, 7vw, 6.5rem);
-      border-top: 1px solid var(--rule);
-      background: var(--ground);
+    .setup::before {
+      position: absolute;
+      top: -30%;
+      left: -10%;
+      width: 38rem;
+      aspect-ratio: 1;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      content: "";
     }
 
-    .principle-statement {
-      max-width: 19ch;
-      margin: 0;
-      font-family: var(--type-display);
-      font-size: clamp(2.4rem, 5.2vw, 5.6rem);
-      font-weight: 500;
-      letter-spacing: -0.075em;
-      line-height: 0.95;
+    .setup-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 0.7fr) minmax(26rem, 1.3fr);
+      align-items: start;
+      gap: clamp(3rem, 8vw, 9rem);
     }
 
-    .principle-statement em {
-      color: var(--gold);
-      font-style: normal;
+    .setup-title { max-width: 8ch; font-size: clamp(3.4rem, 6vw, 6.4rem); }
+    .setup-copy { max-width: 25rem; margin: 1.5rem 0 0; color: var(--ink-soft); }
+
+    .terminal {
+      position: relative;
+      color: #eff4e9;
+      background: var(--terminal);
+      box-shadow: 0 2rem 5rem var(--shadow);
     }
 
-    .principle-bottom {
+    .terminal-bar {
       display: flex;
-      flex-wrap: wrap;
+      min-height: 3.5rem;
+      align-items: center;
       justify-content: space-between;
-      gap: 1.5rem 3rem;
-      align-items: end;
-      margin-top: 2.8rem;
-      padding-top: 1.45rem;
-      border-top: 1px solid var(--rule);
+      gap: 1rem;
+      padding: 0.55rem 0.65rem 0.55rem 1.15rem;
+      border-bottom: 1px solid rgba(239, 244, 233, 0.18);
     }
 
-    .principle-bottom p {
-      max-width: 46rem;
+    .terminal-label { color: #92e7dc; }
+    .terminal .icon-button { color: #eff4e9; border-color: rgba(239, 244, 233, 0.24); }
+    .terminal .icon-button:hover { color: #11140f; border-color: #d8ff4f; background: #d8ff4f; }
+    .terminal [data-tooltip]::after { color: #11140f; background: #eff4e9; }
+
+    .terminal pre {
+      max-width: 100%;
       margin: 0;
-      color: var(--ink-soft);
-      font-size: 1rem;
+      padding: clamp(1.35rem, 3vw, 2.5rem);
+      overflow-x: hidden;
+      font-family: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
+      font-size: clamp(0.76rem, 1.2vw, 0.93rem);
+      line-height: 1.85;
+      tab-size: 2;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
 
-    .footer {
-      border-top: 1px solid var(--rule);
-      background: var(--ground-deep);
+    .terminal code { color: inherit; font: inherit; }
+    .terminal .prompt { color: #d8ff4f; user-select: none; }
+    .terminal .comment { color: #788075; }
+    .copy-status { min-height: 1.3rem; margin: 0.75rem 0 0; color: var(--aqua); font-family: var(--utility); font-size: 0.72rem; }
+
+    .closing {
+      position: relative;
+      padding-block: clamp(5rem, 9vw, 9rem);
+      background: var(--coral);
+      color: var(--on-coral);
+      overflow: hidden;
     }
+
+    .closing::after {
+      position: absolute;
+      right: -5rem;
+      bottom: -13rem;
+      width: 34rem;
+      aspect-ratio: 1;
+      border: 1px solid color-mix(in srgb, var(--on-coral) 28%, transparent);
+      border-radius: 50%;
+      content: "";
+      box-shadow: inset 0 0 0 5rem rgba(216, 255, 79, 0.15);
+    }
+
+    .closing-inner { position: relative; z-index: 1; }
+    .closing .section-index { color: var(--on-coral); }
+    .closing-title { max-width: 15ch; font-size: clamp(3.5rem, 8vw, 8rem); }
+    .closing-title em { color: #f1f0e8; font-family: var(--serif); font-weight: 400; }
+
+    .closing-row {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-top: 3rem;
+      padding-top: 1.4rem;
+      border-top: 1px solid color-mix(in srgb, var(--on-coral) 28%, transparent);
+    }
+
+    .closing-row p { max-width: 43rem; margin: 0; font-size: 1.05rem; }
+    .closing .button { color: #11140f; border-color: #d8ff4f; background: #d8ff4f; }
+    .closing .button:hover { border-color: #f1f0e8; background: #f1f0e8; }
+
+    .footer { color: var(--ink-soft); background: var(--bg); }
 
     .footer-inner {
       display: flex;
-      flex-wrap: wrap;
+      min-height: 6rem;
+      align-items: center;
       justify-content: space-between;
       gap: 1.5rem 3rem;
-      padding-block: 2rem;
     }
 
-    .footer-label {
-      margin: 0;
-      color: var(--ink-faint);
+    .footer-meta { margin: 0; color: var(--ink-faint); }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.6rem 1.5rem; }
+    .footer-links a { color: var(--ink-soft); font-family: var(--utility); font-size: 0.76rem; font-weight: 700; text-decoration: none; }
+    .footer-links a:hover { color: var(--acid); }
+
+    @media (max-width: 64rem) {
+      .hero-inner { grid-template-columns: minmax(0, 0.9fr) minmax(21rem, 1.1fr); gap: 2rem; }
+      .hero h1 { font-size: clamp(4rem, 10vw, 7rem); }
+      .hero-statement, .hero-actions { margin-left: 0; }
+      .system-stage { min-height: 31rem; }
+      .boundary-grid { gap: 5rem; }
+      .panel-facts { grid-template-columns: 1fr; }
     }
 
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem 1.4rem;
-    }
-
-    .footer-links a {
-      color: var(--ink-soft);
-      font-family: var(--type-utility);
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-decoration: none;
-      text-transform: uppercase;
-    }
-
-    .footer-links a:hover { color: var(--gold); }
-
-    @media (max-width: 52rem) {
-      :root { --nav-height: 4.5rem; }
-
-      .desktop-nav { display: none; }
-
-      .menu-detail {
-        position: relative;
-        display: block;
-      }
-
-      .menu-detail summary {
-        display: inline-flex;
-        min-width: 2.75rem;
-        min-height: 2.75rem;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--rule);
-        color: var(--teal);
-        cursor: pointer;
-        font-family: var(--type-utility);
-        font-size: 0.67rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        list-style: none;
-        text-transform: uppercase;
-      }
-
-      .menu-detail summary::-webkit-details-marker { display: none; }
-      .menu-detail summary::after { margin-left: 0.35rem; content: "+"; font-size: 1rem; }
-      .menu-detail[open] summary::after { content: "−"; }
-
-      .mobile-nav {
-        position: absolute;
-        top: calc(100% + 0.6rem);
+    @media (max-width: 50rem) {
+      :root { --header: 4.25rem; }
+      .header-inner { grid-template-columns: 1fr auto; }
+      .primary-nav {
+        position: fixed;
+        z-index: 49;
+        top: var(--header);
         right: 0;
+        left: 0;
         display: grid;
-        width: min(18rem, calc(100vw - var(--page-pad) * 2));
-        padding: 0.55rem;
-        border: 1px solid var(--rule-strong);
-        background: var(--plane);
-        box-shadow: 0 1rem 2rem var(--shadow);
+        align-content: start;
+        height: calc(100svh - var(--header));
+        padding: 1rem var(--gutter) 3rem;
+        background: var(--bg);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-1rem);
+        transition: opacity 180ms ease, transform 180ms ease;
       }
 
-      .mobile-nav .nav-link,
-      .mobile-nav .external-link { width: 100%; }
-      .mobile-nav .external-link { justify-content: center; margin-top: 0.35rem; }
-
-      .hero-grid,
-      .boundary-layout,
-      .start-grid,
-      .capabilities-intro { grid-template-columns: 1fr; }
-
-      .hero-grid { align-items: start; }
-      .architecture-card { max-width: 35rem; }
-      .hero-seam { top: 36%; right: -4rem; width: min(68vw, 31rem); }
-
-      .boundary-map { max-width: 34rem; }
-      .capabilities-intro { margin-bottom: 3.5rem; }
-      .seam-rail { left: calc(var(--page-pad) + 0.4rem); width: 2rem; }
-
-      .capability {
-        grid-template-columns: 3rem minmax(0, 1fr);
-      }
-
-      .capability:nth-child(odd) .capability-card,
-      .capability:nth-child(even) .capability-card { grid-column: 2; }
-
-      .capability-card,
-      .capability:nth-child(1) .capability-card,
-      .capability:nth-child(2) .capability-card,
-      .capability:nth-child(3) .capability-card,
-      .capability:nth-child(4) .capability-card,
-      .capability:nth-child(5) .capability-card {
-        margin-inline: 0;
-      }
-
-      .capability:nth-child(even) .capability-card::before { right: auto; left: -1px; }
+      .primary-nav[data-open="true"] { opacity: 1; pointer-events: auto; transform: translateY(0); }
+      .primary-nav .nav-link { min-height: 4rem; padding: 0; border-bottom: 1px solid var(--line); font-family: var(--display); font-size: 1.7rem; }
+      .primary-nav .nav-link::after { right: auto; bottom: 0; left: 0; width: 3rem; }
+      .menu-button { display: inline-grid; }
+      .hero { min-height: auto; }
+      .hero-inner { grid-template-columns: 1fr; min-height: auto; padding-top: 4.5rem; }
+      .hero-content { max-width: 41rem; }
+      .hero h1 { font-size: clamp(4rem, 18vw, 7.5rem); }
+      .system-stage { min-height: 20rem; margin-top: 1rem; }
+      .stage-node--upstream { top: 18%; left: 0; }
+      .stage-node--local { top: 18%; right: 0; }
+      .stage-node--runtime { right: auto; bottom: 8%; left: 50%; translate: -50% 0; }
+      .stage-core { top: 42%; left: 50%; width: 4.4rem; transform: translateX(-50%) rotate(45deg); }
+      .stage-readout,
+      .stage-foot { display: none; }
+      .hero::after { top: 42%; right: -40%; width: 75vw; }
+      .boundary::before { display: none; }
+      .boundary-grid, .components-head, .setup-grid { grid-template-columns: 1fr; }
+      .boundary-copy { padding-bottom: 0; }
+      .component-browser { grid-template-columns: 1fr; }
+      .component-tabs { grid-auto-flow: column; grid-auto-columns: minmax(11rem, 1fr); overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line-strong); }
+      .component-tab { min-height: 4rem; border-right: 1px solid var(--line); border-bottom: 0; }
+      .component-panel { min-height: 34rem; }
+      .setup-grid { gap: 3rem; }
+      .closing-row { align-items: flex-start; flex-direction: column; }
     }
 
     @media (max-width: 34rem) {
-      body { background-image: none; }
-      .header-inner { gap: 0.45rem; }
-      .theme-select { max-width: 5.35rem; padding-inline: 0.24rem; font-size: 0.59rem; }
-      .hero { padding-top: 4.25rem; }
-      .hero h1 { font-size: clamp(3.15rem, 17vw, 4.2rem); }
-      .hero-seam { right: -8rem; opacity: 0.38; }
-      .boundary-map { grid-template-columns: 1fr; gap: 0.7rem; }
-      .map-link { display: none; }
-      .map-unit--runtime { grid-column: auto; width: auto; }
-      .seam-rail { display: none; }
-      .capability { display: block; }
-      .capability-card { margin-bottom: 1.25rem; }
-      .capability-card:hover,
-      .capability-card:focus-within { transform: none; }
-      .action-row { align-items: stretch; }
-      .button { flex: 1 1 100%; }
-      .command-bar { align-items: flex-start; flex-direction: column; gap: 0.7rem; }
-      .copy-button { width: 100%; justify-content: center; }
+      .brand span { font-size: 0.9rem; }
+      .hero-inner { padding-top: 2.5rem; padding-bottom: 2rem; }
+      .hero h1 { font-size: clamp(3.8rem, 21vw, 5.8rem); }
+      .hero-statement { font-size: 1.08rem; }
+      .hero-actions { align-items: stretch; margin-top: 1.5rem; }
+      .hero-actions .button { flex: 1 1 100%; }
+      .system-stage { min-height: 6.5rem; }
+      .stage-node {
+        top: auto;
+        right: auto;
+        bottom: 0.45rem;
+        min-width: 0;
+        width: 33.333%;
+        min-height: 3rem;
+        padding: 0.45rem 0.25rem;
+        justify-items: center;
+        text-align: center;
+      }
+      .stage-node small { display: none; }
+      .stage-node strong { font-size: 0.72rem; }
+      .stage-node--upstream { left: 0; }
+      .stage-node--local { left: 33.333%; }
+      .stage-node--runtime { left: 66.666%; translate: none; }
+      .stage-core,
+      .stage-lines { display: none; }
+      .stage-head { top: 0.55rem; }
+      .stage-head span:last-child,
+      .stage-foot span:last-child { display: none; }
+      .boundary-title { font-size: clamp(3.3rem, 17vw, 5rem); }
+      .ledger-row { grid-template-columns: 1fr; gap: 0.25rem; }
+      .components-title, .setup-title { font-size: clamp(3rem, 15vw, 4.6rem); }
+      .component-panel { min-height: 38rem; padding: 2rem 1rem; }
+      .panel-title { font-size: clamp(2.6rem, 14vw, 4rem); }
+      .terminal-bar { align-items: center; }
+      .closing-title { font-size: clamp(3.2rem, 16vw, 5rem); }
+      .footer-inner { align-items: flex-start; flex-direction: column; padding-block: 1.5rem; }
+    }
+
+    @media (prefers-contrast: more) {
+      :root { --line: rgba(241, 240, 232, 0.38); --line-strong: rgba(241, 240, 232, 0.7); }
+      :root[data-theme="light"] { --line: rgba(21, 25, 20, 0.38); --line-strong: rgba(21, 25, 20, 0.7); }
     }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after {
         scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
       }
     }
   </style>
@@ -1192,416 +1068,381 @@
   <a class="skip-link" href="#main-content">Skip to content</a>
 
   <header class="site-header">
-    <div class="header-inner">
+    <div class="shell header-inner">
       <a class="brand" href="#top" aria-label="pi-arcweld home">
-        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <rect class="brand-mark__field" x="9" y="9" width="46" height="46" transform="rotate(45 32 32)"/>
-          <rect class="brand-mark__outer" x="14.5" y="14.5" width="35" height="35" stroke-width="3" transform="rotate(45 32 32)"/>
-          <path class="brand-mark__seam" d="m20 43 10-10 6 6 10-10" stroke-width="3"/>
-          <rect class="brand-mark__core" x="27" y="27" width="10" height="10" stroke-width="2" transform="rotate(45 32 32)"/>
+        <svg class="brand-mark" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
+          <rect class="mark-frame" x="3.5" y="3.5" width="39" height="39" transform="rotate(45 23 23)"/>
+          <path class="mark-pi" d="M10 15h26M15 15v20M31 15v20"/>
+          <path class="mark-seam" d="m9 27 6-6 5 5 6-7 5 5 6-6"/>
+          <circle class="mark-spark" cx="23" cy="23" r="2.6"/>
         </svg>
         <span>pi-arcweld</span>
       </a>
 
-      <nav class="desktop-nav" aria-label="Primary navigation">
-        <div class="nav-links">
-          <a class="nav-link" href="#workspace">Workspace</a>
-          <a class="nav-link" href="#capabilities">Capabilities</a>
-          <a class="nav-link" href="#start">Start</a>
-        </div>
-        <div class="external-links">
-          <a class="external-link" href="https://github.com/appautomaton/pi-arcweld">Source ↗</a>
-          <a class="external-link" href="https://pi.dev">Pi ↗</a>
-        </div>
+      <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation" data-open="false">
+        <a class="nav-link" href="#workspace">Workspace</a>
+        <a class="nav-link" href="#components">Components</a>
+        <a class="nav-link" href="#start">Build</a>
+        <a class="nav-link" href="https://github.com/appautomaton/pi-arcweld">GitHub</a>
       </nav>
 
-      <label class="theme-control" for="theme-select">
-        <span class="visually-hidden">Color theme</span>
-        <select class="theme-select" id="theme-select" name="theme">
-          <option value="system">System</option>
-          <option value="dark">Dark</option>
-          <option value="light">Day</option>
-        </select>
-      </label>
-
-      <details class="menu-detail">
-        <summary>Menu</summary>
-        <nav class="mobile-nav" aria-label="Mobile navigation">
-          <a class="nav-link" href="#workspace">Workspace</a>
-          <a class="nav-link" href="#capabilities">Capabilities</a>
-          <a class="nav-link" href="#start">Start</a>
-          <a class="external-link" href="https://github.com/appautomaton/pi-arcweld">Read the source ↗</a>
-          <a class="external-link" href="https://pi.dev">Upstream Pi ↗</a>
-        </nav>
-      </details>
+      <div class="header-actions">
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch to light theme" data-tooltip="Switch theme">
+          <i data-lucide="sun" aria-hidden="true"></i>
+        </button>
+        <button class="icon-button menu-button" id="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="primary-nav" data-tooltip="Open menu">
+          <i data-lucide="menu" aria-hidden="true"></i>
+        </button>
+      </div>
     </div>
   </header>
 
   <main id="main-content">
     <section class="hero" id="top" aria-labelledby="hero-title">
-      <svg class="hero-seam" viewBox="0 0 500 600" aria-hidden="true" focusable="false">
-        <path class="ghost-line" d="M440 0 L308 92 L371 176 L201 282 L278 360 L73 505 L145 600" />
-        <path class="arc-line" d="M440 0 L308 92 L371 176 L201 282" />
-        <circle cx="440" cy="0" r="8" />
-        <circle cx="308" cy="92" r="8" />
-        <circle cx="371" cy="176" r="8" />
-        <circle cx="201" cy="282" r="8" />
-      </svg>
-
-      <div class="section-shell hero-grid">
-        <div>
-          <p class="eyebrow">Local Pi workspace / 01</p>
-          <h1 id="hero-title">Curate Pi locally.<br><span class="headline-accent">Keep</span> upstream clean.</h1>
-          <p class="hero-copy">pi-arcweld keeps a curated <strong>Pi</strong> agent environment in one auditable workspace: user-level extensions, system-instruction guidance, MCP tooling, and a runtime built outside the upstream checkout.</p>
-          <div class="action-row">
-            <a class="button" href="#start">Set up the workspace</a>
-            <a class="button button--quiet" href="https://github.com/appautomaton/pi-arcweld">Read the source ↗</a>
+      <div class="shell hero-inner">
+        <div class="hero-content">
+          <p class="overline">Curated local Pi environment</p>
+          <h1 id="hero-title"><span>pi-</span><span class="hero-arc">arcweld</span></h1>
+          <p class="hero-statement"><strong>Keep Pi upstream. Make the agent yours.</strong> One auditable workspace for local extensions, system guidance, MCP tooling, and a runtime assembled beyond the source checkout.</p>
+          <div class="hero-actions">
+            <a class="button" href="#start">Build the workspace <i data-lucide="arrow-down-right" aria-hidden="true"></i></a>
+            <a class="button button--ghost" href="https://github.com/appautomaton/pi-arcweld">Inspect the source <i data-lucide="github" aria-hidden="true"></i></a>
           </div>
         </div>
 
-        <aside class="architecture-card" aria-labelledby="architecture-title">
-          <p class="architecture-title micro-label" id="architecture-title">The working boundary</p>
-          <ol class="architecture-list">
-            <li>
-              <span class="architecture-token" aria-hidden="true"><span>01</span></span>
-              <span><span class="architecture-term">upstream Pi</span><span class="architecture-detail">Pinned as source. Never a local fork.</span></span>
-            </li>
-            <li>
-              <span class="architecture-token" aria-hidden="true"><span>02</span></span>
-              <span><span class="architecture-term">local workspace</span><span class="architecture-detail">Extensions and instruction guidance stay separate.</span></span>
-            </li>
-            <li>
-              <span class="architecture-token" aria-hidden="true"><span>03</span></span>
-              <span><span class="architecture-term">external runtime</span><span class="architecture-detail">Built, checked, and linked outside the checkout.</span></span>
-            </li>
-          </ol>
-        </aside>
+        <div class="system-stage" aria-label="Interactive pi-arcweld architecture">
+          <div class="stage-surface" id="stage-surface">
+            <div class="stage-grid" aria-hidden="true"></div>
+            <div class="stage-head">
+              <span><span class="live-dot" aria-hidden="true"></span>workspace topology</span>
+              <span>source / local / runtime</span>
+            </div>
+
+            <svg class="stage-lines" viewBox="0 0 520 410" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+              <path class="stage-line-guide" d="M40 70 C185 70 145 190 255 195 S350 118 480 140"/>
+              <path class="stage-line-guide" d="M255 195 C240 280 170 300 90 350"/>
+              <path class="stage-line-active" d="M40 70 C185 70 145 190 255 195 S350 118 480 140"/>
+              <path class="stage-line-runtime" d="M255 195 C240 280 170 300 90 350"/>
+            </svg>
+
+            <button class="stage-node stage-node--upstream" type="button" data-stage="upstream" aria-pressed="true">
+              <small>01 / pinned</small>
+              <strong>upstream Pi</strong>
+            </button>
+            <button class="stage-node stage-node--local" type="button" data-stage="local" aria-pressed="false">
+              <small>02 / curated</small>
+              <strong>local layer</strong>
+            </button>
+            <button class="stage-node stage-node--runtime" type="button" data-stage="runtime" aria-pressed="false">
+              <small>03 / verified</small>
+              <strong>external runtime</strong>
+            </button>
+
+            <div class="stage-core" aria-hidden="true"><span>&pi;</span></div>
+            <p class="stage-readout" id="stage-readout"><strong>Upstream stays recognizable.</strong>The submodule records source and a pinned commit, never private build state.</p>
+            <div class="stage-foot">
+              <span>boundary intact</span>
+              <span>build/pi-agent/runtime/bin/pi</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="boundary" id="workspace" aria-labelledby="boundary-title">
-      <div class="section-shell boundary-layout">
+    <div class="signal-strip" aria-hidden="true">
+      <div class="signal-track">
+        <span>pinned upstream</span><span>curated extensions</span><span>cache-safe plan mode</span><span>bounded MCP</span><span>external runtime</span><span>auditable wiring</span>
+        <span>pinned upstream</span><span>curated extensions</span><span>cache-safe plan mode</span><span>bounded MCP</span><span>external runtime</span><span>auditable wiring</span>
+      </div>
+    </div>
+
+    <section class="boundary" id="workspace" aria-labelledby="workspace-title">
+      <div class="shell boundary-grid">
         <div>
-          <p class="eyebrow">Repository boundary / 02</p>
-          <h2 class="section-heading" id="boundary-title">One upstream. A deliberate local layer.</h2>
+          <p class="section-index">01 / The workspace boundary</p>
+          <h2 class="boundary-title" id="workspace-title">A clean source. A <em>deliberate</em> local layer.</h2>
         </div>
 
         <div class="boundary-copy">
-          <p><strong>Pi remains upstream.</strong> pi-arcweld pins <code>pi-mono/</code> as a Git submodule and keeps its own work where it belongs: extensions in <code>extensions/</code>, response guidance in <code>system-instruction/</code>, and runtime maintenance in <code>scripts/</code>.</p>
-          <p>That boundary keeps experimentation precise. Upstream source stays lean; the local runtime is assembled and verified elsewhere; custom behavior has an obvious home.</p>
-          <div class="boundary-map" aria-label="pi-arcweld architecture">
-            <div class="map-unit">
-              <span class="map-label">pinned Pi</span>
-              <span class="map-detail">A clean upstream source checkout.</span>
-            </div>
-            <span class="map-link" aria-hidden="true"></span>
-            <div class="map-unit map-unit--local">
-              <span class="map-label">local layer</span>
-              <span class="map-detail">Extensions, MCP, and instructions.</span>
-            </div>
-            <div class="map-unit map-unit--runtime">
-              <span class="map-label">external runtime</span>
-              <span class="map-detail">Build output stays outside upstream.</span>
-            </div>
-          </div>
-          <div class="source-cluster">
-            <a class="source-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/README.md">Read the workspace</a>
-            <a class="source-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/AGENTS.md">See the rules</a>
-          </div>
+          <p><strong>pi-arcweld gives every local decision a visible home.</strong> Pi remains pinned in <code>pi-mono/</code>. Extensions live together. System guidance appends globally. Build output belongs outside upstream.</p>
+          <dl class="boundary-ledger">
+            <div class="ledger-row"><dt>Source</dt><dd><code>pi-mono/</code> pinned to upstream <code>main</code></dd></div>
+            <div class="ledger-row"><dt>Behavior</dt><dd><code>extensions/</code> owns every curated extension</dd></div>
+            <div class="ledger-row"><dt>Guidance</dt><dd><code>system-instruction/APPEND_SYSTEM.md</code></dd></div>
+            <div class="ledger-row"><dt>Runtime</dt><dd><code>build/pi-agent/runtime/</code>, generated and untracked</dd></div>
+          </dl>
+          <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/AGENTS.md">Read the workspace rules <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
         </div>
       </div>
     </section>
 
-    <section class="capabilities" id="capabilities" aria-labelledby="capabilities-title">
-      <div class="section-shell">
-        <div class="capabilities-intro">
+    <section class="components" id="components" aria-labelledby="components-title">
+      <div class="shell">
+        <div class="components-head">
           <div>
-            <p class="eyebrow">Components / 03</p>
-            <h2 class="section-heading" id="capabilities-title">Local changes with a defined edge.</h2>
+            <p class="section-index">02 / Curated components</p>
+            <h2 class="components-title" id="components-title">Five precise interventions. No private fork.</h2>
           </div>
-          <p class="intro-note">Each component has one defined role. Together, they provide a maintainable Pi environment without creating an upstream fork.</p>
+          <p class="components-intro">The workspace changes how Pi is assembled and extended, while keeping the upstream project legible and replaceable.</p>
         </div>
 
-        <div class="seam-rail" aria-hidden="true">
-          <svg viewBox="0 0 100 1200" preserveAspectRatio="none" focusable="false">
-            <path class="seam-guide" d="M50 0 L18 150 L78 315 L26 522 L74 744 L32 952 L60 1200" />
-            <path class="seam-path" d="M50 0 L18 150 L78 315 L26 522 L74 744 L32 952 L60 1200" />
-          </svg>
-          <span class="seam-marker" id="seam-runtime" style="--marker-x: 18%; --marker-y: 12.5%"><span class="seam-marker__dot"></span></span>
-          <span class="seam-marker" id="seam-plan" style="--marker-x: 78%; --marker-y: 26.25%"><span class="seam-marker__dot"></span></span>
-          <span class="seam-marker" id="seam-mcp" style="--marker-x: 26%; --marker-y: 43.5%"><span class="seam-marker__dot"></span></span>
-          <span class="seam-marker" id="seam-clarify" style="--marker-x: 74%; --marker-y: 62%"><span class="seam-marker__dot"></span></span>
-          <span class="seam-marker" id="seam-append" style="--marker-x: 32%; --marker-y: 79.33%"><span class="seam-marker__dot"></span></span>
+        <div class="component-browser">
+          <div class="component-tabs" role="tablist" aria-label="pi-arcweld components">
+            <button class="component-tab" id="tab-runtime" type="button" role="tab" aria-selected="true" aria-controls="panel-runtime" tabindex="0" data-component="runtime"><span class="component-number">01</span><span class="component-tab-name">Runtime</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+            <button class="component-tab" id="tab-plan" type="button" role="tab" aria-selected="false" aria-controls="panel-plan" tabindex="-1" data-component="plan"><span class="component-number">02</span><span class="component-tab-name">Plan mode</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+            <button class="component-tab" id="tab-mcp" type="button" role="tab" aria-selected="false" aria-controls="panel-mcp" tabindex="-1" data-component="mcp"><span class="component-number">03</span><span class="component-tab-name">MCP client</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+            <button class="component-tab" id="tab-clarify" type="button" role="tab" aria-selected="false" aria-controls="panel-clarify" tabindex="-1" data-component="clarify"><span class="component-number">04</span><span class="component-tab-name">Questionnaire</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+            <button class="component-tab" id="tab-append" type="button" role="tab" aria-selected="false" aria-controls="panel-append" tabindex="-1" data-component="append"><span class="component-number">05</span><span class="component-tab-name">Append layer</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+          </div>
+
+          <div class="component-panels">
+            <article class="component-panel" id="panel-runtime" role="tabpanel" aria-labelledby="tab-runtime" tabindex="0">
+              <p class="panel-kicker">Reproducible runtime</p>
+              <h3 class="panel-title">Build beside the source, never through it.</h3>
+              <p class="panel-copy">The build helper stages packages, artifacts, and the runnable agent beneath <code>build/pi-agent/</code>. Upstream source is read; generated output lands elsewhere.</p>
+              <ul class="panel-facts"><li>Promotes a smoke-checked runtime artifact.</li><li>Links the user <code>pi</code> command to the verified build.</li><li>Keeps package state out of <code>pi-mono/</code>.</li></ul>
+              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld#user-level-integration">Trace the runtime wiring <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+            </article>
+
+            <article class="component-panel" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0" hidden>
+              <p class="panel-kicker">Cache-safe plan mode</p>
+              <h3 class="panel-title">Change the state, preserve the prefix.</h3>
+              <p class="panel-copy">Plan state is appended instead of rebuilding Pi's system prompt or tool inventory, preserving the provider cache prefix across mode transitions.</p>
+              <ul class="panel-facts"><li>Restricts built-in write and edit to canonical plan files.</li><li>Blocks model calls to Pi's built-in Bash while active.</li><li>Acts as a local mutation guard, not a universal sandbox.</li></ul>
+              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/plan-mode/README.md">Read the plan-mode contract <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+            </article>
+
+            <article class="component-panel" id="panel-mcp" role="tabpanel" aria-labelledby="tab-mcp" tabindex="0" hidden>
+              <p class="panel-kicker">Bounded MCP client</p>
+              <h3 class="panel-title">Discover widely. Expose narrowly.</h3>
+              <p class="panel-copy">Configured servers are discovered in the background while the model sees a fixed two-tool surface. Connection details and secret values remain outside the prompt.</p>
+              <ul class="panel-facts"><li>User-global configuration is the consent boundary.</li><li>Catalog snapshots preserve a stable prompt prefix.</li><li>Server metadata and output are treated as untrusted.</li></ul>
+              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/mcp-extension/README.md">Inspect the MCP security model <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+            </article>
+
+            <article class="component-panel" id="panel-clarify" role="tabpanel" aria-labelledby="tab-clarify" tabindex="0" hidden>
+              <p class="panel-kicker">Keyboard-first clarification</p>
+              <h3 class="panel-title">Give ambiguity a clean interface.</h3>
+              <p class="panel-copy">The questionnaire turns vague branches into visible decisions: focused options, multi-question continuity, free-text escape hatches, and explicit cancellation.</p>
+              <ul class="panel-facts"><li>Supports single and multiple selection.</li><li>Preserves context across question sequences.</li><li>Loads as a curated user-level extension.</li></ul>
+              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/questionnaire.ts">Read the extension source <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+            </article>
+
+            <article class="component-panel" id="panel-append" role="tabpanel" aria-labelledby="tab-append" tabindex="0" hidden>
+              <p class="panel-kicker">Global instruction append</p>
+              <h3 class="panel-title">Refine the response, not the runtime truth.</h3>
+              <p class="panel-copy">A canonical global append file improves response behavior without replacing Pi's generated system prompt, active tool guidance, or discovered project context.</p>
+              <ul class="panel-facts"><li>Preserves the runtime-generated prompt head.</li><li>Avoids project-level files that shadow global guidance.</li><li>Keeps machine-specific captures local and ignored.</li></ul>
+              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/system-instruction/README.md">See the instruction model <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+            </article>
+          </div>
         </div>
-
-        <ol class="capability-list">
-          <li class="capability" data-seam="runtime">
-            <article class="capability-card" aria-labelledby="runtime-title">
-              <div class="card-topline"><span class="index-label">Component / 01</span><span class="chip">Runtime</span></div>
-              <h3 class="capability-title" id="runtime-title">Build outside the checkout.</h3>
-              <p class="capability-copy">Assemble a local Pi runtime without turning the upstream source tree into a private build environment.</p>
-              <ul class="evidence-list">
-                <li>Package output and runtime state stay under <code>build/</code>.</li>
-                <li>The helper smoke-checks the runtime before promotion.</li>
-                <li>The user command can point at the verified local artifact.</li>
-              </ul>
-              <a class="source-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/README.md">Runtime workflow</a>
-            </article>
-          </li>
-
-          <li class="capability" data-seam="plan">
-            <article class="capability-card" aria-labelledby="plan-title">
-              <div class="card-topline"><span class="index-label">Component / 02</span><span class="chip">Plan mode</span></div>
-              <h3 class="capability-title" id="plan-title">Plan without cache churn.</h3>
-              <p class="capability-copy">Plan state is appended instead of reshaping Pi’s active tools or system prompt, preserving the provider’s cached prefix through a plan-mode transition.</p>
-              <ul class="evidence-list">
-                <li>Built-in write and edit calls are restricted to canonical plan files.</li>
-                <li>Model calls to Pi’s built-in Bash are blocked while active.</li>
-                <li>It is a guard for local mutation, not a universal sandbox.</li>
-              </ul>
-              <a class="source-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/plan-mode/README.md">Plan mode notes</a>
-            </article>
-          </li>
-
-          <li class="capability" data-seam="mcp">
-            <article class="capability-card" aria-labelledby="mcp-title">
-              <div class="card-topline"><span class="index-label">Component / 03</span><span class="chip">MCP client</span></div>
-              <h3 class="capability-title" id="mcp-title">MCP with deliberate boundaries.</h3>
-              <p class="capability-copy">A small client discovers user-configured capabilities in the background while presenting the model a fixed, bounded tool surface.</p>
-              <ul class="evidence-list">
-                <li>User-global configuration is the explicit consent boundary.</li>
-                <li>Secret values stay private and missing variables fail closed.</li>
-                <li>Server metadata and output are treated as untrusted.</li>
-              </ul>
-              <a class="source-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/mcp-extension/README.md">MCP security model</a>
-            </article>
-          </li>
-
-          <li class="capability" data-seam="clarify">
-            <article class="capability-card" aria-labelledby="clarify-title">
-              <div class="card-topline"><span class="index-label">Component / 04</span><span class="chip">Clarify</span></div>
-              <h3 class="capability-title" id="clarify-title">Give decisions a shape.</h3>
-              <p class="capability-copy">A focused, keyboard-operable question interface turns ambiguous choices into visible options, explicit answers, and a clear path for “other.”</p>
-              <ul class="evidence-list">
-                <li>Supports single and multi-select questions.</li>
-                <li>Moves through multi-question flows without losing context.</li>
-                <li>Keeps cancellation and free-text answers intentional.</li>
-              </ul>
-              <a class="source-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/questionnaire.ts">Clarification UI</a>
-            </article>
-          </li>
-
-          <li class="capability" data-seam="append">
-            <article class="capability-card" aria-labelledby="append-title">
-              <div class="card-topline"><span class="index-label">Component / 05</span><span class="chip">Instruction layer</span></div>
-              <h3 class="capability-title" id="append-title">Refine the response, not Pi.</h3>
-              <p class="capability-copy">A global append layer improves response quality without replacing Pi’s generated system prompt or freezing its evolving tool context.</p>
-              <ul class="evidence-list">
-                <li>Preserves the runtime-generated prompt as the primary system head.</li>
-                <li>Layers behavior corrections on top of live tool context.</li>
-                <li>Lives globally rather than shadowing projects by accident.</li>
-              </ul>
-              <a class="source-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/system-instruction/README.md">Instruction workspace</a>
-            </article>
-          </li>
-        </ol>
       </div>
     </section>
 
-    <section class="start" id="start" aria-labelledby="start-title">
-      <div class="section-shell start-grid">
+    <section class="setup" id="start" aria-labelledby="start-title">
+      <div class="shell setup-grid">
         <div>
-          <p class="eyebrow">Set up the workspace / 04</p>
-          <h2 class="start-heading" id="start-title">Build the local Pi environment.</h2>
-          <p class="start-copy">Clone the workspace with its pinned upstream source, build the external runtime, and verify the user-level Pi command.</p>
+          <p class="section-index">03 / Assemble locally</p>
+          <h2 class="setup-title" id="start-title">From clone to a verified <code>pi</code>.</h2>
+          <p class="setup-copy">Clone the pinned source, assemble the runtime outside upstream, and confirm the user command resolves to the artifact you just built.</p>
         </div>
 
         <div>
-          <div class="command-shell">
-            <div class="command-bar">
-              <span class="command-prefix">bootstrap / local machine</span>
-              <button class="copy-button" type="button" data-copy-target="setup-command">Copy setup</button>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <span class="terminal-label">bootstrap / local machine</span>
+              <button class="icon-button" id="copy-command" type="button" aria-label="Copy setup commands" data-tooltip="Copy commands">
+                <i data-lucide="copy" aria-hidden="true"></i>
+              </button>
             </div>
-            <pre tabindex="0" aria-label="Setup commands"><code id="setup-command"><span class="comment"># clone the workspace and pinned Pi source</span>
+            <pre tabindex="0" aria-label="Setup commands"><code id="setup-command"><span class="comment"># clone the workspace and its pinned Pi source</span>
 <span class="prompt">$</span> git clone --recurse-submodules https://github.com/appautomaton/pi-arcweld.git pi-arcweld
 <span class="prompt">$</span> cd pi-arcweld
 
-<span class="comment"># assemble and verify the external runtime</span>
+<span class="comment"># assemble, link, and verify the external runtime</span>
 <span class="prompt">$</span> scripts/build-pi-agent.sh --link-user-bin
-<span class="prompt">$</span> pi --version</code></pre>
-            <p class="command-footnote">The root intentionally has no shared npm workspace. Local packages own their dependencies; upstream Pi keeps its own build and release process. <a href="https://github.com/appautomaton/pi-arcweld#updating-pi">Use the update helper when Pi moves.</a></p>
+<span class="prompt">$</span> pi --version
+
+<span class="comment"># verify repository rules and user-level wiring</span>
+<span class="prompt">$</span> scripts/check-workspace.sh
+<span class="prompt">$</span> scripts/check-user-wiring.sh</code></pre>
           </div>
-          <p class="status-message" aria-live="polite" aria-atomic="true" data-copy-status></p>
+          <p class="copy-status" id="copy-status" aria-live="polite" aria-atomic="true"></p>
         </div>
       </div>
     </section>
 
-    <section class="principle" aria-labelledby="principle-title">
-      <div class="section-shell">
-        <p class="eyebrow">Operating principle / 05</p>
-        <h2 class="principle-statement" id="principle-title">Pi stays <em>upstream.</em> Arcweld stays <em>intentional.</em></h2>
-        <div class="principle-bottom">
-          <p>The workspace stays maintainable when every curated component has an explicit owner, loading path, and verification boundary.</p>
-          <div class="source-cluster">
-            <a class="source-link" href="https://github.com/appautomaton/pi-arcweld">Explore pi-arcweld</a>
-            <a class="source-link" href="https://github.com/earendil-works/pi">Explore Pi</a>
-          </div>
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="shell closing-inner">
+        <p class="section-index">04 / The operating principle</p>
+        <h2 class="closing-title" id="closing-title">Upstream stays <em>upstream.</em> Every local choice stays visible.</h2>
+        <div class="closing-row">
+          <p>That is the entire architecture: preserve the source boundary, give curated behavior a clear owner, and verify the runtime that reaches the user's shell.</p>
+          <a class="button" href="https://github.com/appautomaton/pi-arcweld">Open on GitHub <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="footer-inner">
-      <p class="footer-label">pi-arcweld / local Pi workspace / MIT 2026</p>
+    <div class="shell footer-inner">
+      <p class="footer-meta">pi-arcweld / local Pi workspace / MIT 2026</p>
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="https://github.com/appautomaton/pi-arcweld">GitHub</a>
-        <a href="https://pi.dev">pi.dev</a>
+        <a href="https://pi.dev">Upstream Pi</a>
         <a href="https://github.com/appautomaton/pi-arcweld/blob/main/LICENSE">MIT license</a>
       </nav>
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
   <script>
     (() => {
       "use strict";
 
       const root = document.documentElement;
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-      const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
-      const menu = document.querySelector(".menu-detail");
-      const themeSelect = document.getElementById("theme-select");
-      const colorMeta = document.getElementById("theme-color");
-      const copyButton = document.querySelector("[data-copy-target]");
-      const copyStatus = document.querySelector("[data-copy-status]");
-      const themeStorageKey = "pi-arcweld-theme";
+      const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      const themeToggle = document.getElementById("theme-toggle");
+      const menuToggle = document.getElementById("menu-toggle");
+      const primaryNav = document.getElementById("primary-nav");
+      const themeMeta = document.getElementById("theme-color");
+      const copyButton = document.getElementById("copy-command");
+      const copyStatus = document.getElementById("copy-status");
+      const stageSurface = document.getElementById("stage-surface");
+      const stageReadout = document.getElementById("stage-readout");
+      const themeKey = "pi-arcweld-theme";
 
-      const applyTheme = (choice, persist = false) => {
-        const validChoice = ["system", "dark", "light"].includes(choice) ? choice : "system";
-        if (validChoice === "system") delete root.dataset.theme;
-        else root.dataset.theme = validChoice;
+      const refreshIcons = () => window.lucide?.createIcons({ attrs: { "aria-hidden": "true" } });
 
-        const effectiveTheme = validChoice === "system" ? (colorScheme.matches ? "dark" : "light") : validChoice;
-        colorMeta?.setAttribute("content", effectiveTheme === "dark" ? "#18181e" : "#f3f4f1");
-        if (themeSelect) themeSelect.value = validChoice;
+      const updateThemeControl = () => {
+        const dark = root.dataset.theme === "dark";
+        themeToggle?.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+        themeToggle?.setAttribute("data-tooltip", dark ? "Switch to light" : "Switch to dark");
+        if (themeToggle) themeToggle.innerHTML = `<i data-lucide="${dark ? "sun" : "moon"}" aria-hidden="true"></i>`;
+        themeMeta?.setAttribute("content", dark ? "#11140f" : "#f2f0e8");
+        refreshIcons();
+      };
 
-        if (persist) {
-          try { window.localStorage.setItem(themeStorageKey, validChoice); } catch {}
+      themeToggle?.addEventListener("click", () => {
+        const next = root.dataset.theme === "dark" ? "light" : "dark";
+        root.dataset.theme = next;
+        try { localStorage.setItem(themeKey, next); } catch {}
+        updateThemeControl();
+      });
+
+      const setMenu = (open) => {
+        primaryNav?.setAttribute("data-open", String(open));
+        menuToggle?.setAttribute("aria-expanded", String(open));
+        menuToggle?.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
+        menuToggle?.setAttribute("data-tooltip", open ? "Close menu" : "Open menu");
+        if (menuToggle) menuToggle.innerHTML = `<i data-lucide="${open ? "x" : "menu"}" aria-hidden="true"></i>`;
+        document.body.style.overflow = open ? "hidden" : "";
+        refreshIcons();
+      };
+
+      menuToggle?.addEventListener("click", () => setMenu(primaryNav?.dataset.open !== "true"));
+      primaryNav?.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => setMenu(false)));
+      addEventListener("keydown", (event) => { if (event.key === "Escape") setMenu(false); });
+      addEventListener("resize", () => { if (innerWidth > 800) setMenu(false); });
+
+      const stageCopy = {
+        upstream: ["Upstream stays recognizable.", "The submodule records source and a pinned commit, never private build state."],
+        local: ["Local behavior has one address.", "Extensions, instruction guidance, and runtime scripts remain reviewable in the root workspace."],
+        runtime: ["The user runs a verified artifact.", "Build output is assembled beneath build/pi-agent and linked only after a runtime smoke check."]
+      };
+
+      document.querySelectorAll("[data-stage]").forEach((node) => {
+        node.addEventListener("click", () => {
+          document.querySelectorAll("[data-stage]").forEach((item) => item.setAttribute("aria-pressed", String(item === node)));
+          const [title, detail] = stageCopy[node.dataset.stage];
+          if (stageReadout) stageReadout.innerHTML = `<strong>${title}</strong>${detail}`;
+        });
+      });
+
+      const tabs = [...document.querySelectorAll('[role="tab"]')];
+      const activateTab = (tab, moveFocus = false) => {
+        tabs.forEach((item) => {
+          const selected = item === tab;
+          item.setAttribute("aria-selected", String(selected));
+          item.tabIndex = selected ? 0 : -1;
+          const panel = document.getElementById(item.getAttribute("aria-controls"));
+          if (panel) panel.hidden = !selected;
+        });
+        if (moveFocus) tab.focus();
+      };
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => activateTab(tab));
+        tab.addEventListener("keydown", (event) => {
+          if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          let next = index;
+          if (event.key === "Home") next = 0;
+          else if (event.key === "End") next = tabs.length - 1;
+          else if (event.key === "ArrowDown" || event.key === "ArrowRight") next = (index + 1) % tabs.length;
+          else next = (index - 1 + tabs.length) % tabs.length;
+          activateTab(tabs[next], true);
+        });
+      });
+
+      copyButton?.addEventListener("click", async () => {
+        const command = document.getElementById("setup-command");
+        if (!command) return;
+        try {
+          await navigator.clipboard.writeText(command.innerText.trim());
+          copyStatus.textContent = "Setup commands copied.";
+          copyButton.innerHTML = '<i data-lucide="check" aria-hidden="true"></i>';
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(command);
+          getSelection()?.removeAllRanges();
+          getSelection()?.addRange(range);
+          copyStatus.textContent = "Commands selected. Copy them from the terminal.";
         }
-      };
-
-      root.classList.add("js");
-      applyTheme(root.dataset.theme || "system");
-
-      themeSelect?.addEventListener("change", () => applyTheme(themeSelect.value, true));
-      colorScheme.addEventListener("change", () => {
-        if (!root.dataset.theme) applyTheme("system");
+        refreshIcons();
+        setTimeout(() => {
+          copyButton.innerHTML = '<i data-lucide="copy" aria-hidden="true"></i>';
+          refreshIcons();
+        }, 2000);
       });
 
-      document.querySelectorAll(".mobile-nav a").forEach((link) => {
-        link.addEventListener("click", () => {
-          menu?.removeAttribute("open");
+      const observedSections = [...document.querySelectorAll("main section[id]")];
+      const navLinks = [...document.querySelectorAll('.primary-nav a[href^="#"]')];
+      const navObserver = new IntersectionObserver((entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        navLinks.forEach((link) => link.setAttribute("aria-current", String(link.hash === `#${visible.target.id}`)));
+      }, { rootMargin: "-30% 0px -55%", threshold: [0.05, 0.25, 0.5] });
+      observedSections.forEach((section) => navObserver.observe(section));
+
+      if (!reducedMotion.matches && stageSurface) {
+        stageSurface.closest(".system-stage")?.addEventListener("pointermove", (event) => {
+          const bounds = event.currentTarget.getBoundingClientRect();
+          const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+          const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+          stageSurface.style.transform = `rotateX(${y * -3}deg) rotateY(${x * 4}deg)`;
         });
-      });
-
-      const selectText = (element) => {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(element);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-      };
-
-      if (copyButton && copyStatus) {
-        copyButton.addEventListener("click", async () => {
-          const target = document.getElementById(copyButton.dataset.copyTarget);
-          if (!target) return;
-
-          try {
-            await navigator.clipboard.writeText(target.innerText.trim());
-            copyStatus.textContent = "Setup commands copied to clipboard.";
-            copyButton.textContent = "Copied";
-          } catch {
-            selectText(target);
-            copyStatus.textContent = "Setup commands selected. Copy them manually.";
-            copyButton.textContent = "Selected";
-          }
-
-          window.setTimeout(() => {
-            copyButton.textContent = "Copy setup";
-          }, 2200);
-        });
+        stageSurface.closest(".system-stage")?.addEventListener("pointerleave", () => { stageSurface.style.transform = ""; });
       }
 
-      const capabilityPanels = [...document.querySelectorAll(".capability")];
-      const activateSeam = (seam) => {
-        if (seam) root.dataset.activeSeam = seam;
-      };
-
-      capabilityPanels.forEach((panel) => {
-        const seam = panel.dataset.seam;
-        const card = panel.querySelector(".capability-card");
-        card?.addEventListener("mouseenter", () => activateSeam(seam));
-        card?.addEventListener("focusin", () => activateSeam(seam));
-      });
-
-      if (!window.gsap || !window.ScrollTrigger || reducedMotion.matches) return;
-
-      window.gsap.registerPlugin(window.ScrollTrigger);
-
-      const seamPath = document.querySelector(".seam-path");
-      if (seamPath) {
-        const seamLength = seamPath.getTotalLength();
-        window.gsap.set(seamPath, { strokeDasharray: seamLength, strokeDashoffset: seamLength * 0.82 });
-        window.gsap.to(seamPath, {
-          strokeDashoffset: 0,
-          duration: 1.6,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: ".capabilities",
-            start: "top 72%",
-            once: true
-          }
+      if (!reducedMotion.matches && window.gsap && window.ScrollTrigger) {
+        gsap.registerPlugin(ScrollTrigger);
+        gsap.from(".hero-content > *", { y: 28, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.out", delay: 0.15 });
+        gsap.from(".stage-surface", { x: innerWidth > 800 ? 48 : 0, y: innerWidth > 800 ? 0 : 18, opacity: 0, duration: 1, ease: "power3.out", delay: 0.35 });
+        gsap.from(".stage-line-active, .stage-line-runtime", { strokeDasharray: 700, strokeDashoffset: 700, duration: 1.8, ease: "power2.inOut", delay: 0.75 });
+        gsap.utils.toArray(".boundary-title, .components-title, .setup-title, .closing-title").forEach((heading) => {
+          gsap.from(heading, { y: 38, opacity: 0, duration: 0.8, ease: "power3.out", scrollTrigger: { trigger: heading, start: "top 84%" } });
         });
+        gsap.from(".boundary-ledger .ledger-row", { x: 28, opacity: 0, stagger: 0.08, duration: 0.55, ease: "power2.out", scrollTrigger: { trigger: ".boundary-ledger", start: "top 82%" } });
+        gsap.from(".component-browser", { y: 45, opacity: 0, duration: 0.85, ease: "power3.out", scrollTrigger: { trigger: ".component-browser", start: "top 83%" } });
+        gsap.from(".terminal", { y: 45, opacity: 0, duration: 0.85, ease: "power3.out", scrollTrigger: { trigger: ".terminal", start: "top 84%" } });
       }
 
-      capabilityPanels.forEach((panel) => {
-        const card = panel.querySelector(".capability-card");
-        const seam = panel.dataset.seam;
-        const marker = document.querySelector(`#seam-${seam} .seam-marker__dot`);
-
-        window.gsap.from(card, {
-          y: 20,
-          opacity: 0.72,
-          duration: 0.55,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: panel,
-            start: "top 76%",
-            onEnter: () => activateSeam(seam),
-            onEnterBack: () => activateSeam(seam)
-          }
-        });
-
-        if (marker) {
-          window.gsap.fromTo(marker,
-            { opacity: 0.35, scale: 0.64 },
-            {
-              opacity: 1,
-              scale: 1,
-              duration: 0.42,
-              ease: "back.out(2)",
-              scrollTrigger: {
-                trigger: panel,
-                start: "top 76%",
-                once: true
-              }
-            }
-          );
-        }
-      });
+      updateThemeControl();
+      refreshIcons();
     })();
   </script>
 </body>
