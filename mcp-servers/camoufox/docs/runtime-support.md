@@ -1,8 +1,10 @@
 # Runtime support
 
-## Verified profile
+## Verified profiles
 
-This local server is currently supported and verified in one environment:
+This local server is currently supported and verified in two environments. Profile selection is centralized in `scripts/runtime-profile.js`, which the installer and doctor share.
+
+### PRoot ARM64 (`proot-arm64`)
 
 | Component | Verified value |
 |---|---|
@@ -16,16 +18,30 @@ This local server is currently supported and verified in one environment:
 
 The machine-readable baseline is `config/proot-arm64-runtime.json`.
 
+### Apple Silicon macOS (`darwin-arm64`)
+
+| Component | Verified value |
+|---|---|
+| Environment | macOS on Apple Silicon (Darwin 25) |
+| Architecture | `arm64` |
+| Node | 24.14.0 |
+| npm | 11.17.0 |
+| Camoufox | 135.0.1-beta.24 macOS ARM64 |
+| `camoufox-js` | 0.10.2 |
+| `playwright-core` | 1.59.0 |
+
+The machine-readable baseline is `config/darwin-arm64-runtime.json`.
+
 ## Artifact split
 
 The working installation is deliberately split into four parts:
 
-1. Project source, lockfile, bootstrap, tests, and documentation in this directory.
-2. npm dependencies restored into `node_modules/` with `npm ci`.
-3. The pinned Camoufox browser installed into `$HOME/.cache/camoufox/`.
+1. Project source, lockfile, bootstraps, tests, and documentation in this directory.
+2. npm dependencies restored into `node_modules/` with `npm ci` (install scripts enabled, so `better-sqlite3` obtains its native binding).
+3. The pinned Camoufox browser installed into the platform browser cache: `$HOME/.cache/camoufox` on Linux, `$HOME/Library/Caches/camoufox` on macOS. These directories mirror `camoufox-js`'s own cache resolution, so the launcher finds the browser without any extra configuration.
 4. Pi's external MCP registration, which points to this checkout's `bin/camoufox-mcp`.
 
-The browser binary, npm dependency tree, and user configuration are runtime state and must not be committed to Git. For repeatable/offline testing, `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` may be supplied to the installer; the same size and SHA-256 checks still apply.
+The browser binary, npm dependency tree, and user configuration are runtime state and must not be committed to Git. Nothing is installed system-wide and no system package manager is involved: the browser, its bundled libraries, and its profile state live entirely in the user cache. For repeatable/offline installs, `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` may be supplied to the installer; the same size and SHA-256 checks still apply.
 
 ## PRoot-specific behavior
 
@@ -39,6 +55,15 @@ The browser binary, npm dependency tree, and user configuration are runtime stat
 The first two settings accommodate the restricted PRoot process environment. Software rendering avoids relying on host GPU integration. `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` prevents ordinary MCP startup from performing network downloads or changing the browser cache.
 
 These settings are not general recommendations for normal Debian or macOS installations.
+
+## macOS-specific behavior
+
+macOS uses the generic launcher path in `bin/camoufox-mcp` with no environment overrides. In particular:
+
+- Firefox's native content-process sandbox stays fully enabled. The Mozilla sandbox relaxations required under PRoot are neither needed nor applied.
+- The browser runs plain headless (`headless: true`); no Xvfb or virtual display is involved.
+- The archive ships a standard `Camoufox.app` bundle. The pinned executable is `Camoufox.app/Contents/MacOS/camoufox` inside the cache directory, and `version.json` sits at the cache root exactly as on Linux.
+- Fingerprint generation uses `os: ["macos"]` so generated fingerprints match the real platform (`src/browser.js`).
 
 ## Legacy native-library bundle
 
@@ -68,8 +93,7 @@ The reproducible baseline therefore does not download or extract those packages.
 
 Planned follow-up targets, each requiring independent clean-system validation:
 
-- general Debian AArch64;
-- Apple Silicon macOS.
+- general Debian AArch64.
 
 Outside the current roadmap:
 

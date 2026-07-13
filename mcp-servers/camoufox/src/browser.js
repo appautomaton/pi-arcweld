@@ -120,7 +120,7 @@ async function launchBrowser(signal, options = {}) {
 
   let lateBrowser;
   const launch = Camoufox({
-    os: ["linux"],
+    os: process.platform === "darwin" ? ["macos"] : ["linux"],
     headless: process.platform === "linux" ? "virtual" : true,
     humanize: true,
     geoip: false,

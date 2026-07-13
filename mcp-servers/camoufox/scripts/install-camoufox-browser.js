@@ -1,15 +1,21 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
 import { copyFileSync, createReadStream, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { homedir, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { resolveProfile } from "./runtime-profile.js";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const manifest = JSON.parse(readFileSync(join(root, "config", "proot-arm64-runtime.json"), "utf8"));
-const browser = manifest.browser;
-const installDir = join(homedir(), ".cache", "camoufox");
+const profile = resolveProfile();
+if (!profile.browserInstallSupported) {
+  console.error(`FAIL no pinned Camoufox browser exists for this platform (profile: ${profile.name})`);
+  console.error("See docs/runtime-support.md for the supported runtime profiles.");
+  process.exit(1);
+}
+
+const browser = profile.manifest.browser;
+const executableRelPath = browser.executablePath ?? "camoufox-bin";
+const installDir = profile.installDir;
 const versionPath = join(installDir, "version.json");
 
 function installedMatches() {
@@ -62,10 +68,10 @@ try {
   const unzip = spawnSync("unzip", ["-q", archive, "-d", extracted], { stdio: "inherit" });
   if (unzip.status !== 0) throw new Error(`unzip exited with status ${unzip.status ?? "unknown"}`);
 
-  const executable = join(extracted, "camoufox-bin");
+  const executable = join(extracted, ...executableRelPath.split("/"));
   const executableHash = await sha256(executable);
   if (executableHash !== browser.executableSha256) {
-    throw new Error(`camoufox-bin SHA-256 ${executableHash} did not match expected ${browser.executableSha256}`);
+    throw new Error(`${executableRelPath} SHA-256 ${executableHash} did not match expected ${browser.executableSha256}`);
   }
 
   writeFileSync(join(extracted, "version.json"), JSON.stringify({ version: browser.version, release: browser.release }));

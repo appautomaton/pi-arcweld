@@ -1,6 +1,6 @@
 # Local Camoufox MCP
 
-A small, locally owned MCP stdio server for the shared Camoufox ARM64 runtime.
+A small, locally owned MCP stdio server for the shared Camoufox runtime on ARM64 platforms.
 
 ## Architecture
 
@@ -18,28 +18,29 @@ Pi / MCP host
 
 The server does not contain host-side confirmation prompts; those belong to the MCP client.
 
-## Fresh PRoot ARM64 setup
+## Fresh setup
 
-The verified setup target is Debian 13 AArch64 under PRoot. From a fresh checkout:
+There are two verified setup targets, each with its own one-command bootstrap:
 
 ```bash
-npm run bootstrap:proot-arm64
+npm run bootstrap:proot-arm64    # Debian 13 AArch64 under PRoot
+npm run bootstrap:darwin-arm64   # macOS on Apple Silicon
 ```
 
-The bootstrap:
+Each bootstrap:
 
-1. verifies Debian, PRoot, AArch64, Node 24+, and required commands;
+1. verifies the platform, architecture, Node 24+, and required commands;
 2. restores the exact npm dependency tree with `npm ci`;
-3. downloads the pinned Camoufox `135.0.1-beta.24` Linux ARM64 archive;
+3. downloads the pinned Camoufox `135.0.1-beta.24` archive for that platform;
 4. verifies its byte size, archive SHA-256, and executable SHA-256;
-5. installs it into `$HOME/.cache/camoufox` without overwriting an unknown cache;
+5. installs it into the platform browser cache (`$HOME/.cache/camoufox` on Linux, `$HOME/Library/Caches/camoufox` on macOS) without overwriting an unknown cache;
 6. runs `npm run doctor`.
 
-The approximately 675 MiB browser archive is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree. To use an already downloaded verified archive, set `CAMOUFOX_ARCHIVE=/path/to/camoufox-135.0.1-beta.24-lin.arm64.zip` when running the bootstrap.
+The browser archive (roughly 675 MiB for Linux ARM64, 284 MiB for macOS ARM64) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide: the browser, its libraries, and its profile state all live in the user cache directory. To use an already downloaded verified archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap.
 
-See [docs/runtime-support.md](docs/runtime-support.md) and [config/proot-arm64-runtime.json](config/proot-arm64-runtime.json) for the support boundary and recorded hashes.
+See [docs/runtime-support.md](docs/runtime-support.md) and the manifests in [config/](config/) for the support boundary and recorded hashes.
 
-General Debian AArch64 and Apple Silicon macOS are planned follow-up targets but are not yet validated. Windows and other architectures are outside the current roadmap.
+General Debian AArch64 is a planned follow-up target but is not yet validated. Windows, Intel macOS, and other architectures are outside the current roadmap.
 
 ## Pi configuration
 

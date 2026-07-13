@@ -15,6 +15,7 @@
     "url": "https://github.com/daijro/camoufox/releases/download/v135.0.1-beta.24/camoufox-135.0.1-beta.24-lin.arm64.zip",
     "bytes": 706823986,
     "archiveSha256": "11c4ef8277e7eca4ebbf1970048b76734ff87d5cb7e180336dd0cbe33bf93e41",
+    "executablePath": "camoufox-bin",
     "executableSha256": "7a36c9d06b016335dd5ff560da10ca661b5c1fe3464748fbec17c86d2859f558"
   },
   "npm": {

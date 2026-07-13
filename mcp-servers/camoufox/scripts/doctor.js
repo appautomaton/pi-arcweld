@@ -5,15 +5,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { installedVerStr, launchPath } from "camoufox-js/dist/pkgman.js";
+import { resolveProfile } from "./runtime-profile.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const manifest = JSON.parse(readFileSync(join(root, "config", "proot-arm64-runtime.json"), "utf8"));
-const expected = manifest.npm;
-const expectedBrowser = `${manifest.browser.version}-${manifest.browser.release}`;
-let proot = false;
-try {
-  proot = platform() === "linux" && readFileSync("/proc/version", "utf8").toLowerCase().includes("proot");
-} catch {}
+const profile = resolveProfile();
+const expected = profile.manifest.npm;
+const expectedBrowser = `${profile.manifest.browser.version}-${profile.manifest.browser.release}`;
 
 let failed = false;
 function check(ok, label) {
@@ -24,7 +21,7 @@ function check(ok, label) {
 console.log(`runtime ${platform()} ${arch()} ${release()} node ${process.version}`);
 console.log(`root ${root}`);
 console.log(`home ${homedir()}`);
-console.log(`profile ${proot ? "proot-arm64" : "generic-unverified"}`);
+console.log(`profile ${profile.name}`);
 
 check(Number.parseInt(process.versions.node.split(".")[0], 10) >= 24, `Node ${process.version}`);
 for (const [name, version] of Object.entries(expected)) {
@@ -44,13 +41,13 @@ try {
   check(false, `browser ${error instanceof Error ? error.message : error}`);
 }
 
-for (const command of proot ? manifest.proot.requiredCommands : ["node", "npm"]) {
+for (const command of profile.requiredCommands) {
   const result = spawnSync("sh", ["-c", `command -v "$1" >/dev/null 2>&1`, "doctor", command]);
   check(result.status === 0, `command ${command}`);
 }
 
-const launcher = proot ? join(root, manifest.proot.launcher) : join(root, "bin", "camoufox-mcp");
+const launcher = join(root, profile.launcher);
 check(existsSync(launcher), `launcher ${launcher}`);
 
-if (!proot) console.log("note this environment is not in the verified PRoot ARM64 support profile");
+if (!profile.verified) console.log("note this environment is not in a verified support profile");
 if (failed) process.exitCode = 1;
