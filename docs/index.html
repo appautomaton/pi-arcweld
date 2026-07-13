@@ -3,11 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="pi-arcweld is a local-first workshop for shaping Pi with a reproducible runtime, focused extensions, and deliberate boundaries.">
-  <meta name="theme-color" content="#18181e">
-  <meta property="og:title" content="pi-arcweld — Shape Pi. Keep the upstream clean.">
-  <meta property="og:description" content="A local-first workshop for shaping Pi with extensions, MCP tooling, system-instruction material, and a reproducible local runtime.">
-  <title>pi-arcweld — Shape Pi. Keep the upstream clean.</title>
+  <meta name="description" content="pi-arcweld is a clean local workspace for a curated Pi agent environment, with focused extensions and a reproducible runtime.">
+  <meta id="theme-color" name="theme-color" content="#18181e">
+  <meta property="og:title" content="pi-arcweld — A clean local Pi workspace">
+  <meta property="og:description" content="A curated Pi agent environment with user-level extensions, system-instruction guidance, and a reproducible local runtime.">
+  <title>pi-arcweld — A clean local Pi workspace</title>
+  <link rel="icon" type="image/svg+xml" href="arcweld-mark.svg">
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const colorMeta = document.getElementById("theme-color");
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      let choice = "system";
+
+      try {
+        const stored = window.localStorage.getItem("pi-arcweld-theme");
+        if (["system", "dark", "light"].includes(stored)) choice = stored;
+      } catch {}
+
+      if (choice !== "system") root.dataset.theme = choice;
+      const effectiveTheme = choice === "system" ? (darkScheme.matches ? "dark" : "light") : choice;
+      colorMeta?.setAttribute("content", effectiveTheme === "dark" ? "#18181e" : "#f3f4f1");
+    })();
+  </script>
 
   <link rel="preconnect" href="https://api.fontshare.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -15,7 +33,7 @@
 
   <style>
     :root {
-      color-scheme: dark light;
+      color-scheme: dark;
       --ink: #d4d4d4;
       --ink-soft: #aeb4bb;
       --ink-faint: #747b85;
@@ -31,6 +49,13 @@
       --green: #b5bd68;
       --danger: #cc6666;
       --shadow: rgba(0, 0, 0, 0.34);
+      --terminal-ground: #111217;
+      --terminal-ink: #e7e8e1;
+      --terminal-muted: #9aa4ac;
+      --terminal-rule: rgba(212, 212, 212, 0.22);
+      --terminal-accent: #8abeb7;
+      --terminal-prompt: #f0c674;
+      --terminal-action: #00d7ff;
       --type-display: "Array", "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
       --type-reading: "Zodiak", Georgia, "Times New Roman", serif;
       --type-utility: "Array", "SFMono-Regular", "Cascadia Code", "Liberation Mono", ui-monospace, monospace;
@@ -39,8 +64,30 @@
       --nav-height: 5rem;
     }
 
+    :root[data-theme="dark"] { color-scheme: dark; }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --ink: #17212b;
+      --ink-soft: #41505e;
+      --ink-faint: #647382;
+      --ground: #f3f4f1;
+      --ground-deep: #e6e8e4;
+      --plane: #fbfcf9;
+      --plane-raised: #e5e9e4;
+      --rule: rgba(23, 33, 43, 0.16);
+      --rule-strong: rgba(46, 112, 108, 0.52);
+      --teal: #216f6a;
+      --arc: #007ea7;
+      --gold: #9b6c07;
+      --green: #4f7b2e;
+      --danger: #a34343;
+      --shadow: rgba(27, 39, 36, 0.14);
+    }
+
     @media (prefers-color-scheme: light) {
-      :root {
+      :root:not([data-theme]) {
+        color-scheme: light;
         --ink: #17212b;
         --ink-soft: #41505e;
         --ink-faint: #647382;
@@ -67,8 +114,14 @@
         --rule-strong: var(--arc);
       }
 
+      :root[data-theme="light"] {
+        --ink: #000000;
+        --ink-soft: #17212b;
+        --rule: rgba(0, 0, 0, 0.46);
+      }
+
       @media (prefers-color-scheme: light) {
-        :root {
+        :root:not([data-theme]) {
           --ink: #000000;
           --ink-soft: #17212b;
           --rule: rgba(0, 0, 0, 0.46);
@@ -128,6 +181,7 @@
 
     a:focus-visible,
     button:focus-visible,
+    select:focus-visible,
     summary:focus-visible {
       outline: 3px solid var(--arc);
       outline-offset: 4px;
@@ -192,21 +246,43 @@
     }
 
     .brand-mark {
-      display: grid;
-      width: 1.72rem;
-      height: 1.72rem;
-      margin-right: 0.62rem;
-      border: 1px solid var(--teal);
-      place-items: center;
-      transform: rotate(45deg);
+      width: 2.1rem;
+      height: 2.1rem;
+      flex: none;
+      margin-right: 0.52rem;
+      overflow: visible;
     }
 
-    .brand-mark::before {
-      width: 0.5rem;
-      height: 0.5rem;
-      content: "";
-      border: 1px solid var(--gold);
-      background: var(--arc);
+    .brand-mark__field { fill: var(--ground); }
+    .brand-mark__outer { stroke: var(--teal); }
+    .brand-mark__seam {
+      fill: none;
+      stroke: var(--gold);
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+    }
+    .brand-mark__core { fill: var(--arc); stroke: var(--gold); }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .brand-mark__seam {
+        stroke-dasharray: 40;
+        stroke-dashoffset: 40;
+        animation: draw-brand-seam 880ms cubic-bezier(.2, .8, .2, 1) 160ms forwards;
+      }
+
+      .brand-mark__core {
+        animation: arcweld-core 3.2s ease-in-out 1.05s infinite;
+      }
+
+      .brand:hover .brand-mark__seam,
+      .brand:focus-visible .brand-mark__seam { animation-duration: 480ms; }
+    }
+
+    @keyframes draw-brand-seam { to { stroke-dashoffset: 0; } }
+
+    @keyframes arcweld-core {
+      0%, 100% { opacity: 0.72; filter: none; }
+      50% { opacity: 1; filter: drop-shadow(0 0 0.28rem color-mix(in srgb, var(--arc) 72%, transparent)); }
     }
 
     .desktop-nav,
@@ -218,6 +294,43 @@
     }
 
     .nav-links { margin-left: auto; }
+
+    .theme-control {
+      display: none;
+      align-items: center;
+      min-height: 2.75rem;
+      margin-left: 0.3rem;
+    }
+
+    .js .theme-control { display: inline-flex; }
+
+    .theme-select {
+      min-height: 2.75rem;
+      max-width: 7.8rem;
+      padding: 0.55rem 0.55rem;
+      border: 1px solid var(--rule);
+      border-radius: 0;
+      color: var(--ink-soft);
+      background: var(--plane);
+      font-family: var(--type-utility);
+      font-size: 0.67rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .theme-select:hover { border-color: var(--teal); color: var(--ink); }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
 
     .nav-link,
     .external-link {
@@ -632,6 +745,7 @@
       fill: none;
       stroke: color-mix(in srgb, var(--teal) 30%, transparent);
       stroke-width: 1;
+      vector-effect: non-scaling-stroke;
     }
 
     .seam-rail .seam-path {
@@ -639,22 +753,39 @@
       stroke: var(--gold);
       stroke-linecap: round;
       stroke-width: 2;
+      vector-effect: non-scaling-stroke;
     }
 
-    .seam-rail .seam-node {
-      fill: var(--ground);
-      stroke: var(--teal);
-      stroke-width: 2;
-      transition: fill 180ms ease, stroke 180ms ease, filter 180ms ease;
+    .seam-marker {
+      position: absolute;
+      left: var(--marker-x);
+      top: var(--marker-y);
+      display: grid;
+      width: clamp(0.76rem, 1.35vw, 1.08rem);
+      aspect-ratio: 1;
+      place-items: center;
+      transform: translate(-50%, -50%);
     }
 
-    html[data-active-seam="runtime"] #seam-runtime,
-    html[data-active-seam="plan"] #seam-plan,
-    html[data-active-seam="mcp"] #seam-mcp,
-    html[data-active-seam="clarify"] #seam-clarify,
-    html[data-active-seam="append"] #seam-append {
-      fill: var(--arc);
-      stroke: var(--gold);
+    .seam-marker__dot {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 2px solid var(--teal);
+      border-radius: 50%;
+      background: var(--ground);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--ground) 72%, transparent);
+      transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    html[data-active-seam="runtime"] #seam-runtime .seam-marker__dot,
+    html[data-active-seam="plan"] #seam-plan .seam-marker__dot,
+    html[data-active-seam="mcp"] #seam-mcp .seam-marker__dot,
+    html[data-active-seam="clarify"] #seam-clarify .seam-marker__dot,
+    html[data-active-seam="append"] #seam-append .seam-marker__dot {
+      border-color: var(--gold);
+      background: var(--arc);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 52%, transparent);
       filter: drop-shadow(0 0 0.55rem color-mix(in srgb, var(--arc) 75%, transparent));
     }
 
@@ -787,8 +918,9 @@
 
     .command-shell {
       position: relative;
-      border: 1px solid var(--rule-strong);
-      background: var(--ground-deep);
+      border: 1px solid var(--terminal-accent);
+      color: var(--terminal-ink);
+      background: var(--terminal-ground);
       box-shadow: 0 1.5rem 3rem var(--shadow);
     }
 
@@ -798,18 +930,18 @@
       justify-content: space-between;
       min-height: 3.3rem;
       padding: 0.55rem 0.65rem 0.55rem 1rem;
-      border-bottom: 1px solid var(--rule);
+      border-bottom: 1px solid var(--terminal-rule);
     }
 
-    .command-prefix { color: var(--teal); }
+    .command-prefix { color: var(--terminal-accent); }
 
     .copy-button {
       display: none;
       align-items: center;
       min-height: 2.35rem;
       padding: 0.55rem 0.75rem;
-      border: 1px solid var(--teal);
-      color: var(--teal);
+      border: 1px solid var(--terminal-accent);
+      color: var(--terminal-accent);
       background: transparent;
       cursor: pointer;
       font-family: var(--type-utility);
@@ -824,8 +956,8 @@
     .js .copy-button { display: inline-flex; }
 
     .copy-button:hover {
-      color: var(--ground-deep);
-      background: var(--teal);
+      color: var(--terminal-ground);
+      background: var(--terminal-accent);
     }
 
     .command-shell pre {
@@ -833,7 +965,7 @@
       margin: 0;
       padding: clamp(1.25rem, 3vw, 2rem);
       overflow-x: auto;
-      color: #e7e8e1;
+      color: var(--terminal-ink);
       font-family: var(--type-utility);
       font-size: clamp(0.76rem, 1.2vw, 0.94rem);
       line-height: 1.9;
@@ -841,25 +973,25 @@
     }
 
     .command-shell code { font-family: inherit; }
-    .prompt { color: var(--gold); user-select: none; }
-    .comment { color: #8d979e; }
+    .prompt { color: var(--terminal-prompt); user-select: none; }
+    .comment { color: var(--terminal-muted); }
 
     .command-footnote {
       margin: 0;
       padding: 1rem clamp(1.25rem, 3vw, 2rem) 1.35rem;
-      border-top: 1px solid var(--rule);
-      color: var(--ink-soft);
+      border-top: 1px solid var(--terminal-rule);
+      color: var(--terminal-muted);
       font-size: 0.88rem;
       line-height: 1.4;
     }
 
     .command-footnote a {
-      color: var(--teal);
-      text-decoration-color: color-mix(in srgb, var(--teal) 45%, transparent);
+      color: var(--terminal-action);
+      text-decoration-color: color-mix(in srgb, var(--terminal-action) 45%, transparent);
       text-underline-offset: 0.2em;
     }
 
-    .command-footnote a:hover { color: var(--gold); }
+    .command-footnote a:hover { color: var(--terminal-prompt); }
 
     .status-message {
       min-height: 1.35rem;
@@ -1026,6 +1158,8 @@
 
     @media (max-width: 34rem) {
       body { background-image: none; }
+      .header-inner { gap: 0.45rem; }
+      .theme-select { max-width: 5.35rem; padding-inline: 0.24rem; font-size: 0.59rem; }
       .hero { padding-top: 4.25rem; }
       .hero h1 { font-size: clamp(3.15rem, 17vw, 4.2rem); }
       .hero-seam { right: -8rem; opacity: 0.38; }
@@ -1060,13 +1194,18 @@
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="#top" aria-label="pi-arcweld home">
-        <span class="brand-mark" aria-hidden="true"></span>
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <rect class="brand-mark__field" x="9" y="9" width="46" height="46" transform="rotate(45 32 32)"/>
+          <rect class="brand-mark__outer" x="14.5" y="14.5" width="35" height="35" stroke-width="3" transform="rotate(45 32 32)"/>
+          <path class="brand-mark__seam" d="m20 43 10-10 6 6 10-10" stroke-width="3"/>
+          <rect class="brand-mark__core" x="27" y="27" width="10" height="10" stroke-width="2" transform="rotate(45 32 32)"/>
+        </svg>
         <span>pi-arcweld</span>
       </a>
 
       <nav class="desktop-nav" aria-label="Primary navigation">
         <div class="nav-links">
-          <a class="nav-link" href="#workshop">Workshop</a>
+          <a class="nav-link" href="#workspace">Workspace</a>
           <a class="nav-link" href="#capabilities">Capabilities</a>
           <a class="nav-link" href="#start">Start</a>
         </div>
@@ -1076,10 +1215,19 @@
         </div>
       </nav>
 
+      <label class="theme-control" for="theme-select">
+        <span class="visually-hidden">Color theme</span>
+        <select class="theme-select" id="theme-select" name="theme">
+          <option value="system">System</option>
+          <option value="dark">Dark</option>
+          <option value="light">Day</option>
+        </select>
+      </label>
+
       <details class="menu-detail">
         <summary>Menu</summary>
         <nav class="mobile-nav" aria-label="Mobile navigation">
-          <a class="nav-link" href="#workshop">Workshop</a>
+          <a class="nav-link" href="#workspace">Workspace</a>
           <a class="nav-link" href="#capabilities">Capabilities</a>
           <a class="nav-link" href="#start">Start</a>
           <a class="external-link" href="https://github.com/appautomaton/pi-arcweld">Read the source ↗</a>
@@ -1102,11 +1250,11 @@
 
       <div class="section-shell hero-grid">
         <div>
-          <p class="eyebrow">Local-first workshop / 01</p>
-          <h1 id="hero-title">Shape Pi.<br><span class="headline-accent">Keep</span> the upstream clean.</h1>
-          <p class="hero-copy">pi-arcweld is a local-first workshop for shaping <strong>Pi</strong> with deliberate extensions, system-instruction material, MCP tooling, and a runtime built outside the upstream checkout.</p>
+          <p class="eyebrow">Local Pi workspace / 01</p>
+          <h1 id="hero-title">Curate Pi locally.<br><span class="headline-accent">Keep</span> upstream clean.</h1>
+          <p class="hero-copy">pi-arcweld keeps a curated <strong>Pi</strong> agent environment in one auditable workspace: user-level extensions, system-instruction guidance, MCP tooling, and a runtime built outside the upstream checkout.</p>
           <div class="action-row">
-            <a class="button" href="#start">Start the workshop</a>
+            <a class="button" href="#start">Set up the workspace</a>
             <a class="button button--quiet" href="https://github.com/appautomaton/pi-arcweld">Read the source ↗</a>
           </div>
         </div>
@@ -1120,7 +1268,7 @@
             </li>
             <li>
               <span class="architecture-token" aria-hidden="true"><span>02</span></span>
-              <span><span class="architecture-term">local workshop</span><span class="architecture-detail">Extensions and instruction layer stay separate.</span></span>
+              <span><span class="architecture-term">local workspace</span><span class="architecture-detail">Extensions and instruction guidance stay separate.</span></span>
             </li>
             <li>
               <span class="architecture-token" aria-hidden="true"><span>03</span></span>
@@ -1131,10 +1279,10 @@
       </div>
     </section>
 
-    <section class="boundary" id="workshop" aria-labelledby="boundary-title">
+    <section class="boundary" id="workspace" aria-labelledby="boundary-title">
       <div class="section-shell boundary-layout">
         <div>
-          <p class="eyebrow">The seam / 02</p>
+          <p class="eyebrow">Repository boundary / 02</p>
           <h2 class="section-heading" id="boundary-title">One upstream. A deliberate local layer.</h2>
         </div>
 
@@ -1168,28 +1316,28 @@
       <div class="section-shell">
         <div class="capabilities-intro">
           <div>
-            <p class="eyebrow">Toolheads / 03</p>
+            <p class="eyebrow">Components / 03</p>
             <h2 class="section-heading" id="capabilities-title">Local changes with a defined edge.</h2>
           </div>
-          <p class="intro-note">Each toolhead does one focused job. Together, they make a Pi environment that can change without becoming a fork.</p>
+          <p class="intro-note">Each component has one defined role. Together, they provide a maintainable Pi environment without creating an upstream fork.</p>
         </div>
 
         <div class="seam-rail" aria-hidden="true">
           <svg viewBox="0 0 100 1200" preserveAspectRatio="none" focusable="false">
             <path class="seam-guide" d="M50 0 L18 150 L78 315 L26 522 L74 744 L32 952 L60 1200" />
             <path class="seam-path" d="M50 0 L18 150 L78 315 L26 522 L74 744 L32 952 L60 1200" />
-            <circle class="seam-node" id="seam-runtime" cx="18" cy="150" r="10" />
-            <circle class="seam-node" id="seam-plan" cx="78" cy="315" r="10" />
-            <circle class="seam-node" id="seam-mcp" cx="26" cy="522" r="10" />
-            <circle class="seam-node" id="seam-clarify" cx="74" cy="744" r="10" />
-            <circle class="seam-node" id="seam-append" cx="32" cy="952" r="10" />
           </svg>
+          <span class="seam-marker" id="seam-runtime" style="--marker-x: 18%; --marker-y: 12.5%"><span class="seam-marker__dot"></span></span>
+          <span class="seam-marker" id="seam-plan" style="--marker-x: 78%; --marker-y: 26.25%"><span class="seam-marker__dot"></span></span>
+          <span class="seam-marker" id="seam-mcp" style="--marker-x: 26%; --marker-y: 43.5%"><span class="seam-marker__dot"></span></span>
+          <span class="seam-marker" id="seam-clarify" style="--marker-x: 74%; --marker-y: 62%"><span class="seam-marker__dot"></span></span>
+          <span class="seam-marker" id="seam-append" style="--marker-x: 32%; --marker-y: 79.33%"><span class="seam-marker__dot"></span></span>
         </div>
 
         <ol class="capability-list">
           <li class="capability" data-seam="runtime">
             <article class="capability-card" aria-labelledby="runtime-title">
-              <div class="card-topline"><span class="index-label">Toolhead / 01</span><span class="chip">Runtime</span></div>
+              <div class="card-topline"><span class="index-label">Component / 01</span><span class="chip">Runtime</span></div>
               <h3 class="capability-title" id="runtime-title">Build outside the checkout.</h3>
               <p class="capability-copy">Assemble a local Pi runtime without turning the upstream source tree into a private build environment.</p>
               <ul class="evidence-list">
@@ -1203,7 +1351,7 @@
 
           <li class="capability" data-seam="plan">
             <article class="capability-card" aria-labelledby="plan-title">
-              <div class="card-topline"><span class="index-label">Toolhead / 02</span><span class="chip">Plan mode</span></div>
+              <div class="card-topline"><span class="index-label">Component / 02</span><span class="chip">Plan mode</span></div>
               <h3 class="capability-title" id="plan-title">Plan without cache churn.</h3>
               <p class="capability-copy">Plan state is appended instead of reshaping Pi’s active tools or system prompt, preserving the provider’s cached prefix through a plan-mode transition.</p>
               <ul class="evidence-list">
@@ -1217,7 +1365,7 @@
 
           <li class="capability" data-seam="mcp">
             <article class="capability-card" aria-labelledby="mcp-title">
-              <div class="card-topline"><span class="index-label">Toolhead / 03</span><span class="chip">MCP client</span></div>
+              <div class="card-topline"><span class="index-label">Component / 03</span><span class="chip">MCP client</span></div>
               <h3 class="capability-title" id="mcp-title">MCP with deliberate boundaries.</h3>
               <p class="capability-copy">A small client discovers user-configured capabilities in the background while presenting the model a fixed, bounded tool surface.</p>
               <ul class="evidence-list">
@@ -1231,7 +1379,7 @@
 
           <li class="capability" data-seam="clarify">
             <article class="capability-card" aria-labelledby="clarify-title">
-              <div class="card-topline"><span class="index-label">Toolhead / 04</span><span class="chip">Clarify</span></div>
+              <div class="card-topline"><span class="index-label">Component / 04</span><span class="chip">Clarify</span></div>
               <h3 class="capability-title" id="clarify-title">Give decisions a shape.</h3>
               <p class="capability-copy">A focused, keyboard-operable question interface turns ambiguous choices into visible options, explicit answers, and a clear path for “other.”</p>
               <ul class="evidence-list">
@@ -1245,7 +1393,7 @@
 
           <li class="capability" data-seam="append">
             <article class="capability-card" aria-labelledby="append-title">
-              <div class="card-topline"><span class="index-label">Toolhead / 05</span><span class="chip">Instruction layer</span></div>
+              <div class="card-topline"><span class="index-label">Component / 05</span><span class="chip">Instruction layer</span></div>
               <h3 class="capability-title" id="append-title">Refine the response, not Pi.</h3>
               <p class="capability-copy">A global append layer improves response quality without replacing Pi’s generated system prompt or freezing its evolving tool context.</p>
               <ul class="evidence-list">
@@ -1263,9 +1411,9 @@
     <section class="start" id="start" aria-labelledby="start-title">
       <div class="section-shell start-grid">
         <div>
-          <p class="eyebrow">Start the workshop / 04</p>
-          <h2 class="start-heading" id="start-title">Make the local layer yours.</h2>
-          <p class="start-copy">Clone the pinned upstream source with the workshop, build the external runtime, and verify the command that will carry the work.</p>
+          <p class="eyebrow">Set up the workspace / 04</p>
+          <h2 class="start-heading" id="start-title">Build the local Pi environment.</h2>
+          <p class="start-copy">Clone the workspace with its pinned upstream source, build the external runtime, and verify the user-level Pi command.</p>
         </div>
 
         <div>
@@ -1274,7 +1422,7 @@
               <span class="command-prefix">bootstrap / local machine</span>
               <button class="copy-button" type="button" data-copy-target="setup-command">Copy setup</button>
             </div>
-            <pre tabindex="0" aria-label="Setup commands"><code id="setup-command"><span class="comment"># clone Pi and the local workshop together</span>
+            <pre tabindex="0" aria-label="Setup commands"><code id="setup-command"><span class="comment"># clone the workspace and pinned Pi source</span>
 <span class="prompt">$</span> git clone --recurse-submodules https://github.com/appautomaton/pi-arcweld.git pi-arcweld
 <span class="prompt">$</span> cd pi-arcweld
 
@@ -1293,7 +1441,7 @@
         <p class="eyebrow">Operating principle / 05</p>
         <h2 class="principle-statement" id="principle-title">Pi stays <em>upstream.</em> Arcweld stays <em>intentional.</em></h2>
         <div class="principle-bottom">
-          <p>A workshop is useful when its tools have a place, its changes can be inspected, and its boundary stays visible. That is the whole point of the seam.</p>
+          <p>The workspace stays maintainable when every curated component has an explicit owner, loading path, and verification boundary.</p>
           <div class="source-cluster">
             <a class="source-link" href="https://github.com/appautomaton/pi-arcweld">Explore pi-arcweld</a>
             <a class="source-link" href="https://github.com/earendil-works/pi">Explore Pi</a>
@@ -1305,7 +1453,7 @@
 
   <footer class="footer">
     <div class="footer-inner">
-      <p class="footer-label">pi-arcweld / local-first workshop / MIT 2026</p>
+      <p class="footer-label">pi-arcweld / local Pi workspace / MIT 2026</p>
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="https://github.com/appautomaton/pi-arcweld">GitHub</a>
         <a href="https://pi.dev">pi.dev</a>
@@ -1322,11 +1470,35 @@
 
       const root = document.documentElement;
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
       const menu = document.querySelector(".menu-detail");
+      const themeSelect = document.getElementById("theme-select");
+      const colorMeta = document.getElementById("theme-color");
       const copyButton = document.querySelector("[data-copy-target]");
       const copyStatus = document.querySelector("[data-copy-status]");
+      const themeStorageKey = "pi-arcweld-theme";
+
+      const applyTheme = (choice, persist = false) => {
+        const validChoice = ["system", "dark", "light"].includes(choice) ? choice : "system";
+        if (validChoice === "system") delete root.dataset.theme;
+        else root.dataset.theme = validChoice;
+
+        const effectiveTheme = validChoice === "system" ? (colorScheme.matches ? "dark" : "light") : validChoice;
+        colorMeta?.setAttribute("content", effectiveTheme === "dark" ? "#18181e" : "#f3f4f1");
+        if (themeSelect) themeSelect.value = validChoice;
+
+        if (persist) {
+          try { window.localStorage.setItem(themeStorageKey, validChoice); } catch {}
+        }
+      };
 
       root.classList.add("js");
+      applyTheme(root.dataset.theme || "system");
+
+      themeSelect?.addEventListener("change", () => applyTheme(themeSelect.value, true));
+      colorScheme.addEventListener("change", () => {
+        if (!root.dataset.theme) applyTheme("system");
+      });
 
       document.querySelectorAll(".mobile-nav a").forEach((link) => {
         link.addEventListener("click", () => {
@@ -1363,6 +1535,18 @@
         });
       }
 
+      const capabilityPanels = [...document.querySelectorAll(".capability")];
+      const activateSeam = (seam) => {
+        if (seam) root.dataset.activeSeam = seam;
+      };
+
+      capabilityPanels.forEach((panel) => {
+        const seam = panel.dataset.seam;
+        const card = panel.querySelector(".capability-card");
+        card?.addEventListener("mouseenter", () => activateSeam(seam));
+        card?.addEventListener("focusin", () => activateSeam(seam));
+      });
+
       if (!window.gsap || !window.ScrollTrigger || reducedMotion.matches) return;
 
       window.gsap.registerPlugin(window.ScrollTrigger);
@@ -1383,9 +1567,10 @@
         });
       }
 
-      window.gsap.utils.toArray(".capability").forEach((panel) => {
+      capabilityPanels.forEach((panel) => {
         const card = panel.querySelector(".capability-card");
         const seam = panel.dataset.seam;
+        const marker = document.querySelector(`#seam-${seam} .seam-marker__dot`);
 
         window.gsap.from(card, {
           y: 20,
@@ -1395,13 +1580,27 @@
           scrollTrigger: {
             trigger: panel,
             start: "top 76%",
-            onEnter: () => { root.dataset.activeSeam = seam; },
-            onEnterBack: () => { root.dataset.activeSeam = seam; }
+            onEnter: () => activateSeam(seam),
+            onEnterBack: () => activateSeam(seam)
           }
         });
 
-        card.addEventListener("mouseenter", () => { root.dataset.activeSeam = seam; });
-        card.addEventListener("focusin", () => { root.dataset.activeSeam = seam; });
+        if (marker) {
+          window.gsap.fromTo(marker,
+            { opacity: 0.35, scale: 0.64 },
+            {
+              opacity: 1,
+              scale: 1,
+              duration: 0.42,
+              ease: "back.out(2)",
+              scrollTrigger: {
+                trigger: panel,
+                start: "top 76%",
+                once: true
+              }
+            }
+          );
+        }
       });
     })();
   </script>

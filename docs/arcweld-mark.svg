@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="pi-arcweld mark">
+  <style>
+    :root { --outer: #216f6a; --seam: #9b6c07; --core: #007ea7; --field: #f3f4f1; }
+    @media (prefers-color-scheme: dark) {
+      :root { --outer: #8abeb7; --seam: #f0c674; --core: #00d7ff; --field: #18181e; }
+    }
+  </style>
+  <rect x="9" y="9" width="46" height="46" fill="var(--field)" transform="rotate(45 32 32)"/>
+  <rect x="14.5" y="14.5" width="35" height="35" stroke="var(--outer)" stroke-width="3" transform="rotate(45 32 32)"/>
+  <path d="m20 43 10-10 6 6 10-10" stroke="var(--seam)" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"/>
+  <rect x="27" y="27" width="10" height="10" fill="var(--core)" stroke="var(--seam)" stroke-width="2" transform="rotate(45 32 32)"/>
+</svg>
