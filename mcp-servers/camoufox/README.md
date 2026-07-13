@@ -2,6 +2,17 @@
 
 A small, locally owned MCP stdio server for the shared Camoufox runtime on ARM64 platforms.
 
+## Supported systems
+
+Two verified runtime profiles, selected automatically by `scripts/runtime-profile.js`:
+
+| Profile | System |
+| --- | --- |
+| `proot-arm64` | Debian 13 AArch64 under PRoot |
+| `darwin-arm64` | macOS on Apple Silicon |
+
+[docs/runtime-support.md](docs/runtime-support.md) is the single source of truth for the support boundary and roadmap. Each `config/<profile>-runtime.json` records only that profile's verified pins and hashes.
+
 ## Architecture
 
 ```text
@@ -251,7 +262,7 @@ Target-related error codes:
 - MCP cancellation removes queued work or closes the request/session browser so Playwright work is interrupted.
 - One browser slot, one persistent session, and an eight-request queue by default.
 - stdin disconnect, `SIGHUP`, `SIGINT`, and `SIGTERM` converge on graceful browser/session cleanup.
-- PRoot isolation and Camoufox's Xvfb behavior are unchanged. The URL guard is application-layer best effort, not a network sandbox.
+- Process isolation follows the platform profile: Firefox's native content sandbox on macOS, and the PRoot accommodations described in [docs/runtime-support.md](docs/runtime-support.md) under PRoot. The URL guard is application-layer best effort, not a network sandbox.
 
 ## Checks
 

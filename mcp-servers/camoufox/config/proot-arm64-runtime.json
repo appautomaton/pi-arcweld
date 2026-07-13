@@ -50,16 +50,5 @@
     },
     "required": false,
     "evidence": "The browser launch, Example Domain integration flow, and dynamic-loader tracing passed without this bundle; neither libdbus-glib-1 nor libpci was opened in the tested workflow. The directory is retained as legacy local state but is not part of the reproducible runtime."
-  },
-  "futureTargets": [
-    "general Debian aarch64",
-    "Apple Silicon macOS"
-  ],
-  "outOfScope": [
-    "Windows",
-    "Debian x86_64",
-    "Intel macOS",
-    "containers",
-    "other Linux distributions"
-  ]
+  }
 }

@@ -1,5 +1,7 @@
 # Runtime support
 
+This document is the single source of truth for the support boundary: which systems are verified, which are planned, and which are out of scope. The per-profile manifests under `config/` record only verified pins and hashes; when support changes, update this document and the affected manifest together.
+
 ## Verified profiles
 
 This local server is currently supported and verified in two environments. Profile selection is centralized in `scripts/runtime-profile.js`, which the installer and doctor share.
