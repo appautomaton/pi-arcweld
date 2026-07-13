@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="pi-arcweld is an auditable local workspace for a curated Pi agent environment: pinned upstream source, focused extensions, and a reproducible external runtime.">
+  <meta name="description" content="pi-arcweld welds a curated local layer to pinned upstream Pi: extensions, system guidance, MCP tooling, and a reproducible runtime, joined along one auditable seam.">
   <meta name="keywords" content="Pi coding agent, AI agent workspace, agent extensions, MCP client, model context protocol, cache-safe plan mode, reproducible runtime, local AI tooling">
   <meta name="author" content="appautomaton">
   <meta name="application-name" content="pi-arcweld">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
-  <meta id="theme-color" name="theme-color" content="#11140f">
+  <meta id="theme-color" name="theme-color" content="#0a0f17">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="pi-arcweld">
   <meta property="og:locale" content="en_US">
-  <meta property="og:title" content="pi-arcweld | Keep Pi upstream. Make it yours.">
-  <meta property="og:description" content="A disciplined local layer for Pi extensions, system guidance, MCP tooling, and an external runtime.">
+  <meta property="og:title" content="pi-arcweld — Don't fork it. Weld it.">
+  <meta property="og:description" content="A curated local layer welded to pinned upstream Pi along one auditable seam. Upstream stays upstream. The workspace stays yours.">
   <meta property="og:url" content="https://appautomaton.github.io/pi-arcweld/">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="pi-arcweld | Keep Pi upstream. Make it yours.">
-  <meta name="twitter:description" content="An auditable local workspace for curated Pi extensions, bounded MCP tooling, and a reproducible external runtime.">
-  <title>pi-arcweld | Keep Pi upstream. Make it yours.</title>
+  <meta name="twitter:title" content="pi-arcweld — Don't fork it. Weld it.">
+  <meta name="twitter:description" content="A curated local layer welded to pinned upstream Pi along one auditable seam. Upstream stays upstream. The workspace stays yours.">
+  <title>pi-arcweld — Don't fork it. Weld it.</title>
   <link rel="canonical" href="https://appautomaton.github.io/pi-arcweld/">
   <link rel="icon" type="image/svg+xml" href="arcweld-mark.svg">
 
@@ -33,16 +33,8 @@
       "license": "https://github.com/appautomaton/pi-arcweld/blob/main/LICENSE",
       "programmingLanguage": ["TypeScript", "Shell", "HTML"],
       "runtimePlatform": "Node.js",
-      "isPartOf": {
-        "@type": "SoftwareApplication",
-        "name": "Pi",
-        "url": "https://pi.dev"
-      },
-      "author": {
-        "@type": "Organization",
-        "name": "appautomaton",
-        "url": "https://github.com/appautomaton"
-      }
+      "isPartOf": { "@type": "SoftwareApplication", "name": "Pi", "url": "https://pi.dev" },
+      "author": { "@type": "Organization", "name": "appautomaton", "url": "https://github.com/appautomaton" }
     }
   </script>
 
@@ -51,59 +43,82 @@
       const stored = (() => {
         try { return localStorage.getItem("pi-arcweld-theme"); } catch { return null; }
       })();
-      const theme = stored === "light" || stored === "dark"
+      const theme = stored === "day" || stored === "night"
         ? stored
-        : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        : (matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day");
       document.documentElement.dataset.theme = theme;
-      document.getElementById("theme-color")?.setAttribute("content", theme === "dark" ? "#11140f" : "#f2f0e8");
     })();
   </script>
 
-  <link rel="preconnect" href="https://api.fontshare.com">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,600,700,800&f[]=gambetta@400,500,600&display=swap">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,100..900&family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&family=Martian+Mono:wdth,wght@75..112.5,100..800&display=swap">
 
   <style>
+    /* ============================================================
+       pi-arcweld — the page is a weld.
+       Two members: steel monochrome. One filler: titanium heat.
+       ============================================================ */
+
     :root {
       color-scheme: dark;
-      --bg: #11140f;
-      --bg-elevated: #181c16;
-      --bg-soft: #20251d;
-      --ink: #f1f0e8;
-      --ink-soft: #b8bdb0;
-      --ink-faint: #7f8878;
-      --line: rgba(241, 240, 232, 0.15);
-      --line-strong: rgba(241, 240, 232, 0.34);
-      --acid: #d8ff4f;
-      --coral: #ff795c;
-      --on-coral: #16120f;
-      --aqua: #92e7dc;
-      --terminal: #090b08;
-      --shadow: rgba(0, 0, 0, 0.42);
-      --display: "Cabinet Grotesk", "Helvetica Neue", Arial, sans-serif;
-      --serif: "Gambetta", Georgia, serif;
-      --utility: "Cabinet Grotesk", "Helvetica Neue", Arial, sans-serif;
-      --content: 88rem;
-      --gutter: clamp(1rem, 3vw, 3.25rem);
-      --header: 4.5rem;
+
+      /* night shop */
+      --steel-0: #0a0f17;
+      --steel-1: #0e1520;
+      --steel-2: #131c2a;
+      --ink: #e9eef6;
+      --ink-dim: #94a4ba;
+      --ink-faint: #55657b;
+      --line: rgba(233, 238, 246, 0.09);
+      --line-strong: rgba(233, 238, 246, 0.22);
+
+      --arc: #7fb2ff;
+      --arc-core: #edf5ff;
+      --arc-glow: rgba(94, 148, 255, 0.55);
+
+      /* titanium oxidation sequence: straw, bronze, purple, violet, blue */
+      --heat-1: #f5c34d;
+      --heat-2: #e2894f;
+      --heat-3: #b76bd6;
+      --heat-4: #7b7df2;
+      --heat-5: #4b93f0;
+      --heat-run: linear-gradient(90deg, var(--heat-1), var(--heat-2) 30%, var(--heat-3) 55%, var(--heat-4) 78%, var(--heat-5));
+      --heat-drop: linear-gradient(180deg, var(--heat-1), var(--heat-2) 30%, var(--heat-3) 55%, var(--heat-4) 78%, var(--heat-5));
+
+      --display: "Big Shoulders", "Arial Narrow", "Helvetica Neue", sans-serif;
+      --body: "Schibsted Grotesk", "Helvetica Neue", system-ui, sans-serif;
+      --mono: "Martian Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+      --content: 90rem;
+      --gutter: clamp(1.25rem, 4vw, 4rem);
+      --header-h: 4.25rem;
+      --rail-w: 0rem;
+      --weld: 0;
     }
 
-    :root[data-theme="light"] {
+    :root[data-theme="day"] {
       color-scheme: light;
-      --bg: #f2f0e8;
-      --bg-elevated: #e9e7dd;
-      --bg-soft: #deddd2;
-      --ink: #151914;
-      --ink-soft: #4f594c;
-      --ink-faint: #737d70;
-      --line: rgba(21, 25, 20, 0.16);
-      --line-strong: rgba(21, 25, 20, 0.34);
-      --acid: #567300;
-      --coral: #c83c24;
-      --on-coral: #f2f0e8;
-      --aqua: #007b70;
-      --terminal: #151914;
-      --shadow: rgba(42, 48, 38, 0.15);
+
+      /* mill sheet at noon */
+      --steel-0: #edf0f4;
+      --steel-1: #f6f8fb;
+      --steel-2: #e1e6ee;
+      --ink: #0f1621;
+      --ink-dim: #46586f;
+      --ink-faint: #8493a9;
+      --line: rgba(15, 22, 33, 0.11);
+      --line-strong: rgba(15, 22, 33, 0.26);
+
+      --arc: #1d5bd6;
+      --arc-core: #0d3ea8;
+      --arc-glow: rgba(29, 91, 214, 0.35);
+
+      --heat-1: #c08a16;
+      --heat-2: #c05f27;
+      --heat-3: #9440bd;
+      --heat-4: #5356e0;
+      --heat-5: #1f6bd9;
     }
 
     * { box-sizing: border-box; }
@@ -111,319 +126,618 @@
     html {
       min-width: 20rem;
       scroll-behavior: smooth;
-      scroll-padding-top: calc(var(--header) + 1.5rem);
+      scroll-padding-top: calc(var(--header-h) + 2rem);
       overflow-x: clip;
     }
 
     body {
-      min-width: 20rem;
       margin: 0;
+      min-width: 20rem;
       color: var(--ink);
-      background: var(--bg);
-      font-family: var(--serif);
-      font-size: 1rem;
-      line-height: 1.55;
+      background: var(--steel-0);
+      font-family: var(--body);
+      font-size: 1.0625rem;
+      line-height: 1.6;
       overflow-x: clip;
-      transition: color 220ms ease, background-color 220ms ease;
+      transition: color 260ms ease, background-color 260ms ease;
     }
 
+    /* distant arc light behind the hero */
     body::before {
+      content: "";
       position: fixed;
       z-index: -1;
       inset: 0;
-      content: "";
       pointer-events: none;
-      background-image:
-        linear-gradient(var(--line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--line) 1px, transparent 1px);
-      background-size: 4.5rem 4.5rem;
+      background:
+        radial-gradient(52rem 34rem at 18% -6%, var(--arc-glow), transparent 62%);
       opacity: 0.16;
-      mask-image: linear-gradient(to bottom, black, transparent 88%);
     }
 
-    ::selection { color: var(--bg); background: var(--acid); }
+    :root[data-theme="day"] body::before { opacity: 0.12; }
+
+    ::selection { color: var(--steel-0); background: var(--arc); }
+
     a { color: inherit; }
-    button, input, select { font: inherit; }
+    button, input { font: inherit; }
 
     a:focus-visible,
-    button:focus-visible {
-      outline: 2px solid var(--acid);
-      outline-offset: 4px;
+    button:focus-visible,
+    pre:focus-visible {
+      outline: 2px solid var(--arc);
+      outline-offset: 3px;
+      border-radius: 1px;
+    }
+
+    strong { font-weight: 600; }
+
+    code {
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.82em;
+      color: var(--ink);
+    }
+
+    /* ---------- utility voices ---------- */
+
+    .tag,
+    .spec-key,
+    .plate-tag,
+    .ledger-key,
+    .pass-id,
+    .log-label,
+    .footer-meta,
+    .rail-pass a {
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .shell {
+      width: min(100% - var(--gutter) * 2, var(--content));
+      margin-inline: auto;
     }
 
     .skip-link {
       position: fixed;
-      z-index: 100;
+      z-index: 200;
       top: 0.75rem;
       left: 0.75rem;
-      padding: 0.65rem 0.85rem;
-      color: var(--bg);
-      background: var(--acid);
-      font-family: var(--utility);
-      font-size: 0.75rem;
-      font-weight: 700;
+      padding: 0.7rem 1rem;
+      color: var(--steel-0);
+      background: var(--arc);
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
       text-decoration: none;
-      transform: translateY(-160%);
-      transition: transform 150ms ease;
+      transform: translateY(-220%);
+      transition: transform 160ms ease;
     }
 
     .skip-link:focus { transform: translateY(0); }
 
-    .shell {
-      width: min(calc(100% - (var(--gutter) * 2)), var(--content));
-      margin-inline: auto;
+    /* ============================================================
+       Seam rail — the weld runs the length of the page.
+       Progress bead + arc dot + pass markers double as navigation.
+       ============================================================ */
+
+    .seam-rail {
+      position: fixed;
+      z-index: 60;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      display: none;
+      width: var(--rail-w);
+      border-right: 1px solid var(--line);
+      background: color-mix(in srgb, var(--steel-0) 72%, transparent);
+      backdrop-filter: blur(10px);
     }
 
-    .site-header {
+    .rail-track {
+      position: absolute;
+      inset: calc(var(--header-h) + 1.75rem) auto 1.75rem 50%;
+      width: 2px;
+      translate: -50% 0;
+      background:
+        repeating-linear-gradient(180deg,
+          var(--line-strong) 0 6px,
+          transparent 6px 14px);
+    }
+
+    .rail-bead {
+      position: absolute;
+      inset: 0;
+      background: var(--heat-drop);
+      clip-path: inset(0 0 calc((1 - var(--weld)) * 100%) 0);
+      box-shadow: 0 0 12px var(--arc-glow);
+    }
+
+    .rail-arc {
+      position: absolute;
+      left: 50%;
+      top: calc(var(--weld) * 100%);
+      width: 9px;
+      height: 9px;
+      translate: -50% -50%;
+      border-radius: 50%;
+      background: var(--arc-core);
+      box-shadow:
+        0 0 6px 1px var(--arc-core),
+        0 0 18px 4px var(--arc-glow);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .rail-arc { animation: arc-breathe 2.6s ease-in-out infinite; }
+    }
+
+    @keyframes arc-breathe {
+      50% { box-shadow: 0 0 8px 2px var(--arc-core), 0 0 26px 7px var(--arc-glow); }
+    }
+
+    .rail-passes {
+      position: absolute;
+      inset: var(--header-h) 0 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0;
+      padding: 2.5rem 0;
+      list-style: none;
+    }
+
+    .rail-pass a {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.75rem 0.4rem;
+      color: var(--ink-faint);
+      background: var(--steel-0);
+      writing-mode: vertical-rl;
+      text-decoration: none;
+      transition: color 180ms ease;
+    }
+
+    .rail-pass a::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--line-strong);
+      transition: background-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .rail-pass a:hover { color: var(--ink); }
+
+    .rail-pass a[aria-current="true"] {
+      color: var(--ink);
+    }
+
+    .rail-pass a[aria-current="true"]::before {
+      background: var(--arc);
+      box-shadow: 0 0 8px 1px var(--arc-glow);
+    }
+
+    /* mobile: the seam survives as a slim bead on the left edge */
+    .edge-bead {
       position: fixed;
-      z-index: 50;
+      z-index: 90;
       top: 0;
-      right: 0;
+      bottom: 0;
       left: 0;
-      height: var(--header);
+      width: 3px;
+      pointer-events: none;
+      background: var(--heat-drop);
+      clip-path: inset(0 0 calc((1 - var(--weld)) * 100%) 0);
+    }
+
+    @media (min-width: 64rem) {
+      :root { --rail-w: 5.5rem; }
+      .seam-rail { display: block; }
+      .edge-bead { display: none; }
+    }
+
+    /* ============================================================
+       Header
+       ============================================================ */
+
+    .site-header {
+      position: sticky;
+      z-index: 80;
+      top: 0;
+      height: var(--header-h);
+      padding-left: var(--rail-w);
       border-bottom: 1px solid var(--line);
-      background: color-mix(in srgb, var(--bg) 82%, transparent);
-      backdrop-filter: blur(18px) saturate(130%);
+      background: color-mix(in srgb, var(--steel-0) 84%, transparent);
+      backdrop-filter: blur(14px) saturate(120%);
     }
 
     .header-inner {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
       height: 100%;
-      gap: 1.25rem;
     }
 
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: 0.65rem;
-      width: max-content;
+      gap: 0.7rem;
       color: var(--ink);
-      font-family: var(--display);
-      font-size: 1rem;
       font-weight: 700;
+      font-size: 1.02rem;
+      letter-spacing: -0.01em;
       line-height: 1;
       text-decoration: none;
     }
 
-    .brand-mark {
-      width: 2rem;
-      height: 2rem;
-      flex: none;
-      overflow: visible;
-    }
+    .brand-mark { width: 2.1rem; height: 2.1rem; flex: none; overflow: visible; }
 
-    .mark-frame,
-    .mark-pi,
-    .mark-seam {
+    .mark-leg {
       fill: none;
-      vector-effect: non-scaling-stroke;
+      stroke: var(--ink);
+      stroke-width: 4.6;
+      stroke-linecap: round;
     }
 
-    .mark-frame { stroke: var(--line-strong); stroke-width: 1; }
-    .mark-pi { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: square; }
-    .mark-seam { stroke: var(--coral); stroke-width: 2; stroke-linecap: square; }
-    .mark-spark { fill: var(--acid); }
+    .mark-bead {
+      fill: none;
+      stroke: url(#heat-mark);
+      stroke-width: 5;
+      stroke-linecap: round;
+    }
+
+    .mark-ripple {
+      fill: none;
+      stroke: var(--steel-0);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 0.012 0.055;
+      opacity: 0.35;
+    }
+
+    .mark-arcdot { fill: var(--arc-core); }
 
     @media (prefers-reduced-motion: no-preference) {
-      .mark-seam {
-        stroke-dasharray: 34;
-        stroke-dashoffset: 34;
-        animation: draw-seam 1s cubic-bezier(.22, .8, .24, 1) 180ms forwards;
+      .mark-bead,
+      .mark-ripple {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        animation: seam-draw 900ms cubic-bezier(0.6, 0, 0.2, 1) 300ms forwards;
       }
 
-      .mark-spark {
-        animation: spark 2.8s ease-in-out 1s infinite;
-        transform-origin: 23px 23px;
+      .mark-ripple {
+        animation: seam-draw 900ms cubic-bezier(0.6, 0, 0.2, 1) 300ms forwards,
+                   ripple-settle 0ms linear 1250ms forwards;
+      }
+
+      .mark-arcdot {
+        opacity: 0;
+        animation: mark-arc-travel 900ms cubic-bezier(0.6, 0, 0.2, 1) 300ms forwards;
       }
     }
 
-    @keyframes draw-seam { to { stroke-dashoffset: 0; } }
-    @keyframes spark {
-      0%, 100% { opacity: 0.45; transform: scale(0.7); }
-      45% { opacity: 1; transform: scale(1.4); }
-      55% { opacity: 0.7; transform: scale(0.9); }
-    }
+    @keyframes seam-draw { to { stroke-dashoffset: 0; } }
+    @keyframes ripple-settle { to { stroke-dasharray: 0.012 0.055; } }
 
-    .primary-nav {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.2rem;
+    @keyframes mark-arc-travel {
+      0% { opacity: 1; transform: translateX(0); }
+      92% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(36px); }
     }
-
-    .nav-link {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      min-height: 2.75rem;
-      padding-inline: 0.85rem;
-      color: var(--ink-soft);
-      font-family: var(--utility);
-      font-size: 0.78rem;
-      font-weight: 600;
-      line-height: 1;
-      text-decoration: none;
-    }
-
-    .nav-link::after {
-      position: absolute;
-      right: 0.85rem;
-      bottom: 0.45rem;
-      left: 0.85rem;
-      height: 2px;
-      content: "";
-      background: var(--acid);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 180ms ease;
-    }
-
-    .nav-link:hover,
-    .nav-link[aria-current="true"] { color: var(--ink); }
-    .nav-link[aria-current="true"]::after { transform: scaleX(1); }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.35rem;
     }
 
+    .header-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 2.75rem;
+      padding-inline: 0.85rem;
+      color: var(--ink-dim);
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 160ms ease;
+    }
+
+    .header-link:hover { color: var(--ink); }
+    .header-link svg { width: 1.05rem; height: 1.05rem; }
+
     .icon-button {
-      position: relative;
       display: inline-grid;
+      place-items: center;
       width: 2.75rem;
       height: 2.75rem;
-      flex: none;
       padding: 0;
       border: 1px solid var(--line);
       border-radius: 50%;
       color: var(--ink);
       background: transparent;
       cursor: pointer;
-      place-items: center;
-      transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease, transform 160ms ease;
+      transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
     }
 
     .icon-button:hover {
-      color: var(--bg);
-      border-color: var(--acid);
-      background: var(--acid);
-      transform: translateY(-2px);
+      border-color: var(--arc);
+      background: color-mix(in srgb, var(--arc) 12%, transparent);
     }
 
-    .icon-button svg { width: 1.05rem; height: 1.05rem; stroke-width: 1.8; }
+    .icon-button svg { width: 1.1rem; height: 1.1rem; }
 
-    [data-tooltip]::after {
-      position: absolute;
-      top: calc(100% + 0.55rem);
-      right: 0;
-      width: max-content;
-      max-width: 12rem;
-      padding: 0.45rem 0.6rem;
-      color: var(--bg);
-      background: var(--ink);
-      content: attr(data-tooltip);
-      font-family: var(--utility);
-      font-size: 0.7rem;
-      font-weight: 600;
+    .menu-button { display: inline-grid; }
+    @media (min-width: 64rem) { .menu-button { display: none; } }
+
+    /* mobile overlay nav */
+    .overlay-nav {
+      position: fixed;
+      z-index: 70;
+      inset: var(--header-h) 0 0;
+      display: grid;
+      align-content: start;
+      padding: 2rem var(--gutter) 3rem;
+      background: var(--steel-0);
       opacity: 0;
       pointer-events: none;
-      transform: translateY(-0.2rem);
-      transition: opacity 150ms ease, transform 150ms ease;
+      transform: translateY(-0.75rem);
+      transition: opacity 200ms ease, transform 200ms ease;
     }
 
-    [data-tooltip]:hover::after,
-    [data-tooltip]:focus-visible::after { opacity: 1; transform: translateY(0); }
-
-    @media (hover: none) {
-      [data-tooltip]::after { display: none; }
+    .overlay-nav[data-open="true"] {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
     }
 
-    .menu-button { display: none; }
-
-    main { display: block; }
-    section { scroll-margin-top: calc(var(--header) + 1rem); }
-
-    .hero {
-      position: relative;
-      min-height: min(54rem, calc(100svh - 1.5rem));
-      padding-top: var(--header);
+    .overlay-nav a {
+      display: flex;
+      align-items: baseline;
+      gap: 1.1rem;
+      padding: 1.1rem 0;
       border-bottom: 1px solid var(--line);
-      overflow: hidden;
+      color: var(--ink);
+      text-decoration: none;
     }
 
-    .hero::after {
-      position: absolute;
-      top: 14%;
-      right: -12%;
-      width: 44vw;
-      max-width: 42rem;
-      aspect-ratio: 1;
-      border: 1px solid var(--line);
-      border-radius: 50%;
-      content: "";
-      pointer-events: none;
-      box-shadow: inset 0 0 0 5rem color-mix(in srgb, var(--aqua) 3%, transparent);
-    }
+    .overlay-nav .pass-id { color: var(--ink-faint); }
 
-    .hero-inner {
-      display: grid;
-      grid-template-columns: minmax(0, 1.02fr) minmax(24rem, 0.98fr);
-      align-items: center;
-      min-height: calc(min(54rem, 100svh - 1.5rem) - var(--header));
-      gap: clamp(2.5rem, 6vw, 7rem);
-      padding-block: clamp(3rem, 7vw, 6.5rem) clamp(4.5rem, 8vw, 7rem);
-    }
-
-    .hero-content { position: relative; z-index: 2; }
-
-    .overline,
-    .section-index,
-    .status-label,
-    .component-number,
-    .terminal-label,
-    .footer-meta {
-      font-family: var(--utility);
-      font-size: 0.72rem;
+    .overlay-nav .pass-word {
+      font-family: var(--display);
+      font-size: clamp(2.4rem, 9vw, 3.4rem);
       font-weight: 700;
-      line-height: 1.2;
+      letter-spacing: 0.015em;
+      line-height: 1;
       text-transform: uppercase;
     }
 
-    .overline {
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      margin: 0 0 1.4rem;
-      color: var(--aqua);
+    .overlay-nav a:hover .pass-word { color: var(--arc); }
+
+    @media (min-width: 64rem) { .overlay-nav { display: none; } }
+
+    /* ============================================================
+       Main / hero
+       ============================================================ */
+
+    main {
+      display: block;
+      padding-left: var(--rail-w);
     }
 
-    .overline::before {
-      width: 2.5rem;
-      height: 1px;
+    section { scroll-margin-top: calc(var(--header-h) + 1rem); }
+
+    .hero { padding-block: clamp(4rem, 9vh, 8rem) 0; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin: 0 0 2rem;
+      color: var(--ink-dim);
+    }
+
+    .tag::before {
       content: "";
-      background: currentColor;
+      width: 2.6rem;
+      height: 2px;
+      background: var(--heat-run);
     }
 
     .hero h1 {
       margin: 0;
       font-family: var(--display);
-      font-size: clamp(4.1rem, 9.2vw, 9.25rem);
-      font-weight: 500;
-      line-height: 0.78;
+      font-optical-sizing: auto;
+      font-size: clamp(4.5rem, 12.5vw, 12rem);
+      font-weight: 750;
+      letter-spacing: 0.008em;
+      line-height: 0.88;
+      text-transform: uppercase;
     }
 
-    .hero h1 span { display: block; }
-    .hero h1 .hero-arc { color: var(--acid); }
+    @media (prefers-reduced-motion: no-preference) {
+      .is-striking .hero h1 {
+        animation: hot-cool 1300ms ease-out 250ms backwards;
+      }
+    }
+
+    @keyframes hot-cool {
+      0% {
+        color: var(--arc-core);
+        text-shadow: 0 0 34px var(--arc-glow), 0 0 6px var(--arc-glow);
+      }
+      100% {
+        color: var(--ink);
+        text-shadow: 0 0 0 transparent;
+      }
+    }
+
+    .hero-line2 {
+      display: flex;
+      align-items: center;
+      gap: clamp(1.25rem, 3.5vw, 3.5rem);
+    }
+
+    /* ---------- the weld run: joint line, bead, arc, flash, sparks ---------- */
+
+    .weld-run {
+      position: relative;
+      flex: 1 1 8rem;
+      min-width: 6rem;
+      height: 28px;
+      align-self: center;
+    }
+
+    .weld-joint {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      left: 0;
+      height: 1px;
+      translate: 0 -50%;
+      background: repeating-linear-gradient(90deg, var(--line-strong) 0 4px, transparent 4px 11px);
+    }
+
+    .weld-bead {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      left: 0;
+      height: 4px;
+      translate: 0 -50%;
+      border-radius: 2px;
+      background: var(--heat-run);
+      filter: drop-shadow(0 0 7px var(--arc-glow));
+    }
+
+    /* stacked-dimes ripple over the bead */
+    .weld-bead::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: repeating-linear-gradient(90deg,
+        transparent 0 11px,
+        color-mix(in srgb, var(--steel-0) 26%, transparent) 11px 13px);
+    }
+
+    .weld-arcdot {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      translate: -50% -50%;
+      background: var(--arc-core);
+      box-shadow:
+        0 0 8px 2px var(--arc-core),
+        0 0 26px 8px var(--arc-glow);
+      opacity: 0;
+    }
+
+    .weld-flash {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      translate: -50% -50%;
+      pointer-events: none;
+      background: radial-gradient(circle, var(--arc-core) 0%, var(--arc-glow) 30%, transparent 70%);
+      opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .is-striking .weld-bead {
+        clip-path: inset(-12px 100% -12px 0);
+        animation: bead-draw 1150ms cubic-bezier(0.55, 0, 0.3, 1) 350ms forwards;
+      }
+
+      .is-striking .weld-arcdot {
+        animation:
+          arc-travel 1150ms cubic-bezier(0.55, 0, 0.3, 1) 350ms forwards,
+          arc-breathe 2.6s ease-in-out 1.6s infinite;
+      }
+
+      .is-striking .weld-flash {
+        animation: arc-strike 480ms ease-out 280ms;
+      }
+    }
+
+    @keyframes bead-draw { to { clip-path: inset(-12px 0 -12px 0); } }
+
+    @keyframes arc-travel {
+      0% { left: 0; opacity: 1; }
+      100% { left: 100%; opacity: 1; }
+    }
+
+    @keyframes arc-strike {
+      0% { opacity: 0; transform: scale(0.4); }
+      22% { opacity: 0.95; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.25); }
+    }
+
+    /* reduced motion / no JS: the seam is simply welded */
+    @media (prefers-reduced-motion: reduce) {
+      .weld-arcdot { opacity: 1; left: 100%; }
+    }
+
+    .spark {
+      position: absolute;
+      top: 50%;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: var(--heat-1);
+      opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .is-striking .spark {
+        animation: spark-fly 620ms cubic-bezier(0.2, 0.6, 0.4, 1) var(--spark-delay, 400ms) forwards;
+      }
+    }
+
+    @keyframes spark-fly {
+      0% { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--spark-x, 20px), var(--spark-y, -30px)) scale(0.3); }
+    }
+
+    .hero-under {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem 4rem;
+      margin-top: clamp(2.5rem, 5vw, 4.5rem);
+    }
 
     .hero-statement {
-      max-width: 29rem;
-      margin: clamp(1.8rem, 4vw, 3.2rem) 0 0 clamp(0rem, 8vw, 7rem);
-      color: var(--ink-soft);
-      font-size: clamp(1.12rem, 1vw + 0.85rem, 1.45rem);
-      line-height: 1.45;
+      max-width: 36rem;
+      margin: 0;
+      color: var(--ink-dim);
+      font-size: clamp(1.1rem, 0.9vw + 0.9rem, 1.3rem);
+      line-height: 1.55;
+      text-wrap: pretty;
     }
 
     .hero-statement strong { color: var(--ink); font-weight: 500; }
@@ -431,632 +745,656 @@
     .hero-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.7rem;
-      margin: 2rem 0 0 clamp(0rem, 8vw, 7rem);
+      gap: 0.75rem;
     }
 
     .button {
       display: inline-flex;
-      min-height: 3rem;
       align-items: center;
       justify-content: center;
-      gap: 0.55rem;
-      padding: 0.75rem 1rem;
-      border: 1px solid var(--acid);
-      color: var(--bg);
-      background: var(--acid);
-      font-family: var(--utility);
-      font-size: 0.76rem;
-      font-weight: 700;
+      gap: 0.6rem;
+      min-height: 3.1rem;
+      padding: 0.8rem 1.35rem;
+      border: 1px solid var(--arc);
+      color: var(--steel-0);
+      background: var(--arc);
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
       line-height: 1;
+      text-transform: uppercase;
       text-decoration: none;
-      transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+      transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
     }
 
-    .button:hover { color: var(--bg); border-color: var(--coral); background: var(--coral); transform: translateY(-2px); }
-    .button--ghost { color: var(--ink); border-color: var(--line-strong); background: transparent; }
-    .button--ghost:hover { color: var(--ink); border-color: var(--aqua); background: color-mix(in srgb, var(--aqua) 10%, transparent); }
+    .button:hover {
+      background: var(--arc-core);
+      border-color: var(--arc-core);
+      box-shadow: 0 0 22px var(--arc-glow);
+    }
+
+    .button--ghost {
+      color: var(--ink);
+      border-color: var(--line-strong);
+      background: transparent;
+    }
+
+    .button--ghost:hover {
+      color: var(--ink);
+      border-color: var(--arc);
+      background: color-mix(in srgb, var(--arc) 10%, transparent);
+      box-shadow: none;
+    }
+
     .button svg { width: 1rem; height: 1rem; }
 
-    .system-stage {
+    /* ---------- joint diagram ---------- */
+
+    .joint {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      margin: clamp(3.5rem, 7vw, 6.5rem) 0 0;
+      border: 1px solid var(--line);
+      background: var(--steel-1);
+    }
+
+    .joint-plate {
       position: relative;
-      z-index: 2;
-      min-height: 34rem;
-      perspective: 900px;
+      padding: clamp(1.5rem, 3vw, 2.75rem);
+      background:
+        repeating-linear-gradient(180deg,
+          color-mix(in srgb, var(--ink) 2%, transparent) 0 1px,
+          transparent 1px 7px);
     }
 
-    .stage-surface {
-      position: absolute;
-      inset: 0;
-      border-top: 1px solid var(--line-strong);
-      border-bottom: 1px solid var(--line-strong);
-      transform-style: preserve-3d;
-      transition: transform 180ms ease-out;
-    }
+    /* heat-affected zone: metal blushes near the seam */
+    .joint-plate--a { box-shadow: inset -4.5rem 0 4.5rem -4.5rem color-mix(in srgb, var(--heat-2) 26%, transparent); }
+    .joint-plate--b { box-shadow: inset 4.5rem 0 4.5rem -4.5rem color-mix(in srgb, var(--heat-2) 26%, transparent); }
 
-    .stage-grid {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(var(--line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--line) 1px, transparent 1px);
-      background-size: 2.6rem 2.6rem;
-      opacity: 0.42;
-      mask-image: linear-gradient(90deg, transparent, black 14%, black 86%, transparent);
-    }
+    .plate-tag { display: block; margin: 0 0 1.2rem; color: var(--ink-faint); }
+    .joint-plate--a .plate-tag { text-align: right; }
 
-    .stage-head,
-    .stage-foot {
-      position: absolute;
-      right: 0;
-      left: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      color: var(--ink-faint);
-      font-family: var(--utility);
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-
-    .stage-head { top: 1rem; }
-    .stage-foot { bottom: 1rem; }
-
-    .live-dot {
-      display: inline-block;
-      width: 0.48rem;
-      height: 0.48rem;
-      margin-right: 0.45rem;
-      border-radius: 50%;
-      background: var(--acid);
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--acid) 60%, transparent);
-      vertical-align: 0.02rem;
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-      .live-dot { animation: live-pulse 2s ease-out infinite; }
-    }
-
-    @keyframes live-pulse { 50% { box-shadow: 0 0 0 0.4rem transparent; } }
-
-    .stage-lines {
-      position: absolute;
-      inset: 3.5rem 0;
-      width: 100%;
-      height: calc(100% - 7rem);
-      overflow: visible;
-    }
-
-    .stage-lines path { fill: none; vector-effect: non-scaling-stroke; }
-    .stage-line-guide { stroke: var(--line-strong); stroke-width: 1; }
-    .stage-line-active { stroke: var(--coral); stroke-width: 2; }
-    .stage-line-runtime { stroke: var(--aqua); stroke-width: 2; }
-
-    .stage-node {
-      position: absolute;
-      display: grid;
-      min-width: 9.5rem;
-      padding: 0.85rem 1rem;
-      border: 1px solid var(--line-strong);
-      border-radius: 0;
-      color: var(--ink);
-      background: color-mix(in srgb, var(--bg) 88%, transparent);
-      cursor: pointer;
-      text-align: left;
-      box-shadow: 0 1rem 2.5rem transparent;
-      transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-    }
-
-    .stage-node:hover,
-    .stage-node[aria-pressed="true"] {
-      border-color: var(--acid);
-      background: var(--bg-elevated);
-      box-shadow: 0 1rem 2.5rem var(--shadow);
-      transform: translateY(-3px);
-    }
-
-    .stage-node small {
-      color: var(--ink-faint);
-      font-family: var(--utility);
-      font-size: 0.62rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .stage-node strong {
-      margin-top: 0.15rem;
-      font-family: var(--display);
-      font-size: 1.05rem;
-      font-weight: 600;
-      line-height: 1.1;
-    }
-
-    .stage-node--upstream { top: 16%; left: 0; }
-    .stage-node--local { top: 41%; right: 0; }
-    .stage-node--runtime { bottom: 16%; left: 12%; }
-
-    .stage-core {
-      position: absolute;
-      top: 38%;
-      left: 40%;
-      display: grid;
-      width: 5.4rem;
-      aspect-ratio: 1;
-      border: 1px solid var(--coral);
-      color: var(--bg);
-      background: var(--acid);
-      place-items: center;
-      transform: rotate(45deg);
-      box-shadow: 0 0 0 0.75rem color-mix(in srgb, var(--acid) 8%, transparent);
-    }
-
-    .stage-core span {
-      font-family: var(--display);
-      font-size: 2rem;
-      font-weight: 700;
-      line-height: 1;
-      transform: rotate(-45deg);
-    }
-
-    .stage-readout {
-      position: absolute;
-      right: 0;
-      bottom: 3.3rem;
-      width: min(16rem, 58%);
+    .plate-name {
       margin: 0;
-      color: var(--ink-soft);
-      font-size: 0.9rem;
-      line-height: 1.4;
-      text-align: right;
-    }
-
-    .stage-readout strong { display: block; color: var(--ink); font-family: var(--utility); font-size: 0.78rem; }
-
-    .signal-strip {
-      border-bottom: 1px solid var(--line);
-      background: var(--acid);
-      color: var(--bg);
-      overflow: hidden;
-    }
-
-    .signal-track {
-      display: flex;
-      width: max-content;
-      min-height: 3rem;
-      align-items: center;
-      gap: 2.2rem;
-      padding-inline: 1.1rem;
-      font-family: var(--utility);
-      font-size: 0.72rem;
-      font-weight: 700;
+      font-family: var(--display);
+      font-size: clamp(1.9rem, 3.4vw, 3rem);
+      font-weight: 650;
+      letter-spacing: 0.02em;
+      line-height: 0.95;
       text-transform: uppercase;
     }
 
-    .signal-track span::before { margin-right: 2.2rem; content: "/"; color: var(--coral); }
+    .joint-plate--a .plate-name { text-align: right; }
 
-    @media (prefers-reduced-motion: no-preference) {
-      .signal-track { animation: ticker 28s linear infinite; }
-      .signal-strip:hover .signal-track { animation-play-state: paused; }
+    .plate-note {
+      max-width: 26rem;
+      margin: 1rem 0 0;
+      color: var(--ink-dim);
+      font-size: 0.94rem;
+      line-height: 1.55;
     }
 
-    @keyframes ticker { to { transform: translateX(-50%); } }
+    .joint-plate--a .plate-note { margin-left: auto; text-align: right; }
 
-    .boundary {
+    .joint-seam {
       position: relative;
-      padding-block: clamp(5rem, 10vw, 10rem);
-      border-bottom: 1px solid var(--line);
-      overflow: hidden;
+      width: clamp(3.5rem, 6vw, 5.5rem);
+      background: var(--steel-0);
     }
 
-    .boundary::before {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 50%;
-      width: 1px;
+    .joint-seam::before {
       content: "";
-      background: var(--line);
+      position: absolute;
+      inset: 0 auto 0 50%;
+      width: 6px;
+      translate: -50% 0;
+      background: var(--heat-drop);
+      box-shadow: 0 0 16px var(--arc-glow);
     }
 
-    .section-index { margin: 0 0 1.25rem; color: var(--coral); }
+    .joint-seam::after {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 50%;
+      width: 6px;
+      translate: -50% 0;
+      background: repeating-linear-gradient(180deg,
+        transparent 0 7px,
+        color-mix(in srgb, var(--steel-0) 34%, transparent) 7px 9px);
+    }
 
-    .boundary-title,
-    .components-title,
-    .setup-title,
-    .closing-title {
+    .joint-seam-label {
+      position: absolute;
+      z-index: 1;
+      top: 50%;
+      left: 50%;
+      translate: -50% -50%;
+      padding: 0.5rem 0.55rem;
+      border: 1px solid var(--line-strong);
+      color: var(--ink);
+      background: var(--steel-0);
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      white-space: nowrap;
+    }
+
+    /* ---------- spec strip ---------- */
+
+    .spec-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: clamp(3rem, 6vw, 5rem);
+      border-block: 1px solid var(--line);
+    }
+
+    .spec-cell {
+      padding: 1.1rem 1.25rem 1.2rem 0;
+    }
+
+    .spec-cell + .spec-cell { padding-left: 1.25rem; border-left: 1px solid var(--line); }
+
+    .spec-key { display: block; margin-bottom: 0.3rem; color: var(--ink-faint); }
+
+    .spec-val {
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink-dim);
+    }
+
+    /* ============================================================
+       Sections
+       ============================================================ */
+
+    .pass-section { padding-block: clamp(6rem, 11vw, 10.5rem); }
+    .pass-section + .pass-section { border-top: 1px solid var(--line); }
+
+    .section-title {
+      max-width: 14ch;
       margin: 0;
       font-family: var(--display);
-      font-weight: 500;
+      font-size: clamp(3rem, 6.8vw, 6.75rem);
+      font-weight: 700;
+      letter-spacing: 0.012em;
       line-height: 0.9;
+      text-transform: uppercase;
+      text-wrap: balance;
     }
 
-    .boundary-title { max-width: 11ch; font-size: clamp(3.4rem, 7.5vw, 7.8rem); }
-    .boundary-title em { color: var(--acid); font-family: var(--serif); font-weight: 400; }
+    .section-title code { text-transform: none; }
 
-    .boundary-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
-      gap: clamp(3rem, 10vw, 11rem);
+    .section-lede {
+      max-width: 34rem;
+      margin: 0;
+      color: var(--ink-dim);
+      font-size: clamp(1.05rem, 0.6vw + 0.9rem, 1.2rem);
+      line-height: 1.6;
+      text-wrap: pretty;
     }
 
-    .boundary-copy { align-self: end; padding-bottom: 0.5rem; }
-    .boundary-copy > p { max-width: 35rem; margin: 0; color: var(--ink-soft); font-size: clamp(1.15rem, 1.4vw, 1.4rem); }
-    .boundary-copy strong { color: var(--ink); font-weight: 500; }
+    .section-lede strong { color: var(--ink); font-weight: 500; }
 
-    .boundary-ledger {
+    /* scroll reveal */
+    .reveal { opacity: 1; transform: none; }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .js .reveal {
+        opacity: 0;
+        transform: translateY(14px);
+        transition: opacity 600ms ease, transform 600ms cubic-bezier(0.25, 0.6, 0.3, 1);
+      }
+
+      .js .reveal.is-set { opacity: 1; transform: none; }
+    }
+
+    /* ---------- root pass ---------- */
+
+    .root-grid {
       display: grid;
-      margin: 2.6rem 0 0;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: clamp(3rem, 8vw, 9rem);
+      align-items: start;
+    }
+
+    .root-copy { max-width: 34rem; }
+
+    .ledger {
+      margin: 0;
       border-top: 1px solid var(--line-strong);
     }
 
     .ledger-row {
       display: grid;
-      grid-template-columns: 7.5rem 1fr;
-      gap: 1rem;
-      padding-block: 0.85rem;
+      grid-template-columns: 8rem 1fr;
+      gap: 1.25rem;
+      padding-block: 1.05rem;
       border-bottom: 1px solid var(--line);
     }
 
-    .ledger-row dt {
-      color: var(--ink-faint);
-      font-family: var(--utility);
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
+    .ledger-key { color: var(--ink-faint); padding-top: 0.2rem; }
+
+    .ledger-row dd {
+      margin: 0;
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.82rem;
+      color: var(--ink);
+      line-height: 1.55;
+      overflow-wrap: anywhere;
     }
 
-    .ledger-row dd { margin: 0; color: var(--ink); font-family: var(--utility); font-size: 0.9rem; }
+    .ledger-row dd span { color: var(--ink-dim); }
 
     .text-link {
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
-      margin-top: 1.8rem;
-      color: var(--aqua);
-      font-family: var(--utility);
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-decoration-thickness: 1px;
-      text-underline-offset: 0.3rem;
+      gap: 0.5rem;
+      margin-top: 2rem;
+      color: var(--arc);
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 0.25rem;
+      transition: border-color 160ms ease;
     }
 
-    .text-link:hover { color: var(--acid); }
-    .text-link svg { width: 1rem; height: 1rem; }
+    .text-link:hover { border-color: var(--arc); }
+    .text-link svg { width: 0.95rem; height: 0.95rem; }
 
-    .components {
-      padding-block: clamp(5rem, 9vw, 9rem);
-      border-bottom: 1px solid var(--line);
-      background: var(--bg-elevated);
-    }
+    /* ---------- fill passes: the procedure sheet ---------- */
 
-    .components-head {
+    .fill-head {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.4fr);
+      grid-template-columns: minmax(0, 1fr) minmax(16rem, 24rem);
       align-items: end;
-      gap: 3rem;
-      margin-bottom: clamp(3.5rem, 7vw, 6.5rem);
+      gap: 2.5rem;
+      margin-bottom: clamp(3rem, 6vw, 5.5rem);
     }
 
-    .components-title { max-width: 12ch; font-size: clamp(3rem, 6vw, 6rem); }
-    .components-intro { margin: 0; color: var(--ink-soft); font-size: 1.05rem; }
+    .procedure { border-top: 1px solid var(--line-strong); }
 
-    .component-browser {
-      display: grid;
-      grid-template-columns: minmax(14rem, 0.36fr) minmax(0, 1fr);
-      min-height: 31rem;
-      border-top: 1px solid var(--line-strong);
-      border-bottom: 1px solid var(--line-strong);
-    }
+    .pass-row { border-bottom: 1px solid var(--line); }
 
-    .component-tabs {
+    .pass-summary {
       display: grid;
-      align-content: start;
-      border-right: 1px solid var(--line-strong);
-    }
-
-    .component-tab {
-      display: grid;
-      grid-template-columns: 2rem 1fr auto;
-      align-items: center;
-      gap: 0.7rem;
-      min-height: 4.5rem;
-      padding: 0.8rem 1rem;
+      grid-template-columns: 4.25rem minmax(0, 1fr) auto;
+      align-items: baseline;
+      gap: 1.25rem;
+      width: 100%;
+      padding: 1.5rem 0.25rem;
       border: 0;
-      border-bottom: 1px solid var(--line);
-      color: var(--ink-soft);
+      color: var(--ink);
       background: transparent;
       cursor: pointer;
       text-align: left;
-      transition: color 160ms ease, background-color 160ms ease;
+      transition: background-color 160ms ease;
     }
 
-    .component-tab:hover,
-    .component-tab[aria-selected="true"] { color: var(--ink); background: color-mix(in srgb, var(--acid) 9%, transparent); }
-    .component-tab[aria-selected="true"] .component-number { color: var(--coral); }
-    .component-tab svg { width: 0.95rem; height: 0.95rem; color: var(--acid); opacity: 0; transform: translateX(-0.35rem); transition: opacity 160ms ease, transform 160ms ease; }
-    .component-tab[aria-selected="true"] svg { opacity: 1; transform: translateX(0); }
-    .component-tab-name { font-family: var(--display); font-size: 1rem; font-weight: 600; }
-    .component-number { color: var(--ink-faint); font-size: 0.65rem; }
+    .pass-summary:hover { background: color-mix(in srgb, var(--ink) 3%, transparent); }
 
-    .component-panels { position: relative; min-width: 0; }
-    .component-panel { min-height: 100%; padding: clamp(2rem, 5vw, 5rem); }
-    .component-panel[hidden] { display: none; }
+    .pass-id { color: var(--ink-faint); transition: color 160ms ease; }
 
-    .panel-kicker {
-      margin: 0 0 1.5rem;
-      color: var(--aqua);
-      font-family: var(--utility);
-      font-size: 0.72rem;
-      font-weight: 700;
+    .pass-row[data-open="true"] .pass-id { color: var(--arc); }
+
+    .pass-name-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.4rem 1.5rem;
+    }
+
+    .pass-title {
+      font-family: var(--display);
+      font-size: clamp(1.7rem, 3vw, 2.6rem);
+      font-weight: 650;
+      letter-spacing: 0.02em;
+      line-height: 1;
       text-transform: uppercase;
     }
 
-    .panel-title {
-      max-width: 13ch;
-      margin: 0;
-      font-family: var(--display);
-      font-size: clamp(2.6rem, 5vw, 5.4rem);
-      font-weight: 500;
-      line-height: 0.9;
+    .pass-hook {
+      color: var(--ink-dim);
+      font-size: 0.95rem;
     }
 
-    .panel-copy { max-width: 42rem; margin: 1.5rem 0 0; color: var(--ink-soft); font-size: 1.08rem; }
+    .pass-toggle {
+      position: relative;
+      width: 1rem;
+      height: 1rem;
+      align-self: center;
+    }
 
-    .panel-facts {
+    .pass-toggle::before,
+    .pass-toggle::after {
+      content: "";
+      position: absolute;
+      inset: 50% 0 auto;
+      height: 2px;
+      background: var(--ink-dim);
+      translate: 0 -50%;
+      transition: rotate 240ms ease, background-color 160ms ease;
+    }
+
+    .pass-toggle::after { rotate: 90deg; }
+    .pass-row[data-open="true"] .pass-toggle::after { rotate: 0deg; }
+    .pass-row[data-open="true"] .pass-toggle::before,
+    .pass-row[data-open="true"] .pass-toggle::after { background: var(--arc); }
+
+    .pass-detail {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1rem;
-      margin: clamp(2.5rem, 5vw, 4.5rem) 0 0;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 420ms cubic-bezier(0.3, 0.7, 0.3, 1);
+    }
+
+    .pass-row[data-open="true"] .pass-detail { grid-template-rows: 1fr; }
+
+    .pass-detail-inner { overflow: hidden; min-height: 0; }
+
+    .pass-detail-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+      gap: 2rem 4rem;
+      padding: 0.5rem 0.25rem 2.25rem 5.5rem;
+    }
+
+    .pass-copy { margin: 0; max-width: 36rem; color: var(--ink-dim); }
+    .pass-copy strong { color: var(--ink); font-weight: 500; }
+
+    .pass-facts {
+      display: grid;
+      gap: 0.85rem;
+      margin: 0;
       padding: 0;
       list-style: none;
     }
 
-    .panel-facts li {
-      padding-top: 0.9rem;
-      border-top: 2px solid var(--line-strong);
-      color: var(--ink-soft);
-      font-size: 0.88rem;
-      line-height: 1.4;
-    }
-
-    .panel-facts li:nth-child(1) { border-color: var(--acid); }
-    .panel-facts li:nth-child(2) { border-color: var(--coral); }
-    .panel-facts li:nth-child(3) { border-color: var(--aqua); }
-
-    code {
-      color: var(--ink);
-      font-family: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
-      font-size: 0.88em;
-    }
-
-    .setup {
+    .pass-facts li {
       position: relative;
-      padding-block: clamp(5rem, 10vw, 10rem);
-      border-bottom: 1px solid var(--line);
-      overflow: hidden;
+      padding-left: 1.15rem;
+      color: var(--ink-dim);
+      font-size: 0.9rem;
+      line-height: 1.5;
     }
 
-    .setup::before {
-      position: absolute;
-      top: -30%;
-      left: -10%;
-      width: 38rem;
-      aspect-ratio: 1;
-      border: 1px solid var(--line);
-      border-radius: 50%;
+    .pass-facts li::before {
       content: "";
+      position: absolute;
+      top: 0.55em;
+      left: 0;
+      width: 0.45rem;
+      height: 2px;
+      background: var(--heat-run);
     }
 
-    .setup-grid {
-      position: relative;
+    .pass-detail .text-link { margin-top: 1.25rem; }
+
+    /* ---------- cap pass: weld log ---------- */
+
+    .cap-grid {
       display: grid;
-      grid-template-columns: minmax(0, 0.7fr) minmax(26rem, 1.3fr);
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: clamp(3rem, 7vw, 8rem);
       align-items: start;
-      gap: clamp(3rem, 8vw, 9rem);
     }
 
-    .setup-title { max-width: 8ch; font-size: clamp(3.4rem, 6vw, 6.4rem); }
-    .setup-copy { max-width: 25rem; margin: 1.5rem 0 0; color: var(--ink-soft); }
-
-    .terminal {
-      position: relative;
-      color: #eff4e9;
-      background: var(--terminal);
-      box-shadow: 0 2rem 5rem var(--shadow);
+    .weld-log {
+      border: 1px solid var(--line-strong);
+      background: var(--steel-1);
+      box-shadow: 0 1.5rem 4rem color-mix(in srgb, var(--steel-0) 55%, transparent);
     }
 
-    .terminal-bar {
+    :root[data-theme="day"] .weld-log {
+      box-shadow: 0 1.5rem 3.5rem rgba(15, 22, 33, 0.12);
+    }
+
+    .log-bar {
       display: flex;
-      min-height: 3.5rem;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      padding: 0.55rem 0.65rem 0.55rem 1.15rem;
-      border-bottom: 1px solid rgba(239, 244, 233, 0.18);
+      padding: 0.8rem 0.85rem 0.8rem 1.25rem;
+      border-bottom: 1px solid var(--line);
     }
 
-    .terminal-label { color: #92e7dc; }
-    .terminal .icon-button { color: #eff4e9; border-color: rgba(239, 244, 233, 0.24); }
-    .terminal .icon-button:hover { color: #11140f; border-color: #d8ff4f; background: #d8ff4f; }
-    .terminal [data-tooltip]::after { color: #11140f; background: #eff4e9; }
+    .log-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--ink-dim);
+    }
 
-    .terminal pre {
-      max-width: 100%;
+    .log-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--arc);
+      box-shadow: 0 0 8px 1px var(--arc-glow);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .log-dot { animation: arc-breathe 2.6s ease-in-out infinite; }
+    }
+
+    .copy-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 2.5rem;
+      padding: 0.4rem 0.9rem;
+      border: 1px solid var(--line-strong);
+      color: var(--ink);
+      background: transparent;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: border-color 160ms ease, background-color 160ms ease;
+    }
+
+    .copy-button:hover {
+      border-color: var(--arc);
+      background: color-mix(in srgb, var(--arc) 10%, transparent);
+    }
+
+    .copy-button svg { width: 0.9rem; height: 0.9rem; }
+
+    .weld-log pre {
       margin: 0;
-      padding: clamp(1.35rem, 3vw, 2.5rem);
+      padding: clamp(1.35rem, 3vw, 2.25rem);
       overflow-x: hidden;
-      font-family: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
-      font-size: clamp(0.76rem, 1.2vw, 0.93rem);
-      line-height: 1.85;
-      tab-size: 2;
+      font-family: var(--mono);
+      font-stretch: 82%;
+      font-size: clamp(0.72rem, 1.1vw, 0.84rem);
+      font-weight: 400;
+      line-height: 2;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
+      tab-size: 2;
     }
 
-    .terminal code { color: inherit; font: inherit; }
-    .terminal .prompt { color: #d8ff4f; user-select: none; }
-    .terminal .comment { color: #788075; }
-    .copy-status { min-height: 1.3rem; margin: 0.75rem 0 0; color: var(--aqua); font-family: var(--utility); font-size: 0.72rem; }
+    .weld-log code { color: var(--ink); font: inherit; }
+    .weld-log .prompt { color: var(--arc); user-select: none; }
+    .weld-log .comment { color: var(--ink-faint); }
 
-    .closing {
+    .copy-status {
+      min-height: 1.4rem;
+      margin: 0.8rem 0 0;
+      color: var(--arc);
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ---------- inspection ---------- */
+
+    .inspection {
       position: relative;
-      padding-block: clamp(5rem, 9vw, 9rem);
-      background: var(--coral);
-      color: var(--on-coral);
-      overflow: hidden;
+      border-top: 1px solid var(--line);
+      padding-block: clamp(6.5rem, 12vw, 12rem);
+      overflow: clip;
     }
 
-    .closing::after {
-      position: absolute;
-      right: -5rem;
-      bottom: -13rem;
-      width: 34rem;
-      aspect-ratio: 1;
-      border: 1px solid color-mix(in srgb, var(--on-coral) 28%, transparent);
-      border-radius: 50%;
+    .inspection::before {
       content: "";
-      box-shadow: inset 0 0 0 5rem rgba(216, 255, 79, 0.15);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(46rem 26rem at 50% 118%, var(--arc-glow), transparent 68%);
+      opacity: 0.22;
     }
 
-    .closing-inner { position: relative; z-index: 1; }
-    .closing .section-index { color: var(--on-coral); }
-    .closing-title { max-width: 15ch; font-size: clamp(3.5rem, 8vw, 8rem); }
-    .closing-title em { color: #f1f0e8; font-family: var(--serif); font-weight: 400; }
-
-    .closing-row {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 2rem;
-      margin-top: 3rem;
-      padding-top: 1.4rem;
-      border-top: 1px solid color-mix(in srgb, var(--on-coral) 28%, transparent);
+    .inspection-inner {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      text-align: center;
     }
 
-    .closing-row p { max-width: 43rem; margin: 0; font-size: 1.05rem; }
-    .closing .button { color: #11140f; border-color: #d8ff4f; background: #d8ff4f; }
-    .closing .button:hover { border-color: #f1f0e8; background: #f1f0e8; }
+    .inspection .tag { justify-content: center; }
+    .inspection .tag::after {
+      content: "";
+      width: 2.6rem;
+      height: 2px;
+      background: var(--heat-run);
+    }
 
-    .footer { color: var(--ink-soft); background: var(--bg); }
+    .inspection .section-title { max-width: 18ch; }
+
+    .inspection p {
+      max-width: 42rem;
+      margin: 2rem 0 0;
+      color: var(--ink-dim);
+      font-size: 1.1rem;
+      text-wrap: pretty;
+    }
+
+    .inspection .hero-actions { justify-content: center; margin-top: 2.5rem; }
+
+    /* ---------- footer ---------- */
+
+    .footer {
+      padding-left: var(--rail-w);
+      border-top: 1px solid var(--line);
+    }
 
     .footer-inner {
       display: flex;
-      min-height: 6rem;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 1.5rem 3rem;
+      gap: 1rem 3rem;
+      min-height: 5.5rem;
+      padding-block: 1.25rem;
     }
 
     .footer-meta { margin: 0; color: var(--ink-faint); }
-    .footer-links { display: flex; flex-wrap: wrap; gap: 0.6rem 1.5rem; }
-    .footer-links a { color: var(--ink-soft); font-family: var(--utility); font-size: 0.76rem; font-weight: 700; text-decoration: none; }
-    .footer-links a:hover { color: var(--acid); }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.75rem;
+    }
+
+    .footer-links a {
+      color: var(--ink-dim);
+      font-family: var(--mono);
+      font-stretch: 87.5%;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 160ms ease;
+    }
+
+    .footer-links a:hover { color: var(--arc); }
+
+    /* ============================================================
+       Responsive
+       ============================================================ */
 
     @media (max-width: 64rem) {
-      .hero-inner { grid-template-columns: minmax(0, 0.9fr) minmax(21rem, 1.1fr); gap: 2rem; }
-      .hero h1 { font-size: clamp(4rem, 10vw, 7rem); }
-      .hero-statement, .hero-actions { margin-left: 0; }
-      .system-stage { min-height: 31rem; }
-      .boundary-grid { gap: 5rem; }
-      .panel-facts { grid-template-columns: 1fr; }
+      .root-grid, .cap-grid, .fill-head { grid-template-columns: 1fr; gap: 2.5rem; }
+      .pass-detail-grid { grid-template-columns: 1fr; padding-left: 0.25rem; }
+      .spec-strip { grid-template-columns: 1fr 1fr; }
+      .spec-cell:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .spec-cell:nth-child(3) { border-left: 0; padding-left: 0; }
     }
 
-    @media (max-width: 50rem) {
-      :root { --header: 4.25rem; }
-      .header-inner { grid-template-columns: 1fr auto; }
-      .primary-nav {
-        position: fixed;
-        z-index: 49;
-        top: var(--header);
-        right: 0;
-        left: 0;
-        display: grid;
-        align-content: start;
-        height: calc(100svh - var(--header));
-        padding: 1rem var(--gutter) 3rem;
-        background: var(--bg);
-        opacity: 0;
-        pointer-events: none;
-        transform: translateY(-1rem);
-        transition: opacity 180ms ease, transform 180ms ease;
+    @media (max-width: 44rem) {
+      body { font-size: 1rem; }
+
+      .hero h1 { font-size: clamp(3.6rem, 16.5vw, 5.4rem); }
+      .hero-line2 { gap: 1rem; }
+      .weld-run { height: 22px; }
+
+      .joint { grid-template-columns: 1fr; }
+
+      .joint-seam {
+        width: auto;
+        height: 4.25rem;
       }
 
-      .primary-nav[data-open="true"] { opacity: 1; pointer-events: auto; transform: translateY(0); }
-      .primary-nav .nav-link { min-height: 4rem; padding: 0; border-bottom: 1px solid var(--line); font-family: var(--display); font-size: 1.7rem; }
-      .primary-nav .nav-link::after { right: auto; bottom: 0; left: 0; width: 3rem; }
-      .menu-button { display: inline-grid; }
-      .hero { min-height: auto; }
-      .hero-inner { grid-template-columns: 1fr; min-height: auto; padding-top: 4.5rem; }
-      .hero-content { max-width: 41rem; }
-      .hero h1 { font-size: clamp(4rem, 18vw, 7.5rem); }
-      .system-stage { min-height: 20rem; margin-top: 1rem; }
-      .stage-node--upstream { top: 18%; left: 0; }
-      .stage-node--local { top: 18%; right: 0; }
-      .stage-node--runtime { right: auto; bottom: 8%; left: 50%; translate: -50% 0; }
-      .stage-core { top: 42%; left: 50%; width: 4.4rem; transform: translateX(-50%) rotate(45deg); }
-      .stage-readout,
-      .stage-foot { display: none; }
-      .hero::after { top: 42%; right: -40%; width: 75vw; }
-      .boundary::before { display: none; }
-      .boundary-grid, .components-head, .setup-grid { grid-template-columns: 1fr; }
-      .boundary-copy { padding-bottom: 0; }
-      .component-browser { grid-template-columns: 1fr; }
-      .component-tabs { grid-auto-flow: column; grid-auto-columns: minmax(11rem, 1fr); overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line-strong); }
-      .component-tab { min-height: 4rem; border-right: 1px solid var(--line); border-bottom: 0; }
-      .component-panel { min-height: 34rem; }
-      .setup-grid { gap: 3rem; }
-      .closing-row { align-items: flex-start; flex-direction: column; }
-    }
+      .joint-seam::before,
+      .joint-seam::after {
+        inset: 50% 0 auto 0;
+        width: auto;
+        height: 6px;
+        translate: 0 -50%;
+      }
 
-    @media (max-width: 34rem) {
-      .brand span { font-size: 0.9rem; }
-      .hero-inner { padding-top: 2.5rem; padding-bottom: 2rem; }
-      .hero h1 { font-size: clamp(3.8rem, 21vw, 5.8rem); }
-      .hero-statement { font-size: 1.08rem; }
-      .hero-actions { align-items: stretch; margin-top: 1.5rem; }
+      .joint-seam::before { background: var(--heat-run); }
+      .joint-seam::after {
+        background: repeating-linear-gradient(90deg,
+          transparent 0 7px,
+          color-mix(in srgb, var(--steel-0) 34%, transparent) 7px 9px);
+      }
+
+      .joint-seam-label { writing-mode: horizontal-tb; }
+
+      .joint-plate--a { box-shadow: inset 0 -4rem 4rem -4rem color-mix(in srgb, var(--heat-2) 26%, transparent); }
+      .joint-plate--b { box-shadow: inset 0 4rem 4rem -4rem color-mix(in srgb, var(--heat-2) 26%, transparent); }
+
+      .joint-plate--a .plate-tag,
+      .joint-plate--a .plate-name { text-align: left; }
+      .joint-plate--a .plate-note { margin-left: 0; text-align: left; }
+
+      .spec-strip { grid-template-columns: 1fr; }
+      .spec-cell { padding-left: 0; border-left: 0 !important; }
+      .spec-cell + .spec-cell { border-top: 1px solid var(--line); }
+
+      .pass-summary { grid-template-columns: 3rem minmax(0, 1fr) auto; gap: 0.85rem; }
+      .pass-name-wrap { flex-direction: column; gap: 0.3rem; }
+      .ledger-row { grid-template-columns: 1fr; gap: 0.3rem; }
+      .hero-actions { width: 100%; }
       .hero-actions .button { flex: 1 1 100%; }
-      .system-stage { min-height: 6.5rem; }
-      .stage-node {
-        top: auto;
-        right: auto;
-        bottom: 0.45rem;
-        min-width: 0;
-        width: 33.333%;
-        min-height: 3rem;
-        padding: 0.45rem 0.25rem;
-        justify-items: center;
-        text-align: center;
-      }
-      .stage-node small { display: none; }
-      .stage-node strong { font-size: 0.72rem; }
-      .stage-node--upstream { left: 0; }
-      .stage-node--local { left: 33.333%; }
-      .stage-node--runtime { left: 66.666%; translate: none; }
-      .stage-core,
-      .stage-lines { display: none; }
-      .stage-head { top: 0.55rem; }
-      .stage-head span:last-child,
-      .stage-foot span:last-child { display: none; }
-      .boundary-title { font-size: clamp(3.3rem, 17vw, 5rem); }
-      .ledger-row { grid-template-columns: 1fr; gap: 0.25rem; }
-      .components-title, .setup-title { font-size: clamp(3rem, 15vw, 4.6rem); }
-      .component-panel { min-height: 38rem; padding: 2rem 1rem; }
-      .panel-title { font-size: clamp(2.6rem, 14vw, 4rem); }
-      .terminal-bar { align-items: center; }
-      .closing-title { font-size: clamp(3.2rem, 16vw, 5rem); }
-      .footer-inner { align-items: flex-start; flex-direction: column; padding-block: 1.5rem; }
     }
 
     @media (prefers-contrast: more) {
-      :root { --line: rgba(241, 240, 232, 0.38); --line-strong: rgba(241, 240, 232, 0.7); }
-      :root[data-theme="light"] { --line: rgba(21, 25, 20, 0.38); --line-strong: rgba(21, 25, 20, 0.7); }
+      :root { --line: rgba(233, 238, 246, 0.35); --line-strong: rgba(233, 238, 246, 0.65); }
+      :root[data-theme="day"] { --line: rgba(15, 22, 33, 0.4); --line-strong: rgba(15, 22, 33, 0.7); }
     }
 
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       *, *::before, *::after {
-        scroll-behavior: auto !important;
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
@@ -1067,193 +1405,319 @@
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
 
+  <!-- shared heat gradients for inline SVG -->
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <defs>
+      <!-- userSpaceOnUse: a horizontal line has a zero-height bbox, so
+           objectBoundingBox gradients would never paint -->
+      <linearGradient id="heat-mark" gradientUnits="userSpaceOnUse" x1="6.5" y1="0" x2="41.5" y2="0">
+        <stop offset="0" style="stop-color:var(--heat-1)"/>
+        <stop offset="0.3" style="stop-color:var(--heat-2)"/>
+        <stop offset="0.55" style="stop-color:var(--heat-3)"/>
+        <stop offset="0.78" style="stop-color:var(--heat-4)"/>
+        <stop offset="1" style="stop-color:var(--heat-5)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <nav class="seam-rail" aria-label="Weld passes">
+    <div class="rail-track" aria-hidden="true">
+      <div class="rail-bead"></div>
+      <div class="rail-arc"></div>
+    </div>
+    <ol class="rail-passes">
+      <li class="rail-pass"><a href="#root" data-pass="root"><span>01 · Root</span></a></li>
+      <li class="rail-pass"><a href="#fill" data-pass="fill"><span>02 · Fill</span></a></li>
+      <li class="rail-pass"><a href="#cap" data-pass="cap"><span>03 · Cap</span></a></li>
+      <li class="rail-pass"><a href="#inspect" data-pass="inspect"><span>Inspect</span></a></li>
+    </ol>
+  </nav>
+
+  <div class="edge-bead" aria-hidden="true"></div>
+
   <header class="site-header">
     <div class="shell header-inner">
       <a class="brand" href="#top" aria-label="pi-arcweld home">
-        <svg class="brand-mark" viewBox="0 0 46 46" aria-hidden="true" focusable="false">
-          <rect class="mark-frame" x="3.5" y="3.5" width="39" height="39" transform="rotate(45 23 23)"/>
-          <path class="mark-pi" d="M10 15h26M15 15v20M31 15v20"/>
-          <path class="mark-seam" d="m9 27 6-6 5 5 6-7 5 5 6-6"/>
-          <circle class="mark-spark" cx="23" cy="23" r="2.6"/>
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <path class="mark-leg" d="M15 16v23"/>
+          <path class="mark-leg" d="M33 16v18q0 5 5 5"/>
+          <path class="mark-bead" d="M6.5 12.5H41.5" pathLength="1"/>
+          <path class="mark-ripple" d="M6.5 12.5H41.5" pathLength="1"/>
+          <circle class="mark-arcdot" cx="6.5" cy="12.5" r="3.2"/>
         </svg>
         <span>pi-arcweld</span>
       </a>
 
-      <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation" data-open="false">
-        <a class="nav-link" href="#workspace">Workspace</a>
-        <a class="nav-link" href="#components">Components</a>
-        <a class="nav-link" href="#start">Build</a>
-        <a class="nav-link" href="https://github.com/appautomaton/pi-arcweld">GitHub</a>
-      </nav>
-
       <div class="header-actions">
-        <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch to light theme" data-tooltip="Switch theme">
-          <i data-lucide="sun" aria-hidden="true"></i>
+        <a class="header-link" href="https://github.com/appautomaton/pi-arcweld">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.35.95.1-.74.4-1.25.72-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.04.77 2.1v3.11c0 .3.21.66.8.55A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          <span>GitHub</span>
+        </a>
+
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch theme">
+          <!-- auto-darkening lens: filled when the shop is dark -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.2"/>
+            <path class="lens-fill" d="M12 3.8a8.2 8.2 0 0 0 0 16.4Z" fill="currentColor" stroke="none"/>
+          </svg>
         </button>
-        <button class="icon-button menu-button" id="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="primary-nav" data-tooltip="Open menu">
-          <i data-lucide="menu" aria-hidden="true"></i>
+
+        <button class="icon-button menu-button" id="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="overlay-nav">
+          <svg class="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
+          <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true" style="display:none"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
     </div>
   </header>
 
+  <nav class="overlay-nav" id="overlay-nav" aria-label="Primary navigation" data-open="false">
+    <a href="#root"><span class="pass-id">Pass 01</span><span class="pass-word">Root</span></a>
+    <a href="#fill"><span class="pass-id">Pass 02</span><span class="pass-word">Fill</span></a>
+    <a href="#cap"><span class="pass-id">Pass 03</span><span class="pass-word">Cap</span></a>
+    <a href="#inspect"><span class="pass-id">Final</span><span class="pass-word">Inspect</span></a>
+    <a href="https://github.com/appautomaton/pi-arcweld"><span class="pass-id">Source</span><span class="pass-word">GitHub</span></a>
+  </nav>
+
   <main id="main-content">
     <section class="hero" id="top" aria-labelledby="hero-title">
-      <div class="shell hero-inner">
-        <div class="hero-content">
-          <p class="overline">Curated local Pi environment</p>
-          <h1 id="hero-title"><span>pi-</span><span class="hero-arc">arcweld</span></h1>
-          <p class="hero-statement"><strong>Keep Pi upstream. Make the agent yours.</strong> One auditable workspace for local extensions, system guidance, MCP tooling, and a runtime assembled beyond the source checkout.</p>
-          <div class="hero-actions">
-            <a class="button" href="#start">Build the workspace <i data-lucide="arrow-down-right" aria-hidden="true"></i></a>
-            <a class="button button--ghost" href="https://github.com/appautomaton/pi-arcweld">Inspect the source <i data-lucide="github" aria-hidden="true"></i></a>
-          </div>
-        </div>
-
-        <div class="system-stage" aria-label="Interactive pi-arcweld architecture">
-          <div class="stage-surface" id="stage-surface">
-            <div class="stage-grid" aria-hidden="true"></div>
-            <div class="stage-head">
-              <span><span class="live-dot" aria-hidden="true"></span>workspace topology</span>
-              <span>source / local / runtime</span>
-            </div>
-
-            <svg class="stage-lines" viewBox="0 0 520 410" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-              <path class="stage-line-guide" d="M40 70 C185 70 145 190 255 195 S350 118 480 140"/>
-              <path class="stage-line-guide" d="M255 195 C240 280 170 300 90 350"/>
-              <path class="stage-line-active" d="M40 70 C185 70 145 190 255 195 S350 118 480 140"/>
-              <path class="stage-line-runtime" d="M255 195 C240 280 170 300 90 350"/>
-            </svg>
-
-            <button class="stage-node stage-node--upstream" type="button" data-stage="upstream" aria-pressed="true">
-              <small>01 / pinned</small>
-              <strong>upstream Pi</strong>
-            </button>
-            <button class="stage-node stage-node--local" type="button" data-stage="local" aria-pressed="false">
-              <small>02 / curated</small>
-              <strong>local layer</strong>
-            </button>
-            <button class="stage-node stage-node--runtime" type="button" data-stage="runtime" aria-pressed="false">
-              <small>03 / verified</small>
-              <strong>external runtime</strong>
-            </button>
-
-            <div class="stage-core" aria-hidden="true"><span>&pi;</span></div>
-            <p class="stage-readout" id="stage-readout"><strong>Upstream stays recognizable.</strong>The submodule records source and a pinned commit, never private build state.</p>
-            <div class="stage-foot">
-              <span>boundary intact</span>
-              <span>build/pi-agent/runtime/bin/pi</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="signal-strip" aria-hidden="true">
-      <div class="signal-track">
-        <span>pinned upstream</span><span>curated extensions</span><span>cache-safe plan mode</span><span>bounded MCP</span><span>external runtime</span><span>auditable wiring</span>
-        <span>pinned upstream</span><span>curated extensions</span><span>cache-safe plan mode</span><span>bounded MCP</span><span>external runtime</span><span>auditable wiring</span>
-      </div>
-    </div>
-
-    <section class="boundary" id="workspace" aria-labelledby="workspace-title">
-      <div class="shell boundary-grid">
-        <div>
-          <p class="section-index">01 / The workspace boundary</p>
-          <h2 class="boundary-title" id="workspace-title">A clean source. A <em>deliberate</em> local layer.</h2>
-        </div>
-
-        <div class="boundary-copy">
-          <p><strong>pi-arcweld gives every local decision a visible home.</strong> Pi remains pinned in <code>pi-mono/</code>. Extensions live together. System guidance appends globally. Build output belongs outside upstream.</p>
-          <dl class="boundary-ledger">
-            <div class="ledger-row"><dt>Source</dt><dd><code>pi-mono/</code> pinned to upstream <code>main</code></dd></div>
-            <div class="ledger-row"><dt>Behavior</dt><dd><code>extensions/</code> owns every curated extension</dd></div>
-            <div class="ledger-row"><dt>Guidance</dt><dd><code>system-instruction/APPEND_SYSTEM.md</code></dd></div>
-            <div class="ledger-row"><dt>Runtime</dt><dd><code>build/pi-agent/runtime/</code>, generated and untracked</dd></div>
-          </dl>
-          <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/AGENTS.md">Read the workspace rules <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
-        </div>
-      </div>
-    </section>
-
-    <section class="components" id="components" aria-labelledby="components-title">
       <div class="shell">
-        <div class="components-head">
-          <div>
-            <p class="section-index">02 / Curated components</p>
-            <h2 class="components-title" id="components-title">Five precise interventions. No private fork.</h2>
+        <p class="tag">A local workspace for the Pi coding agent</p>
+
+        <h1 id="hero-title">
+          <span>Don't fork it.</span>
+          <span class="hero-line2">
+            <span>Weld&nbsp;it.</span>
+            <span class="weld-run" id="weld-run" aria-hidden="true">
+              <span class="weld-joint"></span>
+              <span class="weld-bead"></span>
+              <span class="weld-flash"></span>
+              <span class="weld-arcdot"></span>
+            </span>
+          </span>
+        </h1>
+
+        <div class="hero-under">
+          <p class="hero-statement"><strong>pi-arcweld joins a curated local layer to pinned upstream Pi along one visible seam:</strong> extensions, system guidance, MCP tooling, and a reproducible runtime. Upstream stays upstream. The workspace stays yours.</p>
+          <div class="hero-actions">
+            <a class="button" href="#cap">Assemble the workspace</a>
+            <a class="button button--ghost" href="https://github.com/appautomaton/pi-arcweld">Inspect the source</a>
           </div>
-          <p class="components-intro">The workspace changes how Pi is assembled and extended, while keeping the upstream project legible and replaceable.</p>
         </div>
 
-        <div class="component-browser">
-          <div class="component-tabs" role="tablist" aria-label="pi-arcweld components">
-            <button class="component-tab" id="tab-runtime" type="button" role="tab" aria-selected="true" aria-controls="panel-runtime" tabindex="0" data-component="runtime"><span class="component-number">01</span><span class="component-tab-name">Runtime</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
-            <button class="component-tab" id="tab-plan" type="button" role="tab" aria-selected="false" aria-controls="panel-plan" tabindex="-1" data-component="plan"><span class="component-number">02</span><span class="component-tab-name">Plan mode</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
-            <button class="component-tab" id="tab-mcp" type="button" role="tab" aria-selected="false" aria-controls="panel-mcp" tabindex="-1" data-component="mcp"><span class="component-number">03</span><span class="component-tab-name">MCP client</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
-            <button class="component-tab" id="tab-clarify" type="button" role="tab" aria-selected="false" aria-controls="panel-clarify" tabindex="-1" data-component="clarify"><span class="component-number">04</span><span class="component-tab-name">Questionnaire</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
-            <button class="component-tab" id="tab-append" type="button" role="tab" aria-selected="false" aria-controls="panel-append" tabindex="-1" data-component="append"><span class="component-number">05</span><span class="component-tab-name">Append layer</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+        <figure class="joint" aria-label="The joint: upstream Pi and the local layer, welded by pi-arcweld">
+          <div class="joint-plate joint-plate--a">
+            <span class="plate-tag">Member A · upstream</span>
+            <p class="plate-name">Upstream Pi</p>
+            <p class="plate-note"><code>pi-mono/</code> stays a pinned submodule: read and built beside, never rewritten.</p>
+          </div>
+          <div class="joint-seam" aria-hidden="true">
+            <span class="joint-seam-label">pi-arcweld · the seam</span>
+          </div>
+          <div class="joint-plate joint-plate--b">
+            <span class="plate-tag">Member B · local</span>
+            <p class="plate-name">The local layer</p>
+            <p class="plate-note">Extensions, system guidance, and runtime scripts, each at one reviewable address.</p>
+          </div>
+        </figure>
+
+        <dl class="spec-strip" aria-label="Workspace specification">
+          <div class="spec-cell"><dt class="spec-key">Process</dt><dd class="spec-val">Curated local layer</dd></div>
+          <div class="spec-cell"><dt class="spec-key">Joint</dt><dd class="spec-val">Upstream ⟂ local</dd></div>
+          <div class="spec-cell"><dt class="spec-key">Filler</dt><dd class="spec-val">Five components</dd></div>
+          <div class="spec-cell"><dt class="spec-key">Inspection</dt><dd class="spec-val">Fully auditable</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="pass-section" id="root" aria-labelledby="root-title">
+      <div class="shell root-grid">
+        <div class="root-copy reveal">
+          <p class="tag">Pass 01 · Root</p>
+          <h2 class="section-title" id="root-title">A sound weld starts at the root.</h2>
+          <p class="section-lede" style="margin-top:2rem"><strong>The root pass fuses the boundary and nothing else.</strong> Upstream Pi stays pinned in <code>pi-mono/</code>, and every local decision lives at an address you can audit in one pass.</p>
+          <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/AGENTS.md">Read the workspace rules
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+          </a>
+        </div>
+
+        <dl class="ledger reveal">
+          <div class="ledger-row"><dt class="ledger-key">Source</dt><dd>pi-mono/ <span>· pinned to upstream main</span></dd></div>
+          <div class="ledger-row"><dt class="ledger-key">Behavior</dt><dd>extensions/ <span>· owns every curated extension</span></dd></div>
+          <div class="ledger-row"><dt class="ledger-key">Guidance</dt><dd>system-instruction/APPEND_SYSTEM.md</dd></div>
+          <div class="ledger-row"><dt class="ledger-key">Runtime</dt><dd>build/pi-agent/ <span>· generated and untracked</span></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="pass-section" id="fill" aria-labelledby="fill-title">
+      <div class="shell">
+        <div class="fill-head reveal">
+          <div>
+            <p class="tag">Pass 02 · Fill</p>
+            <h2 class="section-title" id="fill-title">Five fill passes. No private fork.</h2>
+          </div>
+          <p class="section-lede">Each pass changes how Pi is assembled or extended, and leaves upstream legible, replaceable, and current.</p>
+        </div>
+
+        <div class="procedure reveal">
+          <div class="pass-row" data-open="true">
+            <button class="pass-summary" id="fill-1-btn" aria-expanded="true" aria-controls="fill-1">
+              <span class="pass-id">F-01</span>
+              <span class="pass-name-wrap">
+                <span class="pass-title">Reproducible runtime</span>
+                <span class="pass-hook">Build beside the source, never through it.</span>
+              </span>
+              <span class="pass-toggle" aria-hidden="true"></span>
+            </button>
+            <div class="pass-detail" id="fill-1" role="region" aria-labelledby="fill-1-btn">
+              <div class="pass-detail-inner">
+                <div class="pass-detail-grid">
+                  <div>
+                    <p class="pass-copy">The build helper stages packages, artifacts, and the runnable agent beneath <code>build/pi-agent/</code>. Upstream source is read; generated output lands elsewhere.</p>
+                    <a class="text-link" href="https://github.com/appautomaton/pi-arcweld#user-level-integration">Trace the runtime wiring
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </a>
+                  </div>
+                  <ul class="pass-facts">
+                    <li>Promotes a smoke-checked runtime artifact.</li>
+                    <li>Links the user <code>pi</code> command to the verified build.</li>
+                    <li>Keeps package state out of <code>pi-mono/</code>.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="component-panels">
-            <article class="component-panel" id="panel-runtime" role="tabpanel" aria-labelledby="tab-runtime" tabindex="0">
-              <p class="panel-kicker">Reproducible runtime</p>
-              <h3 class="panel-title">Build beside the source, never through it.</h3>
-              <p class="panel-copy">The build helper stages packages, artifacts, and the runnable agent beneath <code>build/pi-agent/</code>. Upstream source is read; generated output lands elsewhere.</p>
-              <ul class="panel-facts"><li>Promotes a smoke-checked runtime artifact.</li><li>Links the user <code>pi</code> command to the verified build.</li><li>Keeps package state out of <code>pi-mono/</code>.</li></ul>
-              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld#user-level-integration">Trace the runtime wiring <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
-            </article>
+          <div class="pass-row" data-open="false">
+            <button class="pass-summary" id="fill-2-btn" aria-expanded="false" aria-controls="fill-2">
+              <span class="pass-id">F-02</span>
+              <span class="pass-name-wrap">
+                <span class="pass-title">Cache-safe plan mode</span>
+                <span class="pass-hook">Change the state, preserve the prefix.</span>
+              </span>
+              <span class="pass-toggle" aria-hidden="true"></span>
+            </button>
+            <div class="pass-detail" id="fill-2" role="region" aria-labelledby="fill-2-btn">
+              <div class="pass-detail-inner">
+                <div class="pass-detail-grid">
+                  <div>
+                    <p class="pass-copy">Plan state is appended instead of rebuilding Pi's system prompt or tool inventory, preserving the provider cache prefix across mode transitions.</p>
+                    <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/plan-mode/README.md">Read the plan-mode contract
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </a>
+                  </div>
+                  <ul class="pass-facts">
+                    <li>Restricts built-in write and edit to canonical plan files.</li>
+                    <li>Blocks model calls to Pi's built-in Bash while active.</li>
+                    <li>Acts as a local mutation guard, not a universal sandbox.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <article class="component-panel" id="panel-plan" role="tabpanel" aria-labelledby="tab-plan" tabindex="0" hidden>
-              <p class="panel-kicker">Cache-safe plan mode</p>
-              <h3 class="panel-title">Change the state, preserve the prefix.</h3>
-              <p class="panel-copy">Plan state is appended instead of rebuilding Pi's system prompt or tool inventory, preserving the provider cache prefix across mode transitions.</p>
-              <ul class="panel-facts"><li>Restricts built-in write and edit to canonical plan files.</li><li>Blocks model calls to Pi's built-in Bash while active.</li><li>Acts as a local mutation guard, not a universal sandbox.</li></ul>
-              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/plan-mode/README.md">Read the plan-mode contract <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
-            </article>
+          <div class="pass-row" data-open="false">
+            <button class="pass-summary" id="fill-3-btn" aria-expanded="false" aria-controls="fill-3">
+              <span class="pass-id">F-03</span>
+              <span class="pass-name-wrap">
+                <span class="pass-title">Bounded MCP client</span>
+                <span class="pass-hook">Discover widely. Expose narrowly.</span>
+              </span>
+              <span class="pass-toggle" aria-hidden="true"></span>
+            </button>
+            <div class="pass-detail" id="fill-3" role="region" aria-labelledby="fill-3-btn">
+              <div class="pass-detail-inner">
+                <div class="pass-detail-grid">
+                  <div>
+                    <p class="pass-copy">Configured servers are discovered in the background while the model sees a fixed two-tool surface. Connection details and secret values remain outside the prompt.</p>
+                    <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/mcp-extension/README.md">Inspect the MCP security model
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </a>
+                  </div>
+                  <ul class="pass-facts">
+                    <li>User-global configuration is the consent boundary.</li>
+                    <li>Catalog snapshots preserve a stable prompt prefix.</li>
+                    <li>Server metadata and output are treated as untrusted.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <article class="component-panel" id="panel-mcp" role="tabpanel" aria-labelledby="tab-mcp" tabindex="0" hidden>
-              <p class="panel-kicker">Bounded MCP client</p>
-              <h3 class="panel-title">Discover widely. Expose narrowly.</h3>
-              <p class="panel-copy">Configured servers are discovered in the background while the model sees a fixed two-tool surface. Connection details and secret values remain outside the prompt.</p>
-              <ul class="panel-facts"><li>User-global configuration is the consent boundary.</li><li>Catalog snapshots preserve a stable prompt prefix.</li><li>Server metadata and output are treated as untrusted.</li></ul>
-              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/mcp-extension/README.md">Inspect the MCP security model <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
-            </article>
+          <div class="pass-row" data-open="false">
+            <button class="pass-summary" id="fill-4-btn" aria-expanded="false" aria-controls="fill-4">
+              <span class="pass-id">F-04</span>
+              <span class="pass-name-wrap">
+                <span class="pass-title">Questionnaire</span>
+                <span class="pass-hook">Give ambiguity a clean interface.</span>
+              </span>
+              <span class="pass-toggle" aria-hidden="true"></span>
+            </button>
+            <div class="pass-detail" id="fill-4" role="region" aria-labelledby="fill-4-btn">
+              <div class="pass-detail-inner">
+                <div class="pass-detail-grid">
+                  <div>
+                    <p class="pass-copy">The questionnaire turns vague branches into visible decisions: focused options, multi-question continuity, free-text escape hatches, and explicit cancellation.</p>
+                    <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/questionnaire.ts">Read the extension source
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </a>
+                  </div>
+                  <ul class="pass-facts">
+                    <li>Supports single and multiple selection.</li>
+                    <li>Preserves context across question sequences.</li>
+                    <li>Loads as a curated user-level extension.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <article class="component-panel" id="panel-clarify" role="tabpanel" aria-labelledby="tab-clarify" tabindex="0" hidden>
-              <p class="panel-kicker">Keyboard-first clarification</p>
-              <h3 class="panel-title">Give ambiguity a clean interface.</h3>
-              <p class="panel-copy">The questionnaire turns vague branches into visible decisions: focused options, multi-question continuity, free-text escape hatches, and explicit cancellation.</p>
-              <ul class="panel-facts"><li>Supports single and multiple selection.</li><li>Preserves context across question sequences.</li><li>Loads as a curated user-level extension.</li></ul>
-              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/questionnaire.ts">Read the extension source <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
-            </article>
-
-            <article class="component-panel" id="panel-append" role="tabpanel" aria-labelledby="tab-append" tabindex="0" hidden>
-              <p class="panel-kicker">Global instruction append</p>
-              <h3 class="panel-title">Refine the response, not the runtime truth.</h3>
-              <p class="panel-copy">A canonical global append file improves response behavior without replacing Pi's generated system prompt, active tool guidance, or discovered project context.</p>
-              <ul class="panel-facts"><li>Preserves the runtime-generated prompt head.</li><li>Avoids project-level files that shadow global guidance.</li><li>Keeps machine-specific captures local and ignored.</li></ul>
-              <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/system-instruction/README.md">See the instruction model <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
-            </article>
+          <div class="pass-row" data-open="false">
+            <button class="pass-summary" id="fill-5-btn" aria-expanded="false" aria-controls="fill-5">
+              <span class="pass-id">F-05</span>
+              <span class="pass-name-wrap">
+                <span class="pass-title">Append layer</span>
+                <span class="pass-hook">Refine the response, not the runtime truth.</span>
+              </span>
+              <span class="pass-toggle" aria-hidden="true"></span>
+            </button>
+            <div class="pass-detail" id="fill-5" role="region" aria-labelledby="fill-5-btn">
+              <div class="pass-detail-inner">
+                <div class="pass-detail-grid">
+                  <div>
+                    <p class="pass-copy">A canonical global append file improves response behavior without replacing Pi's generated system prompt, active tool guidance, or discovered project context.</p>
+                    <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/system-instruction/README.md">See the instruction model
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </a>
+                  </div>
+                  <ul class="pass-facts">
+                    <li>Preserves the runtime-generated prompt head.</li>
+                    <li>Avoids project-level files that shadow global guidance.</li>
+                    <li>Keeps machine-specific captures local and ignored.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="setup" id="start" aria-labelledby="start-title">
-      <div class="shell setup-grid">
-        <div>
-          <p class="section-index">03 / Assemble locally</p>
-          <h2 class="setup-title" id="start-title">From clone to a verified <code>pi</code>.</h2>
-          <p class="setup-copy">Clone the pinned source, assemble the runtime outside upstream, and confirm the user command resolves to the artifact you just built.</p>
+    <section class="pass-section" id="cap" aria-labelledby="cap-title">
+      <div class="shell cap-grid">
+        <div class="reveal">
+          <p class="tag">Pass 03 · Cap</p>
+          <h2 class="section-title" id="cap-title">From clone to a verified <code style="font-size:.72em;font-weight:600">pi</code>.</h2>
+          <p class="section-lede" style="margin-top:2rem">Clone the pinned source, assemble the runtime outside upstream, and confirm the <code>pi</code> on your PATH is the artifact you just built.</p>
         </div>
 
-        <div>
-          <div class="terminal">
-            <div class="terminal-bar">
-              <span class="terminal-label">bootstrap / local machine</span>
-              <button class="icon-button" id="copy-command" type="button" aria-label="Copy setup commands" data-tooltip="Copy commands">
-                <i data-lucide="copy" aria-hidden="true"></i>
+        <div class="reveal">
+          <div class="weld-log">
+            <div class="log-bar">
+              <span class="log-label"><span class="log-dot" aria-hidden="true"></span>Weld log · local machine</span>
+              <button class="copy-button" id="copy-command" type="button" aria-label="Copy setup commands">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5.5A1.5 1.5 0 0 1 6.5 4H15"/></svg>
+                <span id="copy-label">Copy</span>
               </button>
             </div>
             <pre tabindex="0" aria-label="Setup commands"><code id="setup-command"><span class="comment"># clone the workspace and its pinned Pi source</span>
@@ -1273,13 +1737,13 @@
       </div>
     </section>
 
-    <section class="closing" aria-labelledby="closing-title">
-      <div class="shell closing-inner">
-        <p class="section-index">04 / The operating principle</p>
-        <h2 class="closing-title" id="closing-title">Upstream stays <em>upstream.</em> Every local choice stays visible.</h2>
-        <div class="closing-row">
-          <p>That is the entire architecture: preserve the source boundary, give curated behavior a clear owner, and verify the runtime that reaches the user's shell.</p>
-          <a class="button" href="https://github.com/appautomaton/pi-arcweld">Open on GitHub <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+    <section class="inspection" id="inspect" aria-labelledby="inspect-title">
+      <div class="shell inspection-inner reveal">
+        <p class="tag">Final · Inspection</p>
+        <h2 class="section-title" id="inspect-title">Every weld gets inspected. Every choice stays visible.</h2>
+        <p>That is the whole architecture: preserve the source boundary, give curated behavior one owner, and verify the runtime that reaches your shell.</p>
+        <div class="hero-actions">
+          <a class="button" href="https://github.com/appautomaton/pi-arcweld">Open on GitHub</a>
         </div>
       </div>
     </section>
@@ -1287,7 +1751,7 @@
 
   <footer class="footer">
     <div class="shell footer-inner">
-      <p class="footer-meta">pi-arcweld / local Pi workspace / MIT 2026</p>
+      <p class="footer-meta">pi-arcweld · welded locally · MIT 2026</p>
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="https://github.com/appautomaton/pi-arcweld">GitHub</a>
         <a href="https://pi.dev">Upstream Pi</a>
@@ -1296,153 +1760,166 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
   <script>
     (() => {
       "use strict";
 
       const root = document.documentElement;
+      root.classList.add("js");
+
       const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      const themeKey = "pi-arcweld-theme";
+      const themeMeta = document.getElementById("theme-color");
       const themeToggle = document.getElementById("theme-toggle");
       const menuToggle = document.getElementById("menu-toggle");
-      const primaryNav = document.getElementById("primary-nav");
-      const themeMeta = document.getElementById("theme-color");
-      const copyButton = document.getElementById("copy-command");
-      const copyStatus = document.getElementById("copy-status");
-      const stageSurface = document.getElementById("stage-surface");
-      const stageReadout = document.getElementById("stage-readout");
-      const themeKey = "pi-arcweld-theme";
+      const overlayNav = document.getElementById("overlay-nav");
 
-      const refreshIcons = () => window.lucide?.createIcons({ attrs: { "aria-hidden": "true" } });
+      /* ---------- strike the arc: page-load sequence ---------- */
 
-      const updateThemeControl = () => {
-        const dark = root.dataset.theme === "dark";
-        themeToggle?.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
-        themeToggle?.setAttribute("data-tooltip", dark ? "Switch to light" : "Switch to dark");
-        if (themeToggle) themeToggle.innerHTML = `<i data-lucide="${dark ? "sun" : "moon"}" aria-hidden="true"></i>`;
-        themeMeta?.setAttribute("content", dark ? "#11140f" : "#f2f0e8");
-        refreshIcons();
+      root.classList.add("is-striking");
+
+      if (!reducedMotion.matches) {
+        const run = document.getElementById("weld-run");
+        if (run) {
+          // sparks scatter from the strike point when the arc lights
+          const heat = ["var(--heat-1)", "var(--heat-2)", "var(--arc-core)"];
+          for (let i = 0; i < 7; i++) {
+            const s = document.createElement("span");
+            s.className = "spark";
+            const angle = (Math.random() * 0.9 + 0.05) * Math.PI;
+            const dist = 26 + Math.random() * 46;
+            s.style.setProperty("--spark-x", `${Math.cos(angle) * dist}px`);
+            s.style.setProperty("--spark-y", `${-Math.abs(Math.sin(angle)) * dist}px`);
+            s.style.setProperty("--spark-delay", `${320 + Math.random() * 160}ms`);
+            s.style.background = heat[i % heat.length];
+            s.style.left = "0";
+            run.appendChild(s);
+            setTimeout(() => s.remove(), 1600);
+          }
+        }
+      }
+
+      /* ---------- theme: the auto-darkening lens ---------- */
+
+      const applyTheme = () => {
+        const night = root.dataset.theme === "night";
+        themeToggle?.setAttribute("aria-label", night ? "Switch to day theme" : "Switch to night theme");
+        themeToggle?.setAttribute("title", night ? "Shop lights on" : "Visor down");
+        themeMeta?.setAttribute("content", night ? "#0a0f17" : "#edf0f4");
+        const lens = themeToggle?.querySelector(".lens-fill");
+        lens?.setAttribute("opacity", night ? "1" : "0.25");
       };
 
       themeToggle?.addEventListener("click", () => {
-        const next = root.dataset.theme === "dark" ? "light" : "dark";
-        root.dataset.theme = next;
-        try { localStorage.setItem(themeKey, next); } catch {}
-        updateThemeControl();
+        root.dataset.theme = root.dataset.theme === "night" ? "day" : "night";
+        try { localStorage.setItem(themeKey, root.dataset.theme); } catch {}
+        applyTheme();
       });
+
+      applyTheme();
+
+      /* ---------- mobile overlay navigation ---------- */
 
       const setMenu = (open) => {
-        primaryNav?.setAttribute("data-open", String(open));
+        overlayNav?.setAttribute("data-open", String(open));
         menuToggle?.setAttribute("aria-expanded", String(open));
         menuToggle?.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
-        menuToggle?.setAttribute("data-tooltip", open ? "Close menu" : "Open menu");
-        if (menuToggle) menuToggle.innerHTML = `<i data-lucide="${open ? "x" : "menu"}" aria-hidden="true"></i>`;
-        document.body.style.overflow = open ? "hidden" : "";
-        refreshIcons();
+        const iconMenu = menuToggle?.querySelector(".icon-menu");
+        const iconClose = menuToggle?.querySelector(".icon-close");
+        if (iconMenu) iconMenu.style.display = open ? "none" : "";
+        if (iconClose) iconClose.style.display = open ? "" : "none";
+        // lock scroll on the root: overflow on body would re-anchor the
+        // sticky header to body's own scrollport and scroll it off-screen
+        root.style.overflow = open ? "hidden" : "";
       };
 
-      menuToggle?.addEventListener("click", () => setMenu(primaryNav?.dataset.open !== "true"));
-      primaryNav?.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => setMenu(false)));
-      addEventListener("keydown", (event) => { if (event.key === "Escape") setMenu(false); });
-      addEventListener("resize", () => { if (innerWidth > 800) setMenu(false); });
+      menuToggle?.addEventListener("click", () => setMenu(overlayNav?.dataset.open !== "true"));
+      overlayNav?.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setMenu(false)));
+      addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
+      addEventListener("resize", () => { if (innerWidth >= 1024) setMenu(false); });
 
-      const stageCopy = {
-        upstream: ["Upstream stays recognizable.", "The submodule records source and a pinned commit, never private build state."],
-        local: ["Local behavior has one address.", "Extensions, instruction guidance, and runtime scripts remain reviewable in the root workspace."],
-        runtime: ["The user runs a verified artifact.", "Build output is assembled beneath build/pi-agent and linked only after a runtime smoke check."]
+      /* ---------- the seam welds as you scroll ---------- */
+
+      let ticking = false;
+      const setWeld = () => {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - innerHeight;
+        const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 1;
+        root.style.setProperty("--weld", p.toFixed(4));
+        ticking = false;
       };
 
-      document.querySelectorAll("[data-stage]").forEach((node) => {
-        node.addEventListener("click", () => {
-          document.querySelectorAll("[data-stage]").forEach((item) => item.setAttribute("aria-pressed", String(item === node)));
-          const [title, detail] = stageCopy[node.dataset.stage];
-          if (stageReadout) stageReadout.innerHTML = `<strong>${title}</strong>${detail}`;
+      addEventListener("scroll", () => {
+        if (!ticking) { ticking = true; requestAnimationFrame(setWeld); }
+      }, { passive: true });
+      addEventListener("resize", setWeld);
+      setWeld();
+
+      /* ---------- pass markers track the visible section ---------- */
+
+      const railLinks = [...document.querySelectorAll(".rail-pass a")];
+      const sections = railLinks
+        .map((a) => document.getElementById(a.hash.slice(1)))
+        .filter(Boolean);
+
+      const sectionObserver = new IntersectionObserver((entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        railLinks.forEach((a) => a.setAttribute("aria-current", String(a.hash === `#${visible.target.id}`)));
+      }, { rootMargin: "-25% 0px -55%", threshold: [0.05, 0.25, 0.5] });
+
+      sections.forEach((s) => sectionObserver.observe(s));
+
+      /* ---------- reveals ---------- */
+
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          e.target.classList.add("is-set");
+          revealObserver.unobserve(e.target);
+        });
+      }, { rootMargin: "0px 0px -8%", threshold: 0.08 });
+
+      document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
+
+      /* ---------- procedure sheet ---------- */
+
+      document.querySelectorAll(".pass-row").forEach((row) => {
+        const btn = row.querySelector(".pass-summary");
+        btn?.addEventListener("click", () => {
+          const open = row.dataset.open !== "true";
+          row.dataset.open = String(open);
+          btn.setAttribute("aria-expanded", String(open));
         });
       });
 
-      const tabs = [...document.querySelectorAll('[role="tab"]')];
-      const activateTab = (tab, moveFocus = false) => {
-        tabs.forEach((item) => {
-          const selected = item === tab;
-          item.setAttribute("aria-selected", String(selected));
-          item.tabIndex = selected ? 0 : -1;
-          const panel = document.getElementById(item.getAttribute("aria-controls"));
-          if (panel) panel.hidden = !selected;
-        });
-        if (moveFocus) tab.focus();
-      };
+      /* ---------- copy the weld log ---------- */
 
-      tabs.forEach((tab, index) => {
-        tab.addEventListener("click", () => activateTab(tab));
-        tab.addEventListener("keydown", (event) => {
-          if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
-          event.preventDefault();
-          let next = index;
-          if (event.key === "Home") next = 0;
-          else if (event.key === "End") next = tabs.length - 1;
-          else if (event.key === "ArrowDown" || event.key === "ArrowRight") next = (index + 1) % tabs.length;
-          else next = (index - 1 + tabs.length) % tabs.length;
-          activateTab(tabs[next], true);
-        });
-      });
+      const copyButton = document.getElementById("copy-command");
+      const copyLabel = document.getElementById("copy-label");
+      const copyStatus = document.getElementById("copy-status");
 
       copyButton?.addEventListener("click", async () => {
         const command = document.getElementById("setup-command");
         if (!command) return;
         try {
           await navigator.clipboard.writeText(command.innerText.trim());
-          copyStatus.textContent = "Setup commands copied.";
-          copyButton.innerHTML = '<i data-lucide="check" aria-hidden="true"></i>';
+          copyStatus.textContent = "Commands copied.";
+          if (copyLabel) copyLabel.textContent = "Copied";
         } catch {
           const range = document.createRange();
           range.selectNodeContents(command);
           getSelection()?.removeAllRanges();
           getSelection()?.addRange(range);
-          copyStatus.textContent = "Commands selected. Copy them from the terminal.";
+          copyStatus.textContent = "Commands selected. Copy them from the log.";
         }
-        refreshIcons();
         setTimeout(() => {
-          copyButton.innerHTML = '<i data-lucide="copy" aria-hidden="true"></i>';
-          refreshIcons();
-        }, 2000);
+          if (copyLabel) copyLabel.textContent = "Copy";
+          copyStatus.textContent = "";
+        }, 2400);
       });
-
-      const observedSections = [...document.querySelectorAll("main section[id]")];
-      const navLinks = [...document.querySelectorAll('.primary-nav a[href^="#"]')];
-      const navObserver = new IntersectionObserver((entries) => {
-        const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) return;
-        navLinks.forEach((link) => link.setAttribute("aria-current", String(link.hash === `#${visible.target.id}`)));
-      }, { rootMargin: "-30% 0px -55%", threshold: [0.05, 0.25, 0.5] });
-      observedSections.forEach((section) => navObserver.observe(section));
-
-      if (!reducedMotion.matches && stageSurface) {
-        stageSurface.closest(".system-stage")?.addEventListener("pointermove", (event) => {
-          const bounds = event.currentTarget.getBoundingClientRect();
-          const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-          const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-          stageSurface.style.transform = `rotateX(${y * -3}deg) rotateY(${x * 4}deg)`;
-        });
-        stageSurface.closest(".system-stage")?.addEventListener("pointerleave", () => { stageSurface.style.transform = ""; });
-      }
-
-      if (!reducedMotion.matches && window.gsap && window.ScrollTrigger) {
-        gsap.registerPlugin(ScrollTrigger);
-        gsap.from(".hero-content > *", { y: 28, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.out", delay: 0.15 });
-        gsap.from(".stage-surface", { x: innerWidth > 800 ? 48 : 0, y: innerWidth > 800 ? 0 : 18, opacity: 0, duration: 1, ease: "power3.out", delay: 0.35 });
-        gsap.from(".stage-line-active, .stage-line-runtime", { strokeDasharray: 700, strokeDashoffset: 700, duration: 1.8, ease: "power2.inOut", delay: 0.75 });
-        gsap.utils.toArray(".boundary-title, .components-title, .setup-title, .closing-title").forEach((heading) => {
-          gsap.from(heading, { y: 38, opacity: 0, duration: 0.8, ease: "power3.out", scrollTrigger: { trigger: heading, start: "top 84%" } });
-        });
-        gsap.from(".boundary-ledger .ledger-row", { x: 28, opacity: 0, stagger: 0.08, duration: 0.55, ease: "power2.out", scrollTrigger: { trigger: ".boundary-ledger", start: "top 82%" } });
-        gsap.from(".component-browser", { y: 45, opacity: 0, duration: 0.85, ease: "power3.out", scrollTrigger: { trigger: ".component-browser", start: "top 83%" } });
-        gsap.from(".terminal", { y: 45, opacity: 0, duration: 0.85, ease: "power3.out", scrollTrigger: { trigger: ".terminal", start: "top 84%" } });
-      }
-
-      updateThemeControl();
-      refreshIcons();
     })();
   </script>
 </body>

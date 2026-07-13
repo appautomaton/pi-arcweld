@@ -1,21 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="pi-arcweld mark">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="pi-arcweld mark">
+  <!-- pi-arcweld: a pi whose crossbar is the weld bead, in titanium heat colors -->
   <style>
-    :root { --field: #f2f0e8; --ink: #151914; --seam: #c83c24; --spark: #567300; }
+    :root { --plate: #edf0f4; --ink: #0f1621; --core: #1d5bd6; }
     @media (prefers-color-scheme: dark) {
-      :root { --field: #11140f; --ink: #f1f0e8; --seam: #ff795c; --spark: #d8ff4f; }
+      :root { --plate: #0a0f17; --ink: #e9eef6; --core: #edf5ff; }
     }
-    .frame, .pi, .seam { fill: none; }
-    .frame { stroke: var(--ink); opacity: .34; }
-    .pi { stroke: var(--ink); stroke-width: 3.4; stroke-linecap: square; }
-    .seam { stroke: var(--seam); stroke-width: 3; stroke-linecap: square; stroke-dasharray: 44; animation: draw 1.2s cubic-bezier(.22,.8,.24,1) forwards; }
-    .spark { fill: var(--spark); transform-origin: 32px 32px; animation: pulse 2.8s ease-in-out 1s infinite; }
-    @keyframes draw { from { stroke-dashoffset: 44; } to { stroke-dashoffset: 0; } }
-    @keyframes pulse { 0%,100% { opacity: .45; transform: scale(.7); } 45% { opacity: 1; transform: scale(1.45); } 55% { opacity: .7; transform: scale(.9); } }
-    @media (prefers-reduced-motion: reduce) { .seam, .spark { animation: none; } }
+    .leg { fill: none; stroke: var(--ink); stroke-width: 4.2; stroke-linecap: round; }
+    .ripple { fill: none; stroke: var(--plate); stroke-width: 4.6; stroke-linecap: round; stroke-dasharray: 0.5 2.4; opacity: 0.32; }
+    .arcdot { fill: var(--core); }
   </style>
-  <rect width="64" height="64" rx="10" fill="var(--field)"/>
-  <rect class="frame" x="8" y="8" width="48" height="48" transform="rotate(45 32 32)"/>
-  <path class="pi" d="M14 21h36M21 21v29M43 21v29"/>
-  <path class="seam" d="m13 38 8-8 7 7 8-10 7 7 8-8"/>
-  <circle class="spark" cx="32" cy="32" r="3.6"/>
+  <defs>
+    <linearGradient id="heat" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f5c34d"/>
+      <stop offset="0.3" stop-color="#e2894f"/>
+      <stop offset="0.55" stop-color="#b76bd6"/>
+      <stop offset="0.78" stop-color="#7b7df2"/>
+      <stop offset="1" stop-color="#4b93f0"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="10" fill="var(--plate)"/>
+  <path class="leg" d="M17 19v16"/>
+  <path class="leg" d="M31 19v12q0 4 4 4"/>
+  <path d="M9.5 15.5h29" fill="none" stroke="url(#heat)" stroke-width="4.6" stroke-linecap="round"/>
+  <path class="ripple" d="M9.5 15.5h29"/>
+  <circle class="arcdot" cx="38.5" cy="15.5" r="2.6"/>
 </svg>
