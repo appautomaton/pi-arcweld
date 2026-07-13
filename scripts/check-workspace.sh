@@ -7,6 +7,9 @@ cd "$ROOT_DIR"
 echo "==> Checking shell scripts"
 bash -n scripts/*.sh
 
+echo "==> Checking secret boundary"
+scripts/check-secret-boundary.sh
+
 echo "==> Checking repository references"
 if stale_references="$(git grep -n -E 'pi-mcp-client-local|/home/dev|href="#workshop"|id="workshop"' -- ':!pi-mono' ':!scripts/check-workspace.sh')"; then
 	printf '%s\n' "$stale_references" >&2
@@ -51,13 +54,17 @@ for package_dir in extensions/plan-mode extensions/mcp-extension; do
 	)
 done
 
-echo "==> Checking questionnaire through its user-level loading shape"
+echo "==> Checking self-contained extensions through their user-level loading shape"
 grep -Fq 'promptSnippet: "Ask focused clarification questions when material decisions require user input"' extensions/questionnaire.ts
 grep -Fq 'Use questionnaire only when missing input would materially change the result' extensions/questionnaire.ts
+grep -Fq 'name: "web_search"' extensions/web-search.ts
+grep -Fq 'name: "grok_search"' extensions/grok-search.ts
 agent_dir="$(mktemp -d)"
 trap 'rm -rf "$agent_dir"' EXIT
 mkdir -p "$agent_dir/extensions"
-ln -s "$ROOT_DIR/extensions/questionnaire.ts" "$agent_dir/extensions/questionnaire.ts"
+for extension in questionnaire.ts web-search.ts grok-search.ts; do
+	ln -s "$ROOT_DIR/extensions/$extension" "$agent_dir/extensions/$extension"
+done
 PI_CODING_AGENT_DIR="$agent_dir" pi --list-models >/dev/null
 
 echo "==> Workspace checks passed"

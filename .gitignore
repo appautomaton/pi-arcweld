@@ -21,6 +21,9 @@
 .env
 .env.*
 !.env.example
+**/web-search.json
+**/auth.json
+**/credentials.json
 *.pem
 *.key
 

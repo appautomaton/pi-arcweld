@@ -25,6 +25,8 @@ check_link() {
 echo "==> Checking user-level symlinks"
 check_link "$AGENT_DIR/extensions/plan-mode" "$ROOT_DIR/extensions/plan-mode"
 check_link "$AGENT_DIR/extensions/questionnaire.ts" "$ROOT_DIR/extensions/questionnaire.ts"
+check_link "$AGENT_DIR/extensions/web-search.ts" "$ROOT_DIR/extensions/web-search.ts"
+check_link "$AGENT_DIR/extensions/grok-search.ts" "$ROOT_DIR/extensions/grok-search.ts"
 check_link "$AGENT_DIR/APPEND_SYSTEM.md" "$ROOT_DIR/system-instruction/APPEND_SYSTEM.md"
 
 echo "==> Checking MCP package registration"
