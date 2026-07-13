@@ -12,7 +12,7 @@
 *.tgz
 *.tsbuildinfo
 **/coverage/
-/mcp-extension/dist/
+/extensions/mcp-extension/dist/
 
 # Machine-local Claude Code settings (keep shared skills and project instructions trackable)
 **/.claude/settings.local.json

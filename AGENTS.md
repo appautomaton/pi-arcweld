@@ -5,7 +5,7 @@ This repository wraps the upstream `pi-mono` source as a pinned Git submodule.
 ## Workspace Layout
 
 - `pi-mono/` is an upstream Git submodule, pinned by the root repository. Keep it free of local build/dependency state and do not add it to a root npm workspace.
-- `extensions/` contains locally-maintained Pi extensions (e.g. the cache-safe plan-mode fork), symlinked into `~/.pi/agent/extensions/`.
+- `extensions/` is the single repository root for locally-maintained Pi extensions. Direct extensions are symlinked into `~/.pi/agent/extensions/`; package-backed extensions such as `plan-mode/` and `mcp-extension/` must remain beneath this directory and be referenced from their `extensions/` path in Pi settings.
 - `system-instruction/` contains the canonical `APPEND_SYSTEM.md` (symlinked from `~/.pi/agent/APPEND_SYSTEM.md`). Its machine-specific reference captures under `baseline/` are local and ignored. Do not create a project-level `.pi/APPEND_SYSTEM.md`, as it would shadow the global file.
 - `scripts/` contains local build and maintenance scripts for this workspace.
 - `references/` contains local independent repositories retained for comparison or tooling. It is ignored and is not part of the public repository.

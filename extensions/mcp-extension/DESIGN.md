@@ -253,7 +253,7 @@ The first implementation uses the temporary private package name `pi-mcp-client-
 ## Files
 
 ```text
-mcp-extension/
+extensions/mcp-extension/
 ├── DESIGN.md
 ├── README.md
 ├── LICENSE

@@ -9,9 +9,9 @@ The package currently uses the temporary private name `pi-mcp-client-local`. It 
 ## Install locally
 
 ```bash
-cd /home/dev/agents/pi/mcp-extension
+cd /home/dev/agents/pi/extensions/mcp-extension
 npm install --ignore-scripts
-pi install /home/dev/agents/pi/mcp-extension
+pi install /home/dev/agents/pi/extensions/mcp-extension
 ```
 
 A local-path install records the package path in Pi settings; it does not copy or rebuild the package. During development, edit `src/*.ts` and run `/reload` in Pi. Run `npm install --ignore-scripts` again only when dependencies change.
@@ -19,7 +19,7 @@ A local-path install records the package path in Pi settings; it does not copy o
 For a one-run test without changing settings:
 
 ```bash
-pi -e /home/dev/agents/pi/mcp-extension
+pi -e /home/dev/agents/pi/extensions/mcp-extension
 ```
 
 ## Configuration

@@ -7,8 +7,7 @@ Pi itself remains upstream. This repository pins the upstream source as a Git su
 ## Layout
 
 - `pi-mono/` — pinned upstream Pi source; never a local fork.
-- `extensions/` — locally maintained Pi extensions.
-- `mcp-extension/` — the local MCP client Pi package.
+- [`extensions/`](extensions/README.md) — locally maintained Pi extensions, including the MCP client package at `extensions/mcp-extension/`.
 - `system-instruction/` — the canonical global system-prompt append material.
 - `scripts/` — runtime build and upstream-maintenance tools.
 - `build/` — generated local runtime; intentionally untracked.
