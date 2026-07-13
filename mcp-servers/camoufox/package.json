@@ -14,7 +14,7 @@
     "start": "node src/index.js",
     "bootstrap:proot-arm64": "sh scripts/bootstrap-proot-arm64.sh",
     "fetch:camoufox": "node scripts/install-camoufox-browser.js",
-    "test": "node --test test/*.test.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js",
     "test:integration": "CAMOUFOX_INTEGRATION=1 node --test --test-concurrency=1 test/*integration.test.js",
     "doctor": "node scripts/doctor.js"
   }

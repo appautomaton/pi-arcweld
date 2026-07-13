@@ -7,10 +7,16 @@ const entry = new URL("../src/index.js", import.meta.url).pathname;
 async function waitForReady(child) {
   let stderr = "";
   child.stderr.on("data", (data) => { stderr += data; });
-  const deadline = Date.now() + 5_000;
+  // Generous ceiling so a slow process launch under load does not fail
+  // spuriously. On failure, kill the child so the test fails fast instead of
+  // leaking a running process that keeps the event loop alive.
+  const deadline = Date.now() + 30_000;
   while (!stderr.includes("Local MCP server running on stdio")) {
     if (child.exitCode !== null) throw new Error(`server exited before ready: ${stderr}`);
-    if (Date.now() > deadline) throw new Error(`server did not become ready: ${stderr}`);
+    if (Date.now() > deadline) {
+      child.kill("SIGKILL");
+      throw new Error(`server did not become ready: ${stderr}`);
+    }
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
   return () => stderr;

@@ -36,7 +36,7 @@ Each server owns its dependencies and checks. Install and validate from the serv
 cd mcp-servers/camoufox
 npm ci --ignore-scripts
 npm run doctor
-node --test --test-concurrency=1 test/*.test.js
+npm test
 ```
 
-Run tests serialized in this constrained runtime. The default parallel `npm test` can spawn several server processes at once and exceed a readiness timeout under load. Integration tests that launch a real browser are gated behind `CAMOUFOX_INTEGRATION=1`.
+`npm test` runs the unit suite serialized, which keeps the server-spawning tests reliable in constrained runtimes where parallel process launches would otherwise contend. Integration tests that launch a real browser are gated behind `CAMOUFOX_INTEGRATION=1` and run with `npm run test:integration`.
