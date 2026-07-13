@@ -184,7 +184,7 @@ export class McpManager {
 				serverName: state.serverName,
 				serverVersion: state.serverVersion,
 				instructions: state.instructions,
-				tools: state.tools,
+				tools: toolsByName(state.tools),
 			});
 			fingerprints[state.name] = {
 				ready: true,
@@ -585,6 +585,16 @@ function stripControlCharacters(value: string): string {
 
 function canonicalJson(value: unknown): string {
 	return JSON.stringify(canonicalize(value));
+}
+
+/**
+ * A tool's identity is its name, so catalog list order carries no meaning. Sorting
+ * by name before fingerprinting keeps an identical reconnect that merely reorders
+ * its tools from being reported as a catalog change. Uses the same collation as
+ * canonicalize's object keys so the whole signature shares one ordering rule.
+ */
+function toolsByName(tools: McpTool[]): McpTool[] {
+	return [...tools].sort((left, right) => left.name.localeCompare(right.name));
 }
 
 function canonicalize(value: unknown): unknown {
