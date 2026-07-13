@@ -8,7 +8,7 @@ echo "==> Checking shell scripts"
 bash -n scripts/*.sh
 
 echo "==> Checking repository references"
-if stale_references="$(git grep -n -E 'pi-mcp-client-local|/home/dev/agents/pi/mcp-extension|href="#workshop"|id="workshop"' -- ':!pi-mono' ':!scripts/check-workspace.sh')"; then
+if stale_references="$(git grep -n -E 'pi-mcp-client-local|/home/dev|href="#workshop"|id="workshop"' -- ':!pi-mono' ':!scripts/check-workspace.sh')"; then
 	printf '%s\n' "$stale_references" >&2
 	echo "Stale repository references found" >&2
 	exit 1

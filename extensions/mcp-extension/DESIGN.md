@@ -111,7 +111,7 @@ Example:
       "command": "/usr/bin/node",
       "args": [
         "/opt/mcp/filesystem-server/dist/index.js",
-        "/home/dev/work"
+        "/home/user/work"
       ]
     },
     "context7": {
