@@ -1,10 +1,23 @@
-# System instruction workspace
+# System instruction
 
-- `baseline/SYSTEM.md` is a verbatim runtime capture from Pi `0.80.6` on `2026-07-12`, with cwd `/home/dev/agents/pi`.
-- The capture came from `ctx.getSystemPrompt()` using the normal auto-discovered configuration.
-- It includes Pi's default prompt, active tool snippets and guidelines, project `AGENTS.md`, discovered skills, current date, and working directory.
-- It excludes provider-level tool definitions, provider-injected formatting, conversation messages, and later `before_provider_request` rewrites.
-- This workspace file is not an active `.pi/SYSTEM.md` override. Re-capture after changing extensions, active tools, project context, or skills.
-- `APPEND_SYSTEM.md` here is the canonical behavior-correction append file, active globally via the symlink `~/.pi/agent/APPEND_SYSTEM.md` -> this file. It refines response quality without replacing Pi's generated system prompt.
-- Decision (2026-07-12): we deliberately do not use a `SYSTEM.md` override. The generated head varies with the live tool inventory (extension tools contribute their own snippets) and improves with upstream releases. A replacement would freeze both. The append layer adds behavior corrections on top of whatever Pi generates, with one known coupling: it quotes "Be concise in your responses" verbatim for precedence, so verify that string still exists on re-capture.
-- Do not add a project-level `.pi/APPEND_SYSTEM.md` in any project unless it should fully replace the global file there: Pi's discovery is shadowing (project wins), not layering.
+This directory owns the user-level system-instruction append file used by the local Pi agent.
+
+## Active file
+
+`APPEND_SYSTEM.md` contains concise response and working guidelines. The user-level path is a symlink:
+
+```text
+~/.pi/agent/APPEND_SYSTEM.md -> <repository>/system-instruction/APPEND_SYSTEM.md
+```
+
+Pi appends this file to its generated system prompt. It does not replace the generated prompt, so upstream instructions, active tool guidance, project context, and discovered skills remain current.
+
+Do not add a project-level `.pi/APPEND_SYSTEM.md` unless the project intentionally needs a replacement. Pi uses the project file instead of the global file; the two are not layered.
+
+## Baseline captures
+
+`baseline/SYSTEM.md`, when present, is a machine-local capture of `ctx.getSystemPrompt()` used to inspect the assembled prompt. Baseline captures are ignored by Git because they contain machine paths and runtime-specific context.
+
+A capture includes Pi's generated prompt, active tool snippets and guidelines, project `AGENTS.md`, discovered skills, date, and working directory. It does not include provider-level tool definitions, provider-specific serialization, conversation messages, or later `before_provider_request` rewrites. Record the Pi version, capture date, and working directory alongside any capture used for comparison.
+
+Recapture after changing the Pi version, active extensions or tools, project instructions, or skills. During review, confirm that the upstream phrase quoted by `APPEND_SYSTEM.md`—`Be concise in your responses`—still exists; that exact phrase establishes the append file's precedence rule.

@@ -20,7 +20,7 @@ Provide a small, secure MCP client extension for Pi that works with local stdio 
 - Fail closed at trust and credential boundaries.
 - Add features only when a real use case requires them.
 
-## First Release Scope
+## Implemented Scope
 
 ### Transports
 
@@ -56,7 +56,7 @@ The panel is deliberately not a general configuration editor. It never displays 
 
 ### Authorization policy
 
-The user-global configuration is the user's consent to connect to and invoke the configured servers. The first release does not add per-session, per-connection, or per-call confirmation prompts.
+The user-global configuration is the user's consent to connect to and invoke the configured servers. The extension does not add per-session, per-connection, or per-call confirmation prompts.
 
 ### Server lifecycle
 
@@ -87,7 +87,7 @@ The user-global configuration is the user's consent to connect to and invoke the
 
 ## Configuration
 
-The first release reads one user-owned file:
+The extension reads one user-owned file:
 
 ```text
 $PI_CODING_AGENT_DIR/mcp.json
@@ -183,7 +183,7 @@ When text output exceeds the limit:
 
 Do not store the complete raw MCP response in tool-result details.
 
-Supported result content in the first release:
+Supported result content:
 
 - text;
 - structured content serialized as bounded JSON;
@@ -199,7 +199,7 @@ Unsupported content returns an explicit bounded description rather than being si
 
 ### Remote servers
 
-Static headers are supported. OAuth is not part of the first release because a compliant implementation requires discovery, PKCE, issuer/resource validation, redirect handling, and secure token storage.
+Static headers are supported. OAuth is not implemented because a compliant implementation requires discovery, PKCE, issuer/resource validation, redirect handling, and secure token storage.
 
 ### Server metadata
 
@@ -248,7 +248,7 @@ The system prompt sits ahead of the entire conversation in every provider's prom
 
 ## Packaging
 
-The first implementation uses the temporary private package name `pi-mcp-client-local`, version `0.1.0`, and the MIT license. Its package structure is publish-ready, but npm publication remains disabled with `"private": true` until a public name is selected.
+The private package is named `pi-arcweld-mcp`, version `0.1.0`, under the MIT license. npm publication remains disabled with `"private": true`.
 
 ## Files
 
@@ -281,9 +281,9 @@ extensions/mcp-extension/
 - `freeze.test.ts`: frozen-prefix and append-only runtime regression checks.
 - `ui.test.ts`: responsive rendering and keyboard-flow checks.
 
-## Release Checks
+## Verification Coverage
 
-The first release is complete when one deterministic test suite verifies:
+The deterministic test suite verifies:
 
 1. Invalid configuration fails closed.
 2. Missing MCP environment variables fail closed and process environment fallback is rejected.

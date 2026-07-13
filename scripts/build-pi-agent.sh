@@ -16,7 +16,7 @@ Build Pi outside pi-mono while treating pi-mono as source input only.
 Options:
   --link-user-bin      Repoint the current `pi` command to the external runtime after smoke checks.
   --keep-work          Keep the temporary build workspace after a successful build.
-  --build-dir <dir>    Build root. Defaults to /home/dev/agents/pi/build/pi-agent.
+  --build-dir <dir>    Build root. Defaults to <repository>/build/pi-agent.
   --help               Show this help.
 USAGE
 }

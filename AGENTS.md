@@ -5,9 +5,10 @@ This repository wraps the upstream `pi-mono` source as a pinned Git submodule.
 ## Workspace Layout
 
 - `pi-mono/` is an upstream Git submodule, pinned by the root repository. Keep it free of local build/dependency state and do not add it to a root npm workspace.
-- `extensions/` is the single repository root for locally-maintained Pi extensions. Direct extensions are symlinked into `~/.pi/agent/extensions/`; package-backed extensions such as `plan-mode/` and `mcp-extension/` must remain beneath this directory and be referenced from their `extensions/` path in Pi settings.
-- `system-instruction/` contains the canonical `APPEND_SYSTEM.md` (symlinked from `~/.pi/agent/APPEND_SYSTEM.md`). Its machine-specific reference captures under `baseline/` are local and ignored. Do not create a project-level `.pi/APPEND_SYSTEM.md`, as it would shadow the global file.
-- `scripts/` contains local build and maintenance scripts for this workspace.
+- `extensions/` is the single repository root for locally maintained Pi extensions. Keep every curated extension there. Global extensions may be symlinked into `~/.pi/agent/extensions/` or registered as local-path packages in `~/.pi/agent/settings.json`; document the chosen loading method in `extensions/README.md`.
+- `system-instruction/` contains the canonical `APPEND_SYSTEM.md`, symlinked from `~/.pi/agent/APPEND_SYSTEM.md`. Machine-specific reference captures under `baseline/` are local and ignored. Do not create a project-level `.pi/APPEND_SYSTEM.md`, because it would replace the global append file for this project rather than layer with it.
+- `scripts/` contains local runtime build, validation, and upstream-update scripts.
+- `docs/` contains the static GitHub Pages site; keep its claims and paths consistent with the repository documentation.
 - `references/` contains local independent repositories retained for comparison or tooling. It is ignored and is not part of the public repository.
 - `build/pi-agent/runtime/` is the runnable local Pi artifact.
 - `build/pi-agent/work/` is temporary build state and is deleted by default after a successful build.

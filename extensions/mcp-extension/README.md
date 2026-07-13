@@ -4,22 +4,25 @@ A small MCP client extension for Pi. It discovers user-configured stdio and Stre
 
 ## Status
 
-The package currently uses the temporary private name `pi-mcp-client-local`. It is not published to npm.
+This is a private local package named `pi-arcweld-mcp`. It is not published to npm.
 
 ## Install locally
 
+From the repository root:
+
 ```bash
-cd /home/dev/agents/pi/extensions/mcp-extension
-npm install --ignore-scripts
-pi install /home/dev/agents/pi/extensions/mcp-extension
+cd extensions/mcp-extension
+npm ci --ignore-scripts
+cd ../..
+pi install ./extensions/mcp-extension
 ```
 
-A local-path install records the package path in Pi settings; it does not copy or rebuild the package. During development, edit `src/*.ts` and run `/reload` in Pi. Run `npm install --ignore-scripts` again only when dependencies change.
+A local-path install records the package path in Pi settings; it does not copy or rebuild the package. During development, edit `src/*.ts` and run `/reload` in Pi. Run `npm ci --ignore-scripts` after cloning or whenever the lockfile changes.
 
 For a one-run test without changing settings:
 
 ```bash
-pi -e /home/dev/agents/pi/extensions/mcp-extension
+pi -e ./extensions/mcp-extension
 ```
 
 ## Configuration
@@ -231,6 +234,8 @@ Session actions are immediate and never write configuration. `set-default` chang
 - OAuth is not supported in this release. Remote servers requiring OAuth will fail authentication.
 
 ## Development
+
+From `extensions/mcp-extension/`:
 
 ```bash
 npm run check

@@ -1,31 +1,51 @@
 # pi-arcweld
 
-A local-first workshop for shaping [Pi](https://github.com/earendil-works/pi): extensions, MCP tooling, system-instruction material, and a reproducible local runtime.
+A local workspace for a curated [Pi](https://github.com/earendil-works/pi) agent environment. It keeps the pinned upstream source, user-level extensions, system-instruction append file, and reproducible runtime tooling in one auditable repository.
 
-Pi itself remains upstream. This repository pins the upstream source as a Git submodule and keeps local customizations separate.
+Pi remains upstream. Local behavior and build state stay outside the `pi-mono/` checkout.
 
-## Layout
+## Repository layout
 
-- `pi-mono/` — pinned upstream Pi source; never a local fork.
-- [`extensions/`](extensions/README.md) — locally maintained Pi extensions, including the MCP client package at `extensions/mcp-extension/`.
-- `system-instruction/` — the canonical global system-prompt append material.
-- `scripts/` — runtime build and upstream-maintenance tools.
-- `build/` — generated local runtime; intentionally untracked.
+- `pi-mono/` — pinned upstream Pi source managed as a Git submodule.
+- [`extensions/`](extensions/README.md) — curated user-level Pi extensions and package-backed extensions.
+- [`system-instruction/`](system-instruction/README.md) — the global `APPEND_SYSTEM.md` source and capture notes.
+- `scripts/` — local runtime build and upstream-update scripts.
+- `docs/` — the static GitHub Pages site.
+- `build/` — generated local runtime and package artifacts; intentionally untracked.
+
+## User-level integration
+
+The active Pi configuration points back to this repository rather than copying curated files:
+
+- `~/.pi/agent/extensions/plan-mode` → `extensions/plan-mode/`
+- `~/.pi/agent/extensions/questionnaire.ts` → `extensions/questionnaire.ts`
+- `~/.pi/agent/APPEND_SYSTEM.md` → `system-instruction/APPEND_SYSTEM.md`
+- `~/.pi/agent/settings.json` registers `extensions/mcp-extension/` as a local-path package
+- the user `pi` command resolves to `build/pi-agent/runtime/bin/pi`
+
+Machine-local settings, credentials, and unrelated user extensions are not stored in this repository.
 
 ## Getting started
 
-Clone with the upstream source:
+Clone the repository with its upstream submodule:
 
 ```bash
 git clone --recurse-submodules https://github.com/appautomaton/pi-arcweld.git pi-arcweld
 cd pi-arcweld
 ```
 
-Build the local Pi runtime outside the upstream checkout:
+Build and link the local Pi runtime without writing build output into `pi-mono/`:
 
 ```bash
 scripts/build-pi-agent.sh --link-user-bin
 pi --version
+```
+
+See [`extensions/README.md`](extensions/README.md) for extension loading and validation. Run the repository and machine-specific checks with:
+
+```bash
+scripts/check-workspace.sh
+scripts/check-user-wiring.sh
 ```
 
 ## Updating Pi
@@ -37,10 +57,10 @@ scripts/update-pi-mono.sh
 git diff --submodule=log -- pi-mono
 ```
 
-The helper never commits or pushes. Review the resulting submodule pointer before committing it in this repository.
+The helper does not commit or push. Review the resulting submodule pointer before committing it in this repository.
 
 ## Development model
 
-`pi-arcweld` intentionally has no root `package.json` or shared npm workspace. Local packages manage their own dependencies; the upstream Pi source retains its own build and release process.
+The repository intentionally has no root `package.json` or shared npm workspace. Each local package owns its manifest, lockfile, dependencies, and checks. Upstream Pi retains its own build and release process.
 
-The root repository tracks only the upstream URL and pinned Pi commit, not Pi source changes. See [AGENTS.md](AGENTS.md) for workspace and Git hygiene rules.
+The root repository records the upstream URL and pinned Pi commit, not local Pi source changes. See [`AGENTS.md`](AGENTS.md) for workspace, build, and Git hygiene rules.

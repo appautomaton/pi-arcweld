@@ -7,7 +7,7 @@ summary: Drive the MCP extension through the real Pi TUI and capture provider-pr
 
 1. Create a throwaway `PI_CODING_AGENT_DIR` with `mcp.json` containing the stdio fixture (`test/fixture-server.ts`), a disabled server, and a broken server.
 2. Launch in an isolated tmux socket from this package directory so `--import tsx` resolves:
-   `tmux -L mcpverify new-session -d -s pi 'PI_CODING_AGENT_DIR=<dir> pi -e /home/dev/agents/pi/mcp-extension'`
+   `tmux -L mcpverify new-session -d -s pi 'PI_CODING_AGENT_DIR=<dir> pi -e .'`
 3. Type `/mcp`; capture with `tmux -L mcpverify capture-pane -pt pi`. Exercise Enter/Space, `r`, `d`, `y`/`n`, Esc, and resize with `tmux resize-window`.
 4. Verify persistence by inspecting raw `mcp.json`: only `enabled` changes, `${TOKEN}` remains literal, and the current panel session state stays independent.
 5. Restart Pi against the same directory and confirm the persisted default controls startup.

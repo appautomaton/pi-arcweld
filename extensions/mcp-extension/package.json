@@ -1,8 +1,8 @@
 {
-  "name": "pi-mcp-client-local",
+  "name": "pi-arcweld-mcp",
   "version": "0.1.0",
   "private": true,
-  "description": "A small, security-first MCP client extension for Pi",
+  "description": "Security-focused MCP client extension for Pi",
   "type": "module",
   "license": "MIT",
   "keywords": [
@@ -28,14 +28,13 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "@cfworker/json-schema": "4.1.1",
     "zod": "4.4.3"
   },
   "peerDependencies": {
-    "@earendil-works/pi-ai": "0.80.6",
-    "@earendil-works/pi-coding-agent": "0.80.6",
-    "@earendil-works/pi-tui": "0.80.6",
-    "typebox": "1.1.38"
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
   },
   "devDependencies": {
     "@earendil-works/pi-ai": "0.80.6",

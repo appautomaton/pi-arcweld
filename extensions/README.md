@@ -1,32 +1,47 @@
-# Local Pi Extensions
+# Pi extensions
 
-`extensions/` is the only repository root for locally maintained Pi extensions. Do not create standalone extension packages beside it.
+`extensions/` is the repository root for every curated Pi extension. Keep local variants here so their code, documentation, and user-level wiring can be reviewed together.
 
-## Contents
+## Inventory
 
-- `mcp-extension/` — package-backed MCP client. Pi loads it from the local package path recorded in `~/.pi/agent/settings.json`.
-- `plan-mode/` — cache-safe plan-mode package, globally symlinked into `~/.pi/agent/extensions/`.
-- `questionnaire.ts` — single-file local extension.
+| Path | Form | User-level loading |
+| --- | --- | --- |
+| `mcp-extension/` | Package with runtime dependencies | Local-path package in `~/.pi/agent/settings.json` |
+| `plan-mode/` | Package directory | Symlink at `~/.pi/agent/extensions/plan-mode` |
+| `questionnaire.ts` | Self-contained curated extension | Symlink at `~/.pi/agent/extensions/questionnaire.ts` |
 
-## Loading
+The questionnaire started from Pi's upstream example and is maintained here as a self-contained local variant. Keeping its imports package-based makes it safe to load through the user-level symlink, while the local copy owns its model-facing clarification policy.
 
-Pi auto-discovers direct global extensions from `~/.pi/agent/extensions/`. Symlink a direct extension there when it should load globally.
+## Loading model
 
-Extensions that need their own npm dependencies should remain package-backed under this directory. Install or register them using their path beneath `extensions/`, for example:
+Pi auto-discovers global files and directories under `~/.pi/agent/extensions/`. Use symlinks there for extensions that should support `/reload` directly from this checkout.
+
+Use a local-path package registration for a package whose `package.json` declares Pi resources and owns runtime dependencies:
 
 ```bash
-pi install /home/dev/agents/pi/extensions/mcp-extension
+pi install ./extensions/mcp-extension
 ```
 
-A local-path package registration references the source directory; Pi does not copy it. After changing its dependencies, run that package's own install command. Do not add a root npm workspace or install dependencies in `pi-mono/`.
+Pi records a local package path without copying the package. Relative package paths are resolved from the settings file that contains them.
+
+Do not add a root npm workspace or install dependencies in `pi-mono/`.
 
 ## Development
 
-Each package owns its own `package.json`, lockfile, dependencies, and checks. Run its commands from that package directory, such as:
+Each package owns its own dependencies and checks. Install and validate from the package directory:
 
 ```bash
 cd extensions/mcp-extension
+npm ci --ignore-scripts
 npm run check
 npm test
 npm run pack:check
 ```
+
+Use the same command sequence in `extensions/plan-mode/`. Test the questionnaire through its user-level symlink or explicitly with:
+
+```bash
+pi -e ./extensions/questionnaire.ts
+```
+
+After changing an auto-discovered extension, run `/reload` in an active Pi session. Restart Pi after changing package registration or dependencies.

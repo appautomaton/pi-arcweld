@@ -1,6 +1,6 @@
-# pi-arcweld plan mode
+# Pi plan mode
 
-A cache-safe local plan mode for [Pi](https://github.com/earendil-works/pi).
+A cache-safe plan-mode extension for [Pi](https://github.com/earendil-works/pi).
 
 Plan mode keeps Pi's tool inventory and system prompt stable. It appends plan-state context instead of changing active tools or filtering prior messages, preserving provider prompt-cache prefixes across plan-mode transitions.
 
@@ -22,9 +22,14 @@ It is a guard for local file mutation and model shell execution, not a universal
 
 Use `--plan` to start a session in plan mode.
 
+## Loading
+
+The user-level Pi agent loads this package through the symlink `~/.pi/agent/extensions/plan-mode` → this directory. Run `/reload` after changing the extension.
+
 ## Development
 
 ```bash
+cd extensions/plan-mode
 npm ci --ignore-scripts
 npm run check
 npm test
