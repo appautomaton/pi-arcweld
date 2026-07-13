@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+if [ "$(uname -s)" = Linux ] && { grep -qi 'PRoot' /proc/version 2>/dev/null || uname -a | grep -qi 'PRoot'; }; then
+  exec "$ROOT/bin/camoufox-mcp-proot" "$@"
+fi
+
+export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+exec node "$ROOT/src/index.js"

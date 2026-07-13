@@ -22,6 +22,7 @@ for (const path of [
 	"extensions/mcp-extension/tsconfig.json",
 	"extensions/plan-mode/package.json",
 	"extensions/plan-mode/tsconfig.json",
+	"mcp-servers/camoufox/package.json",
 ]) {
 	JSON.parse(readFileSync(path, "utf8"));
 }
