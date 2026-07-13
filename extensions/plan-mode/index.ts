@@ -18,8 +18,13 @@ import { Key } from "@earendil-works/pi-tui";
 import { isPlanDocumentPath } from "./paths.ts";
 import { extractTodoItems, markCompletedSteps, type TodoItem } from "./utils.ts";
 
+const PLAN_MODE_STATE_TYPE = "plan-mode";
 const PLAN_MODE_CONTEXT_TYPE = "plan-mode-context";
 const PLAN_MODE_ENDED_TYPE = "plan-mode-ended";
+const PLAN_MODE_EXECUTE_TYPE = "plan-mode-execute";
+const PLAN_EXECUTION_CONTEXT_TYPE = "plan-execution-context";
+const PLAN_COMPLETE_TYPE = "plan-complete";
+const PLAN_TODO_LIST_TYPE = "plan-todo-list";
 const PLAN_DOCUMENT_GLOB = `${CONFIG_DIR_NAME}/plans/*.md`;
 
 interface PlanModeState {
@@ -81,7 +86,7 @@ function isPlanContextDetails(value: unknown): value is PlanContextDetails {
 function latestPlanModeState(entries: readonly unknown[]): PlanModeState | undefined {
 	for (let index = entries.length - 1; index >= 0; index--) {
 		const entry = entries[index];
-		if (!isRecord(entry) || entry.type !== "custom" || entry.customType !== "plan-mode") continue;
+		if (!isRecord(entry) || entry.type !== "custom" || entry.customType !== PLAN_MODE_STATE_TYPE) continue;
 		if (isPlanModeState(entry.data)) return entry.data;
 	}
 	return undefined;
@@ -97,6 +102,11 @@ function sameTodoItems(left: TodoItem[], right: TodoItem[]): boolean {
 				item.completed === right[index]?.completed,
 		)
 	);
+}
+
+/** Renders todo items as a newline-separated "step. text" list for model-facing messages. */
+function formatSteps(items: TodoItem[]): string {
+	return items.map((item) => `${item.step}. ${item.text}`).join("\n");
 }
 
 function planInstructions(): string {
@@ -135,6 +145,11 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	let todoItems: TodoItem[] = [];
 	let episode = 0;
 
+	/** True while a plan is actively executing with tracked steps. */
+	function isExecuting(): boolean {
+		return executionMode && todoItems.length > 0;
+	}
+
 	pi.registerFlag("plan", {
 		description: "Start in plan mode (local exploration)",
 		type: "boolean",
@@ -142,7 +157,7 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	});
 
 	function updateStatus(ctx: ExtensionContext): void {
-		if (executionMode && todoItems.length > 0) {
+		if (isExecuting()) {
 			const completed = todoItems.filter((item) => item.completed).length;
 			ctx.ui.setStatus("plan-mode", ctx.ui.theme.fg("accent", `📋 ${completed}/${todoItems.length}`));
 		} else if (planModeEnabled) {
@@ -151,7 +166,7 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			ctx.ui.setStatus("plan-mode", undefined);
 		}
 
-		if (executionMode && todoItems.length > 0) {
+		if (isExecuting()) {
 			const lines = todoItems.map((item) => {
 				if (item.completed) {
 					return ctx.ui.theme.fg("success", "☑ ") + ctx.ui.theme.fg("muted", ctx.ui.theme.strikethrough(item.text));
@@ -165,7 +180,7 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	}
 
 	function persistState(): void {
-		pi.appendEntry("plan-mode", {
+		pi.appendEntry(PLAN_MODE_STATE_TYPE, {
 			enabled: planModeEnabled,
 			todos: todoItems,
 			executing: executionMode,
@@ -268,12 +283,12 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			};
 		}
 
-		if (executionMode && todoItems.length > 0) {
+		if (isExecuting()) {
 			const remaining = todoItems.filter((item) => !item.completed);
-			const todoList = remaining.map((item) => `${item.step}. ${item.text}`).join("\n");
+			const todoList = formatSteps(remaining);
 			return {
 				message: {
-					customType: "plan-execution-context",
+					customType: PLAN_EXECUTION_CONTEXT_TYPE,
 					content: `[EXECUTING PLAN - Full tool access enabled]\n\nRemaining steps:\n${todoList}\n\nExecute each step in order.\nAfter completing a step, include a [DONE:n] tag in your response.`,
 					display: false,
 				},
@@ -282,19 +297,19 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	});
 
 	pi.on("turn_end", async (event, ctx) => {
-		if (!executionMode || todoItems.length === 0 || !isAssistantMessage(event.message)) return;
+		if (!isExecuting() || !isAssistantMessage(event.message)) return;
 		if (markCompletedSteps(getTextContent(event.message), todoItems) === 0) return;
 		updateStatus(ctx);
 		persistState();
 	});
 
 	pi.on("agent_end", async (event, ctx) => {
-		if (executionMode && todoItems.length > 0) {
+		if (isExecuting()) {
 			if (!todoItems.every((item) => item.completed)) return;
 
 			const completedList = todoItems.map((item) => `~~${item.text}~~`).join("\n");
 			pi.sendMessage(
-				{ customType: "plan-complete", content: `**Plan Complete!** ✓\n\n${completedList}`, display: true },
+				{ customType: PLAN_COMPLETE_TYPE, content: `**Plan Complete!** ✓\n\n${completedList}`, display: true },
 				{ triggerTurn: false },
 			);
 			executionMode = false;
@@ -319,7 +334,7 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 
 		const todoListText = todoItems.map((item) => `${item.step}. ☐ ${item.text}`).join("\n");
 		const planTodoListMessage = {
-			customType: "plan-todo-list",
+			customType: PLAN_TODO_LIST_TYPE,
 			content: `**Plan Steps (${todoItems.length}):**\n\n${todoListText}`,
 			display: true,
 		};
@@ -339,11 +354,11 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			updateStatus(ctx);
 			persistState();
 
-			const remainingList = todoItems.map((item) => `${item.step}. ${item.text}`).join("\n");
+			const remainingList = formatSteps(todoItems);
 			const executionMessage = `Execute the plan.\n\nRemaining steps:\n${remainingList}\n\nStart with: ${firstTodoItem.text}\nAfter completing a step, include a [DONE:n] tag in your response.`;
 			pi.sendMessage(planTodoListMessage, { deliverAs: "followUp" });
 			pi.sendMessage(
-				{ customType: "plan-mode-execute", content: executionMessage, display: true },
+				{ customType: PLAN_MODE_EXECUTE_TYPE, content: executionMessage, display: true },
 				{ triggerTurn: true, deliverAs: "followUp" },
 			);
 		} else if (choice === "Stay in plan mode") {
@@ -372,12 +387,12 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			episode = storedState.episode ?? (planModeEnabled ? 1 : 0);
 		}
 
-		if (executionMode && todoItems.length > 0) {
+		if (isExecuting()) {
 			const entries = ctx.sessionManager.getEntries();
 			let executeIndex = -1;
 			for (let index = entries.length - 1; index >= 0; index--) {
 				const entry = entries[index];
-				if (entry.type === "custom_message" && entry.customType === "plan-mode-execute") {
+				if (entry.type === "custom_message" && entry.customType === PLAN_MODE_EXECUTE_TYPE) {
 					executeIndex = index;
 					break;
 				}
