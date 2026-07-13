@@ -8,14 +8,16 @@ This local server is currently supported and verified in two environments. Profi
 
 ### PRoot ARM64 (`proot-arm64`)
 
-| Component | Verified value |
+**Status: pending revalidation.** The pins were advanced to Camoufox 150.0.2-beta.25 and `camoufox-js` 0.11.1 on 2026-07-13 (verified on darwin-arm64). On the PRoot machine, run `npm run bootstrap:proot-arm64`, `npm test`, and `npm run test:integration`, then set the manifest's `support.status` back to `verified`. The last fully verified pair on PRoot was Camoufox 135.0.1-beta.24 with `camoufox-js` 0.10.2.
+
+| Component | Pinned value |
 |---|---|
 | Environment | Debian GNU/Linux 13 (trixie) under PRoot |
 | Architecture | AArch64 (`aarch64`) |
 | Node | 24.13.0 |
 | npm | 11.17.0 |
-| Camoufox | 135.0.1-beta.24 Linux ARM64 |
-| `camoufox-js` | 0.10.2 |
+| Camoufox | 150.0.2-beta.25 Linux ARM64 |
+| `camoufox-js` | 0.11.1 |
 | `playwright-core` | 1.59.0 |
 
 The machine-readable baseline is `config/proot-arm64-runtime.json`.
@@ -28,11 +30,13 @@ The machine-readable baseline is `config/proot-arm64-runtime.json`.
 | Architecture | `arm64` |
 | Node | 24.14.0 |
 | npm | 11.17.0 |
-| Camoufox | 135.0.1-beta.24 macOS ARM64 |
-| `camoufox-js` | 0.10.2 |
+| Camoufox | 150.0.2-beta.25 macOS ARM64 |
+| `camoufox-js` | 0.11.1 |
 | `playwright-core` | 1.59.0 |
 
 The machine-readable baseline is `config/darwin-arm64-runtime.json`.
+
+Note on upstream naming: the `v150.0.2-beta.25` GitHub release publishes asset files named `camoufox-150.0.2-alpha.25-*`. The manifests record the actual download filenames; the `release` field follows the release tag.
 
 ## Artifact split
 

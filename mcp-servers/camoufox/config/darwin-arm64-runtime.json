@@ -9,18 +9,18 @@
     "testedNpm": "11.17.0"
   },
   "browser": {
-    "version": "135.0.1",
-    "release": "beta.24",
-    "asset": "camoufox-135.0.1-beta.24-mac.arm64.zip",
-    "url": "https://github.com/daijro/camoufox/releases/download/v135.0.1-beta.24/camoufox-135.0.1-beta.24-mac.arm64.zip",
-    "bytes": 297579070,
-    "archiveSha256": "40d6eff71305dcc856a5d67880d328f99783236d7e306eef664b2e9ff4981a67",
+    "version": "150.0.2",
+    "release": "beta.25",
+    "asset": "camoufox-150.0.2-alpha.25-mac.arm64.zip",
+    "url": "https://github.com/daijro/camoufox/releases/download/v150.0.2-beta.25/camoufox-150.0.2-alpha.25-mac.arm64.zip",
+    "bytes": 311097462,
+    "archiveSha256": "a7f03c1def1ad63029b0d522353039e88afadbdef2517755b733e6931a462eb2",
     "executablePath": "Camoufox.app/Contents/MacOS/camoufox",
-    "executableSha256": "43805f5cbf01d9a2803ac0641926c09754a47aad8caeb3b6b143aeb0bff054a1"
+    "executableSha256": "d5be6bdcfde51b087c5ad0491abd98eb64d077a3dc463ad62ceeb45bef0193b4"
   },
   "npm": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "camoufox-js": "0.10.2",
+    "camoufox-js": "0.11.1",
     "playwright-core": "1.59.0",
     "zod": "4.4.3"
   },

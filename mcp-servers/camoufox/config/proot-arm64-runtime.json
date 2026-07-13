@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "support": {
-    "status": "verified",
+    "status": "pending-revalidation",
     "environment": "Debian GNU/Linux 13 (trixie) under PRoot",
     "architecture": "aarch64",
     "kernelMarker": "PRoot-Distro",
@@ -9,18 +9,18 @@
     "testedNpm": "11.17.0"
   },
   "browser": {
-    "version": "135.0.1",
-    "release": "beta.24",
-    "asset": "camoufox-135.0.1-beta.24-lin.arm64.zip",
-    "url": "https://github.com/daijro/camoufox/releases/download/v135.0.1-beta.24/camoufox-135.0.1-beta.24-lin.arm64.zip",
-    "bytes": 706823986,
-    "archiveSha256": "11c4ef8277e7eca4ebbf1970048b76734ff87d5cb7e180336dd0cbe33bf93e41",
+    "version": "150.0.2",
+    "release": "beta.25",
+    "asset": "camoufox-150.0.2-alpha.25-lin.arm64.zip",
+    "url": "https://github.com/daijro/camoufox/releases/download/v150.0.2-beta.25/camoufox-150.0.2-alpha.25-lin.arm64.zip",
+    "bytes": 652036669,
+    "archiveSha256": "b2870af8cd99721d41bd48f0cce0f949449ab75364b80ee3d389bd35953ea213",
     "executablePath": "camoufox-bin",
-    "executableSha256": "7a36c9d06b016335dd5ff560da10ca661b5c1fe3464748fbec17c86d2859f558"
+    "executableSha256": "99185f7551f6c2da961923083c49e7406faf2adafadb1b0aa5cec3661647451b"
   },
   "npm": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "camoufox-js": "0.10.2",
+    "camoufox-js": "0.11.1",
     "playwright-core": "1.59.0",
     "zod": "4.4.3"
   },

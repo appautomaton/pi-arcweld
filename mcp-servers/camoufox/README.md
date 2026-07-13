@@ -20,9 +20,9 @@ Pi / MCP host
   -> <checkout>/bin/camoufox-mcp
   -> src/index.js (@modelcontextprotocol/sdk)
   -> guarded tools, compact/full snapshots, completion, sessions, queue, cleanup
-  -> camoufox-js 0.10.2
+  -> camoufox-js 0.11.1
   -> playwright-core 1.59.0
-  -> Camoufox 135.0.1-beta.24 ARM64
+  -> Camoufox 150.0.2-beta.25 ARM64
 ```
 
 `camoufox-js` launches and configures Camoufox. `playwright-core` performs navigation and browser actions. The local server translates MCP calls into a deliberately bounded tool surface and adds URL policy, output control, completion observation, cancellation, and cleanup.
@@ -42,12 +42,12 @@ Each bootstrap:
 
 1. verifies the platform, architecture, Node 24+, and required commands;
 2. restores the exact npm dependency tree with `npm ci`;
-3. downloads the pinned Camoufox `135.0.1-beta.24` archive for that platform;
+3. downloads the pinned Camoufox `150.0.2-beta.25` archive for that platform;
 4. verifies its byte size, archive SHA-256, and executable SHA-256;
 5. installs it into the platform browser cache (`$HOME/.cache/camoufox` on Linux, `$HOME/Library/Caches/camoufox` on macOS) without overwriting an unknown cache;
 6. runs `npm run doctor`.
 
-The browser archive (roughly 675 MiB for Linux ARM64, 284 MiB for macOS ARM64) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide: the browser, its libraries, and its profile state all live in the user cache directory. To use an already downloaded verified archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap.
+The browser archive (roughly 622 MiB for Linux ARM64, 297 MiB for macOS ARM64) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide: the browser, its libraries, and its profile state all live in the user cache directory. To use an already downloaded verified archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap.
 
 See [docs/runtime-support.md](docs/runtime-support.md) and the manifests in [config/](config/) for the support boundary and recorded hashes.
 
