@@ -20,12 +20,14 @@ The active Pi configuration points back to this repository rather than copying c
 
 - `~/.pi/agent/extensions/plan-mode` → `extensions/plan-mode/`
 - `~/.pi/agent/extensions/questionnaire.ts` → `extensions/questionnaire.ts`
+- `~/.pi/agent/extensions/web-search.ts` → `extensions/web-search.ts`
+- `~/.pi/agent/extensions/grok-search.ts` → `extensions/grok-search.ts`
 - `~/.pi/agent/APPEND_SYSTEM.md` → `system-instruction/APPEND_SYSTEM.md`
 - `~/.pi/agent/settings.json` registers `extensions/mcp-extension/` as a local-path package
 - `~/.pi/agent/mcp.json` registers `mcp-servers/camoufox/bin/camoufox-mcp` as a stdio MCP server
 - the user `pi` command resolves to `build/pi-agent/runtime/bin/pi`
 
-Machine-local settings, credentials, and unrelated user extensions are not stored in this repository.
+Machine-local settings, credentials, and unrelated user extensions are not stored in this repository. In particular, the Exa API key stays only in `~/.pi/agent/web-search.json`, and Grok provider credentials stay in Pi's machine-local model/auth configuration. `scripts/check-secret-boundary.sh` fails if commit candidates include Pi credential/config files, obvious literal secrets, or an exact credential value discoverable from the active machine-local Pi configuration.
 
 ## Getting started
 
