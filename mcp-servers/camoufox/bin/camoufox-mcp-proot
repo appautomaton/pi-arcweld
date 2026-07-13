@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+export MOZ_FAKE_NO_SANDBOX=1
+export MOZ_DISABLE_CONTENT_SANDBOX=1
+export LIBGL_ALWAYS_SOFTWARE=1
+export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+exec node "$ROOT/src/index.js"

@@ -1,0 +1,21 @@
+{
+  "name": "arcweld-camoufox-mcp-server",
+  "version": "0.3.0",
+  "description": "Locally owned Camoufox MCP server for coding agents",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "camoufox-js": "0.10.2",
+    "playwright-core": "1.59.0",
+    "zod": "4.4.3"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "bootstrap:proot-arm64": "sh scripts/bootstrap-proot-arm64.sh",
+    "fetch:camoufox": "node scripts/install-camoufox-browser.js",
+    "test": "node --test test/*.test.js",
+    "test:integration": "CAMOUFOX_INTEGRATION=1 node --test --test-concurrency=1 test/*integration.test.js",
+    "doctor": "node scripts/doctor.js"
+  }
+}

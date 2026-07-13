@@ -8,6 +8,7 @@ Pi remains upstream. Local behavior and build state stay outside the `pi-mono/` 
 
 - `pi-mono/` — pinned upstream Pi source managed as a Git submodule.
 - [`extensions/`](extensions/README.md) — curated user-level Pi extensions and package-backed extensions.
+- [`mcp-servers/`](mcp-servers/README.md) — local MCP servers the client launches over stdio, such as `mcp-servers/camoufox/`.
 - [`system-instruction/`](system-instruction/README.md) — the global `APPEND_SYSTEM.md` source and capture notes.
 - `scripts/` — local runtime build and upstream-update scripts.
 - `docs/` — the static GitHub Pages site.
@@ -21,6 +22,7 @@ The active Pi configuration points back to this repository rather than copying c
 - `~/.pi/agent/extensions/questionnaire.ts` → `extensions/questionnaire.ts`
 - `~/.pi/agent/APPEND_SYSTEM.md` → `system-instruction/APPEND_SYSTEM.md`
 - `~/.pi/agent/settings.json` registers `extensions/mcp-extension/` as a local-path package
+- `~/.pi/agent/mcp.json` registers `mcp-servers/camoufox/bin/camoufox-mcp` as a stdio MCP server
 - the user `pi` command resolves to `build/pi-agent/runtime/bin/pi`
 
 Machine-local settings, credentials, and unrelated user extensions are not stored in this repository.
