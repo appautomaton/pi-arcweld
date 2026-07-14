@@ -1,19 +1,19 @@
 {
-  "name": "pi-arcweld-plan-mode",
+  "name": "pi-arcweld-todos",
   "version": "0.1.0",
   "private": true,
-  "description": "Cache-safe local plan mode for Pi",
+  "description": "Always-on, cache-safe todo tool for Pi",
   "type": "module",
   "license": "MIT",
   "keywords": [
     "pi-package",
     "pi-extension",
-    "plan-mode"
+    "todos"
   ],
   "files": [
     "index.ts",
     "LICENSE",
-    "paths.ts",
+    "utils.ts",
     "README.md"
   ],
   "pi": {

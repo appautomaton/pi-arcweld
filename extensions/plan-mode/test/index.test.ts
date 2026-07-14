@@ -142,7 +142,7 @@ test("restores full instructions when the active context does not contain the cu
 		const full = messageFrom(await fake.handler("before_agent_start")({}, context));
 		assert.equal(full.details.episode, 7);
 		assert.equal(full.details.kind, "full");
-		assert.match(full.content, /Create a detailed numbered plan/);
+		assert.match(full.content, /record it by calling the update_todos tool/);
 
 		contextEntries.push({
 			type: "custom_message",

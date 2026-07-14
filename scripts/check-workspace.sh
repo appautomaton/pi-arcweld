@@ -25,6 +25,8 @@ for (const path of [
 	"extensions/mcp-extension/tsconfig.json",
 	"extensions/plan-mode/package.json",
 	"extensions/plan-mode/tsconfig.json",
+	"extensions/pi-arcweld-todos/package.json",
+	"extensions/pi-arcweld-todos/tsconfig.json",
 	"mcp-servers/camoufox/package.json",
 ]) {
 	JSON.parse(readFileSync(path, "utf8"));
@@ -44,7 +46,7 @@ if (missing.length > 0) {
 }
 NODE
 
-for package_dir in extensions/plan-mode extensions/mcp-extension; do
+for package_dir in extensions/plan-mode extensions/pi-arcweld-todos extensions/mcp-extension; do
 	echo "==> Checking $package_dir"
 	(
 		cd "$package_dir"

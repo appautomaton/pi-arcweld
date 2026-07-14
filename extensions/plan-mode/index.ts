@@ -1,13 +1,13 @@
 /**
  * Cache-safe local plan mode.
  *
- * Plan mode never changes Pi's active tool set or rewrites provider context. It
- * guards only built-in file mutation and model bash calls; other installed
- * tools retain their own policy.
+ * Plan mode is a policy layer only. It never changes Pi's active tool set or
+ * rewrites provider context. It guards built-in file mutation and the model bash
+ * tool; every other installed tool retains its own policy. Progress tracking is
+ * not this extension's job: the model records its plan by calling the update_todos
+ * tool (see pi-arcweld-todos), which tracks execution in every mode.
  */
 
-import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import type { AssistantMessage, TextContent } from "@earendil-works/pi-ai";
 import {
 	CONFIG_DIR_NAME,
 	isToolCallEventType,
@@ -16,22 +16,15 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { Key } from "@earendil-works/pi-tui";
 import { isPlanDocumentPath } from "./paths.ts";
-import { extractTodoItems, markCompletedSteps, type TodoItem } from "./utils.ts";
 
 const PLAN_MODE_STATE_TYPE = "plan-mode";
 const PLAN_MODE_CONTEXT_TYPE = "plan-mode-context";
 const PLAN_MODE_ENDED_TYPE = "plan-mode-ended";
-const PLAN_MODE_EXECUTE_TYPE = "plan-mode-execute";
-const PLAN_EXECUTION_CONTEXT_TYPE = "plan-execution-context";
-const PLAN_COMPLETE_TYPE = "plan-complete";
-const PLAN_TODO_LIST_TYPE = "plan-todo-list";
 const PLAN_DOCUMENT_GLOB = `${CONFIG_DIR_NAME}/plans/*.md`;
 
 interface PlanModeState {
 	enabled: boolean;
-	todos?: TodoItem[];
-	executing?: boolean;
-	episode?: number;
+	episode: number;
 }
 
 interface PlanContextDetails {
@@ -39,37 +32,20 @@ interface PlanContextDetails {
 	kind: "full" | "reminder" | "ended";
 }
 
-function isAssistantMessage(message: AgentMessage): message is AssistantMessage {
-	return message.role === "assistant" && Array.isArray(message.content);
-}
-
-function getTextContent(message: AssistantMessage): string {
-	return message.content
-		.filter((block): block is TextContent => block.type === "text")
-		.map((block) => block.text)
-		.join("\n");
+/** Minimal view of an update_todos result. The only contract shared with pi-arcweld-todos. */
+interface PlanTodo {
+	content: string;
+	status: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
 
-function isTodoItem(value: unknown): value is TodoItem {
-	return (
-		isRecord(value) &&
-		typeof value.step === "number" &&
-		Number.isSafeInteger(value.step) &&
-		typeof value.text === "string" &&
-		typeof value.completed === "boolean"
-	);
-}
-
 function isPlanModeState(value: unknown): value is PlanModeState {
 	return (
 		isRecord(value) &&
 		typeof value.enabled === "boolean" &&
-		(value.todos === undefined || (Array.isArray(value.todos) && value.todos.every(isTodoItem))) &&
-		(value.executing === undefined || typeof value.executing === "boolean") &&
 		(value.episode === undefined || (typeof value.episode === "number" && Number.isSafeInteger(value.episode)))
 	);
 }
@@ -92,63 +68,52 @@ function latestPlanModeState(entries: readonly unknown[]): PlanModeState | undef
 	return undefined;
 }
 
-function sameTodoItems(left: TodoItem[], right: TodoItem[]): boolean {
-	return (
-		left.length === right.length &&
-		left.every(
-			(item, index) =>
-				item.step === right[index]?.step &&
-				item.text === right[index]?.text &&
-				item.completed === right[index]?.completed,
-		)
-	);
-}
-
-/** Renders todo items as a newline-separated "step. text" list for model-facing messages. */
-function formatSteps(items: TodoItem[]): string {
-	return items.map((item) => `${item.step}. ${item.text}`).join("\n");
+/** Latest update_todos list on the active branch, read structurally without importing the todos extension. */
+function latestTodos(ctx: ExtensionContext): PlanTodo[] {
+	let todos: PlanTodo[] = [];
+	for (const entry of ctx.sessionManager.getBranch()) {
+		if (!isRecord(entry) || entry.type !== "message") continue;
+		const message = (entry as { message?: unknown }).message;
+		if (!isRecord(message) || message.role !== "toolResult" || message.toolName !== "update_todos") continue;
+		const details = message.details;
+		if (isRecord(details) && Array.isArray(details.todos)) todos = details.todos as PlanTodo[];
+	}
+	return todos;
 }
 
 function planInstructions(): string {
-	return `[PLAN MODE ACTIVE]
-You are in plan mode: a local exploration mode for safe code analysis.
+	return `[PLAN MODE]
+You are in plan mode. Explore the code freely and think hard before proposing any change.
 
-Restrictions enforced by this extension:
-- Built-in write and edit are blocked, except Markdown plan documents under ${PLAN_DOCUMENT_GLOB}
-- The model bash tool is blocked
-- Other installed tools retain their own policy
+Restrictions enforced by this extension while plan mode is active:
+- Built-in write and edit are blocked, except Markdown plan documents under ${PLAN_DOCUMENT_GLOB}.
+- The model bash tool is blocked. Use Pi's read and search tools to investigate.
+- Other installed tools keep their own policy.
 
-Use the questionnaire tool when missing user input would materially affect the plan.
+Do the real work of planning:
+- Read the relevant code and learn how it behaves today, rather than assuming.
+- Use the questionnaire tool when a missing decision would materially change the plan.
+- Weigh the approaches and their trade-offs before you commit to one.
 
-Create a detailed numbered plan under a "Plan:" header:
+When you have a plan, record it by calling the update_todos tool as an ordered list of
+concrete, verifiable steps, each with status "pending". That todo list, not prose in this
+reply, is the durable plan: it carries into execution and tracks progress there. You may
+also save a fuller write-up under ${PLAN_DOCUMENT_GLOB} if it helps.
 
-Plan:
-1. First step description
-2. Second step description
-...
-
-You may save the plan to ${PLAN_DOCUMENT_GLOB} if useful.
-Do not attempt local file changes outside that directory; present the plan and let the user leave plan mode to execute it.`;
+Do not implement yet. Present your plan and let the user leave plan mode to execute it.`;
 }
 
 function planReminder(): string {
-	return `[PLAN MODE ACTIVE — built-in write/edit are limited to ${PLAN_DOCUMENT_GLOB}; model bash is blocked.]`;
+	return `[PLAN MODE: built-in write and edit are limited to ${PLAN_DOCUMENT_GLOB}, and the model bash tool is blocked. Record the plan with update_todos.]`;
 }
 
 function planEnded(): string {
-	return "[PLAN MODE ENDED — local file and model-bash restrictions are no longer active]";
+	return "[PLAN MODE ENDED: local file and model-bash restrictions are no longer active.]";
 }
 
 export default function planModeExtension(pi: ExtensionAPI): void {
 	let planModeEnabled = false;
-	let executionMode = false;
-	let todoItems: TodoItem[] = [];
 	let episode = 0;
-
-	/** True while a plan is actively executing with tracked steps. */
-	function isExecuting(): boolean {
-		return executionMode && todoItems.length > 0;
-	}
 
 	pi.registerFlag("plan", {
 		description: "Start in plan mode (local exploration)",
@@ -157,41 +122,15 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	});
 
 	function updateStatus(ctx: ExtensionContext): void {
-		if (isExecuting()) {
-			const completed = todoItems.filter((item) => item.completed).length;
-			ctx.ui.setStatus("plan-mode", ctx.ui.theme.fg("accent", `📋 ${completed}/${todoItems.length}`));
-		} else if (planModeEnabled) {
-			ctx.ui.setStatus("plan-mode", ctx.ui.theme.fg("warning", "⏸ plan"));
-		} else {
-			ctx.ui.setStatus("plan-mode", undefined);
-		}
-
-		if (isExecuting()) {
-			const lines = todoItems.map((item) => {
-				if (item.completed) {
-					return ctx.ui.theme.fg("success", "☑ ") + ctx.ui.theme.fg("muted", ctx.ui.theme.strikethrough(item.text));
-				}
-				return `${ctx.ui.theme.fg("muted", "☐ ")}${item.text}`;
-			});
-			ctx.ui.setWidget("plan-todos", lines);
-		} else {
-			ctx.ui.setWidget("plan-todos", undefined);
-		}
+		ctx.ui.setStatus("plan-mode", planModeEnabled ? ctx.ui.theme.fg("warning", "⏸ plan") : undefined);
 	}
 
 	function persistState(): void {
-		pi.appendEntry(PLAN_MODE_STATE_TYPE, {
-			enabled: planModeEnabled,
-			todos: todoItems,
-			executing: executionMode,
-			episode,
-		} satisfies PlanModeState);
+		pi.appendEntry(PLAN_MODE_STATE_TYPE, { enabled: planModeEnabled, episode } satisfies PlanModeState);
 	}
 
 	function beginPlanMode(): void {
 		planModeEnabled = true;
-		executionMode = false;
-		todoItems = [];
 		episode++;
 	}
 
@@ -210,8 +149,6 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	function togglePlanMode(ctx: ExtensionContext): void {
 		if (planModeEnabled) {
 			planModeEnabled = false;
-			executionMode = false;
-			todoItems = [];
 			announcePlanModeEnded();
 			ctx.ui.notify("Plan mode disabled. Local restrictions removed.");
 		} else {
@@ -232,18 +169,6 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	pi.registerCommand("plan", {
 		description: "Toggle plan mode (local exploration)",
 		handler: async (_args, ctx) => togglePlanMode(ctx),
-	});
-
-	pi.registerCommand("todos", {
-		description: "Show current plan todo list",
-		handler: async (_args, ctx) => {
-			if (todoItems.length === 0) {
-				ctx.ui.notify("No todos. Create a plan first with /plan", "info");
-				return;
-			}
-			const list = todoItems.map((item, index) => `${index + 1}. ${item.completed ? "✓" : "○"} ${item.text}`).join("\n");
-			ctx.ui.notify(`Plan Progress:\n${list}`, "info");
-		},
 	});
 
 	pi.registerShortcut(Key.ctrlAlt("p"), {
@@ -271,102 +196,42 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	});
 
 	pi.on("before_agent_start", async (_event, ctx) => {
-		if (planModeEnabled) {
-			const fullInstructions = !hasFullPlanInstructions(ctx);
-			return {
-				message: {
-					customType: PLAN_MODE_CONTEXT_TYPE,
-					content: fullInstructions ? planInstructions() : planReminder(),
-					display: false,
-					details: { episode, kind: fullInstructions ? "full" : "reminder" } satisfies PlanContextDetails,
-				},
-			};
-		}
-
-		if (isExecuting()) {
-			const remaining = todoItems.filter((item) => !item.completed);
-			const todoList = formatSteps(remaining);
-			return {
-				message: {
-					customType: PLAN_EXECUTION_CONTEXT_TYPE,
-					content: `[EXECUTING PLAN - Full tool access enabled]\n\nRemaining steps:\n${todoList}\n\nExecute each step in order.\nAfter completing a step, include a [DONE:n] tag in your response.`,
-					display: false,
-				},
-			};
-		}
+		if (!planModeEnabled) return;
+		const fullInstructions = !hasFullPlanInstructions(ctx);
+		return {
+			message: {
+				customType: PLAN_MODE_CONTEXT_TYPE,
+				content: fullInstructions ? planInstructions() : planReminder(),
+				display: false,
+				details: { episode, kind: fullInstructions ? "full" : "reminder" } satisfies PlanContextDetails,
+			},
+		};
 	});
 
-	pi.on("turn_end", async (event, ctx) => {
-		if (!isExecuting() || !isAssistantMessage(event.message)) return;
-		if (markCompletedSteps(getTextContent(event.message), todoItems) === 0) return;
-		updateStatus(ctx);
-		persistState();
-	});
-
-	pi.on("agent_end", async (event, ctx) => {
-		if (isExecuting()) {
-			if (!todoItems.every((item) => item.completed)) return;
-
-			const completedList = todoItems.map((item) => `~~${item.text}~~`).join("\n");
-			pi.sendMessage(
-				{ customType: PLAN_COMPLETE_TYPE, content: `**Plan Complete!** ✓\n\n${completedList}`, display: true },
-				{ triggerTurn: false },
-			);
-			executionMode = false;
-			todoItems = [];
-			updateStatus(ctx);
-			persistState();
-			return;
-		}
-
+	pi.on("agent_end", async (_event, ctx) => {
 		if (!planModeEnabled || !ctx.hasUI) return;
 
-		const lastAssistant = [...event.messages].reverse().find(isAssistantMessage);
-		if (lastAssistant) {
-			const extracted = extractTodoItems(getTextContent(lastAssistant));
-			if (extracted.length > 0 && !sameTodoItems(todoItems, extracted)) {
-				todoItems = extracted;
-				persistState();
-			}
-		}
+		const todos = latestTodos(ctx);
+		if (todos.length === 0) return;
 
-		if (todoItems.length === 0) return;
-
-		const todoListText = todoItems.map((item) => `${item.step}. ☐ ${item.text}`).join("\n");
-		const planTodoListMessage = {
-			customType: PLAN_TODO_LIST_TYPE,
-			content: `**Plan Steps (${todoItems.length}):**\n\n${todoListText}`,
-			display: true,
-		};
 		const choice = await ctx.ui.select("Plan mode - what next?", [
-			"Execute the plan (track progress)",
+			"Execute the plan",
 			"Stay in plan mode",
 			"Refine the plan",
 		]);
 
-		if (choice?.startsWith("Execute")) {
-			const firstTodoItem = todoItems[0];
-			if (!firstTodoItem) return;
-
+		if (choice === "Execute the plan") {
 			planModeEnabled = false;
-			executionMode = true;
 			announcePlanModeEnded();
 			updateStatus(ctx);
 			persistState();
-
-			const remainingList = formatSteps(todoItems);
-			const executionMessage = `Execute the plan.\n\nRemaining steps:\n${remainingList}\n\nStart with: ${firstTodoItem.text}\nAfter completing a step, include a [DONE:n] tag in your response.`;
-			pi.sendMessage(planTodoListMessage, { deliverAs: "followUp" });
-			pi.sendMessage(
-				{ customType: PLAN_MODE_EXECUTE_TYPE, content: executionMessage, display: true },
-				{ triggerTurn: true, deliverAs: "followUp" },
+			pi.sendUserMessage(
+				"Leave plan mode and execute the plan you recorded in the todo list. Set the first item in_progress and begin.",
+				{ deliverAs: "followUp" },
 			);
-		} else if (choice === "Stay in plan mode") {
-			pi.sendMessage(planTodoListMessage, { triggerTurn: false, deliverAs: "followUp" });
 		} else if (choice === "Refine the plan") {
 			const refinement = await ctx.ui.editor("Refine the plan:", "");
 			if (refinement?.trim()) {
-				pi.sendMessage(planTodoListMessage, { deliverAs: "followUp" });
 				pi.sendUserMessage(refinement.trim(), { deliverAs: "followUp" });
 			}
 		}
@@ -377,33 +242,10 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 		if (pi.getFlag("plan") === true) {
 			episode = (storedState?.episode ?? 0) + 1;
 			planModeEnabled = true;
-			executionMode = false;
-			todoItems = [];
 			persistState();
 		} else if (storedState) {
 			planModeEnabled = storedState.enabled;
-			executionMode = storedState.executing ?? false;
-			todoItems = storedState.todos ?? [];
 			episode = storedState.episode ?? (planModeEnabled ? 1 : 0);
-		}
-
-		if (isExecuting()) {
-			const entries = ctx.sessionManager.getEntries();
-			let executeIndex = -1;
-			for (let index = entries.length - 1; index >= 0; index--) {
-				const entry = entries[index];
-				if (entry.type === "custom_message" && entry.customType === PLAN_MODE_EXECUTE_TYPE) {
-					executeIndex = index;
-					break;
-				}
-			}
-
-			const messages: AssistantMessage[] = [];
-			for (let index = executeIndex + 1; index < entries.length; index++) {
-				const entry = entries[index];
-				if (entry.type === "message" && isAssistantMessage(entry.message)) messages.push(entry.message);
-			}
-			markCompletedSteps(messages.map(getTextContent).join("\n"), todoItems);
 		}
 
 		updateStatus(ctx);
