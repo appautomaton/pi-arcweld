@@ -15,6 +15,7 @@ import {
 	type ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 import { Key } from "@earendil-works/pi-tui";
+import { isReadOnlyCommand } from "./commands.ts";
 import { isPlanDocumentPath } from "./paths.ts";
 
 const PLAN_MODE_STATE_TYPE = "plan-mode";
@@ -83,28 +84,30 @@ function latestTodos(ctx: ExtensionContext): PlanTodo[] {
 
 function planInstructions(): string {
 	return `[PLAN MODE]
-You are in plan mode. Explore the code freely and think hard before proposing any change.
+Plan mode is for understanding, not doing. Your work here is to read, reason, research, and
+answer: learn how the code actually behaves, think problems through, and give the user clear,
+well-grounded answers. Nothing changes while you are in plan mode, and that guarantee is what
+lets the user explore with you freely.
 
-Restrictions enforced by this extension while plan mode is active:
-- Built-in write and edit are blocked, except Markdown plan documents under ${PLAN_DOCUMENT_GLOB}.
-- The model bash tool is blocked. Use Pi's read and search tools to investigate.
-- Other installed tools keep their own policy.
+So do not change anything here. Built-in write and edit are held back, except Markdown plan
+documents under ${PLAN_DOCUMENT_GLOB}. The bash tool runs read-only commands only: search and
+inspect freely with rg, grep, find, git log, git diff, and the like, while commands that would
+mutate files or state are blocked. Your read and search tools, the questionnaire, and every other
+installed tool stay available. Read before you assert, and use the questionnaire tool when a
+missing decision would change your answer.
 
-Do the real work of planning:
-- Read the relevant code and learn how it behaves today, rather than assuming.
-- Use the questionnaire tool when a missing decision would materially change the plan.
-- Weigh the approaches and their trade-offs before you commit to one.
+If the user is simply asking or getting oriented, just answer well. You do not need a plan or a
+todo list for that.
 
-When you have a plan, record it by calling the update_todos tool as an ordered list of
-concrete, verifiable steps, each with status "pending". That todo list, not prose in this
-reply, is the durable plan: it carries into execution and tracks progress there. You may
-also save a fuller write-up under ${PLAN_DOCUMENT_GLOB} if it helps.
-
-Do not implement yet. Present your plan and let the user leave plan mode to execute it.`;
+When the user wants a concrete change, plan mode is where you design it. Weigh the approaches and
+their trade-offs, then record the plan by calling update_todos as an ordered list of concrete,
+verifiable steps, each "pending". That todo list, not prose, is the durable plan. It carries into
+execution and tracks progress there. Do not start implementing here: present the plan and let the
+user leave plan mode to carry it out. You may also save a fuller write-up under ${PLAN_DOCUMENT_GLOB}.`;
 }
 
 function planReminder(): string {
-	return `[PLAN MODE: built-in write and edit are limited to ${PLAN_DOCUMENT_GLOB}, and the model bash tool is blocked. Record the plan with update_todos.]`;
+	return `[PLAN MODE: read-only. Write and edit are held back except ${PLAN_DOCUMENT_GLOB}, and bash runs only read-only commands.]`;
 }
 
 function planEnded(): string {
@@ -183,14 +186,15 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 			if (await isPlanDocumentPath(event.input.path, ctx.cwd, CONFIG_DIR_NAME)) return;
 			return {
 				block: true,
-				reason: `Plan mode: local file modification blocked. Only canonical, non-symlinked Markdown plan documents under ${PLAN_DOCUMENT_GLOB} may be changed.`,
+				reason: `Plan mode is read-only, so this edit was not applied. Record the change as a step in your update_todos plan instead, and it will run once the user leaves plan mode. Only Markdown plan documents under ${PLAN_DOCUMENT_GLOB} can be written here.`,
 			};
 		}
 
 		if (isToolCallEventType("bash", event)) {
+			if (isReadOnlyCommand(event.input.command)) return;
 			return {
 				block: true,
-				reason: "Plan mode: the model bash tool is blocked. Use Pi's dedicated read and search tools for exploration, or leave plan mode to execute commands.",
+				reason: "Plan mode runs read-only shell commands only (search, inspect, read). This command looks like it could change files or state, so it was not run. Use a read-only command, or record the change in your update_todos plan to run after leaving plan mode.",
 			};
 		}
 	});
@@ -211,8 +215,13 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 	pi.on("agent_end", async (_event, ctx) => {
 		if (!planModeEnabled || !ctx.hasUI) return;
 
-		const todos = latestTodos(ctx);
-		if (todos.length === 0) return;
+		// Offer the execute handoff only when an actionable plan is waiting: at least one
+		// step the model recorded but could not carry out, since writes are blocked in plan
+		// mode. Pure exploration and question-answering use only reads, so those todos are
+		// already completed and nothing is pending. In that case plan mode stays quiet
+		// rather than asking the user to "execute" an answer.
+		const pending = latestTodos(ctx).filter((todo) => todo.status !== "completed");
+		if (pending.length === 0) return;
 
 		const choice = await ctx.ui.select("Plan mode - what next?", [
 			"Execute the plan",
