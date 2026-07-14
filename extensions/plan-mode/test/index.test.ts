@@ -14,6 +14,7 @@ class FakePi {
 	readonly commands = new Map<string, CommandHandler>();
 	readonly entries: Array<{ customType: string; data: unknown }> = [];
 	readonly messages: Array<{ customType: string; content: unknown; details: unknown }> = [];
+	readonly userMessages: string[] = [];
 	readonly flags = new Map<string, boolean | string>();
 	setActiveToolsCalls = 0;
 
@@ -41,6 +42,10 @@ class FakePi {
 
 	sendMessage(message: { customType: string; content: unknown; details?: unknown }): void {
 		this.messages.push({ customType: message.customType, content: message.content, details: message.details });
+	}
+
+	sendUserMessage(text: string): void {
+		this.userMessages.push(text);
 	}
 
 	setActiveTools(): void {
@@ -114,11 +119,11 @@ test("keeps tool inventory stable while blocking only built-in local mutations a
 		await fake.command("plan")("", context);
 
 		const toolCall = fake.handler("tool_call");
-		const bash = await toolCall({ toolName: "bash", input: { command: "echo blocked" } }, context);
-		assert.deepEqual(bash, {
-			block: true,
-			reason: "Plan mode: the model bash tool is blocked. Use Pi's dedicated read and search tools for exploration, or leave plan mode to execute commands.",
-		});
+		const readOnlyBash = await toolCall({ toolName: "bash", input: { command: "rg -n foo src/" } }, context);
+		assert.equal(readOnlyBash, undefined);
+
+		const mutatingBash = await toolCall({ toolName: "bash", input: { command: "rm -rf build" } }, context);
+		assert.ok(isRecord(mutatingBash) && mutatingBash.block === true);
 
 		const write = await toolCall({ toolName: "write", input: { path: ".pi/plans/plan.md", content: "Plan\n" } }, context);
 		assert.equal(write, undefined);
@@ -142,7 +147,7 @@ test("restores full instructions when the active context does not contain the cu
 		const full = messageFrom(await fake.handler("before_agent_start")({}, context));
 		assert.equal(full.details.episode, 7);
 		assert.equal(full.details.kind, "full");
-		assert.match(full.content, /record it by calling the update_todos tool/);
+		assert.match(full.content, /record the plan by calling update_todos/);
 
 		contextEntries.push({
 			type: "custom_message",
@@ -185,4 +190,60 @@ test("an explicit plan flag starts a new episode over persisted disabled state",
 		assert.equal(message.details.episode, 5);
 		assert.equal(message.details.kind, "full");
 	});
+});
+
+function todoResult(todos: Array<{ content: string; status: string }>): unknown {
+	return { type: "message", message: { role: "toolResult", toolName: "update_todos", details: { todos, version: 1 } } };
+}
+
+function createAgentEndContext(
+	entries: unknown[],
+	selectChoice: string | undefined,
+): { ctx: ExtensionContext; calls: { select: number } } {
+	const calls = { select: 0 };
+	const ctx = {
+		cwd: "/tmp/plan-mode",
+		hasUI: true,
+		ui: {
+			theme: { fg: (_color: string, text: string) => text, strikethrough: (text: string) => text },
+			notify: () => {},
+			setStatus: () => {},
+			setWidget: () => {},
+			select: async () => {
+				calls.select++;
+				return selectChoice;
+			},
+			editor: async () => undefined,
+		},
+		sessionManager: {
+			getEntries: () => entries,
+			buildContextEntries: () => entries,
+			getBranch: () => entries,
+		},
+	} as unknown as ExtensionContext;
+	return { ctx, calls };
+}
+
+test("does not offer the handoff when the recorded plan is already complete", async () => {
+	const fake = new FakePi();
+	planModeExtension(fake as unknown as ExtensionAPI);
+	const entries = [todoResult([{ content: "Review docs", status: "completed" }])];
+	const { ctx, calls } = createAgentEndContext(entries, "Execute the plan");
+
+	await fake.command("plan")("", ctx); // enter plan mode
+	await fake.handler("agent_end")({}, ctx);
+
+	assert.equal(calls.select, 0);
+});
+
+test("offers the handoff when the plan still has pending steps", async () => {
+	const fake = new FakePi();
+	planModeExtension(fake as unknown as ExtensionAPI);
+	const entries = [todoResult([{ content: "Add caching", status: "pending" }])];
+	const { ctx, calls } = createAgentEndContext(entries, "Stay in plan mode");
+
+	await fake.command("plan")("", ctx);
+	await fake.handler("agent_end")({}, ctx);
+
+	assert.equal(calls.select, 1);
 });

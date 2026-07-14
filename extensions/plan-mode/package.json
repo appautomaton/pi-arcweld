@@ -13,6 +13,7 @@
   "files": [
     "index.ts",
     "LICENSE",
+    "commands.ts",
     "paths.ts",
     "README.md"
   ],
