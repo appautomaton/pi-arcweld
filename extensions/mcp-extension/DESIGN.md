@@ -52,6 +52,8 @@ Invoke one exact server/tool pair with an arguments object. The MCP server remai
 
 `/mcp` opens a live TUI control panel for status, session enable/disable, reconnect, and the confirmed future-session enabled default. Fast paths provide `/mcp status`, `enable`, `disable`, `reconnect`, and `set-default`.
 
+The compact footer treats only current-session-enabled servers as the health denominator and reports disabled servers separately, so an intentional disable is not presented as degraded availability. An all-disabled session collapses to an explicit `<count> off` state rather than `0/0`; cross-server search likewise reports that no servers are enabled and suggests `/mcp` instead of presenting an empty ratio.
+
 The panel is deliberately not a general configuration editor. It never displays or edits headers, environment values, stdio arguments, URLs beyond a sanitized origin, or other secret-bearing fields.
 
 ### Authorization policy
