@@ -197,6 +197,8 @@ The MCP server validates tool arguments against its own schema.
 
 Opens a live, theme-aware server control panel. It shows connection state, tool count, transport, current-session enablement, and the default for future sessions.
 
+The compact footer reports `ready/session-enabled` health and lists intentionally disabled servers separately. For example, three configured servers with two ready and one disabled appear as `MCP: 2/2 · 1 off`, not `2/3`. If every configured server is disabled, it displays `MCP: 3 off` instead of an ambiguous `0/0` ratio. Cross-server search uses the same session-enabled scope and directs the user to `/mcp` when nothing is enabled.
+
 ```text
 enter/space  enable or disable for this session
 r            reconnect

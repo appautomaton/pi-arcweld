@@ -316,12 +316,21 @@ function requireManager(manager: McpManager | undefined): McpManager {
 function formatStatusBar(manager: McpManager, theme: Theme): string | undefined {
 	const statuses = manager.status();
 	if (statuses.length === 0) return undefined;
+	const enabled = statuses.filter((server) => server.sessionEnabled);
 	const ready = statuses.filter((server) => server.sessionEnabled && server.status === "ready").length;
 	const off = statuses.filter((server) => !server.sessionEnabled).length;
 	const errors = statuses.filter((server) => server.sessionEnabled && server.status === "error").length;
-	const marker = errors ? theme.fg("error", "!") : ready > 0 ? theme.fg("success", "●") : theme.fg("warning", "○");
-	const extras = `${errors ? ` !${errors}` : ""}${off ? ` · ${off} off` : ""}`;
-	return `${marker}${theme.fg("dim", ` MCP: ${ready}/${statuses.length}${extras}`)}`;
+	const marker = errors
+		? theme.fg("error", "!")
+		: ready > 0
+			? theme.fg("success", "●")
+			: enabled.length === 0
+				? theme.fg("dim", "○")
+				: theme.fg("warning", "○");
+	const health = enabled.length === 0
+		? `${off} off`
+		: `${ready}/${enabled.length}${errors ? ` !${errors}` : ""}${off ? ` · ${off} off` : ""}`;
+	return `${marker}${theme.fg("dim", ` MCP: ${health}`)}`;
 }
 
 function formatStatus(manager: McpManager): string {
@@ -347,10 +356,16 @@ function formatTools(server: string, result: { tools: Array<{ name: string; desc
 }
 
 function formatMatches(result: { tools: Array<{ server: string; name: string; description?: string; score: number }>; total: number; nextCursor?: string; readyServers?: number; totalServers?: number }): string {
-	const lines = [`${result.total} matching tools across ${result.readyServers ?? 0}/${result.totalServers ?? 0} ready servers`];
+	const enabledServers = result.totalServers ?? 0;
+	const serverHealth = enabledServers === 0
+		? "no MCP servers enabled for this session"
+		: `${result.readyServers ?? 0}/${enabledServers} session-enabled servers ready`;
+	const lines = [`${result.total} matching tools; ${serverHealth}`];
 	for (const tool of result.tools) lines.push(`- ${tool.server}/${tool.name}${tool.description ? ` — ${tool.description}` : ""} (score ${tool.score})`);
 	if (result.nextCursor) lines.push(`Next cursor: ${result.nextCursor}`);
-	if (result.total === 0) lines.push("No tool matched the query; use mcp list on a likely server or try broader capability keywords.");
+	if (result.total === 0) lines.push(enabledServers === 0
+		? "Enable a server with /mcp before searching."
+		: "No tool matched the query; use mcp list on a likely server or try broader capability keywords.");
 	return lines.join("\n");
 }
 

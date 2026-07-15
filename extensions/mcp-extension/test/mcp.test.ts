@@ -226,6 +226,7 @@ describe("stdio manager", () => {
 		const config = stdioConfig();
 		config.servers.second = { ...config.servers.fixture };
 		config.servers.broken = { enabled: true, transport: "stdio", command: "/definitely/missing/mcp-server", args: [], env: {} };
+		config.servers.off = { ...config.servers.fixture, enabled: false };
 		const mixed = new McpManager(config);
 		try {
 			await mixed.warmup();
@@ -233,6 +234,7 @@ describe("stdio manager", () => {
 			assert.equal(mixed.status().find((server) => server.name === "broken")?.status, "error");
 			const search = await mixed.search(undefined, "echo text");
 			assert.equal(search.readyServers, 2);
+			assert.equal(search.totalServers, 3, "disabled servers are outside the cross-server search denominator");
 			assert.deepEqual(new Set(search.tools.map((tool) => tool.server)), new Set(["fixture", "second"]));
 		} finally {
 			await mixed.shutdown();
@@ -354,10 +356,16 @@ describe("stdio manager", () => {
 			const status = isolated.status()[0];
 			assert.equal(status.configuredEnabled, false);
 			assert.equal(status.sessionEnabled, false);
+			const disabledSearch = await isolated.search(undefined, "echo");
+			assert.equal(disabledSearch.readyServers, 0);
+			assert.equal(disabledSearch.totalServers, 0);
 			await assert.rejects(() => isolated.list("fixture"), /disabled for this session/);
 			await assert.rejects(() => readFile(countFile, "utf8"), /ENOENT/);
 			await isolated.enableForSession("fixture");
 			assert.equal(isolated.status()[0].status, "ready");
+			const enabledSearch = await isolated.search(undefined, "echo");
+			assert.equal(enabledSearch.readyServers, 1);
+			assert.equal(enabledSearch.totalServers, 1);
 			assert.equal((await readFile(countFile, "utf8")).trim(), "start");
 			await isolated.disableForSession("fixture");
 			assert.equal(isolated.status()[0].sessionEnabled, false);

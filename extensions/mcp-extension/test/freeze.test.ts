@@ -6,8 +6,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const fixturePath = fileURLToPath(new URL("./fixture-server.ts", import.meta.url));
+const markerColors: string[] = [];
 const theme = {
-	fg: (_color: string, text: string) => text,
+	fg: (color: string, text: string) => {
+		if (text === "○") markerColors.push(color);
+		return text;
+	},
 	bg: (_color: string, text: string) => text,
 	bold: (text: string) => text,
 	italic: (text: string) => text,
@@ -26,6 +30,7 @@ test("keeps tools and the frozen summary stable while runtime changes append", a
 			servers: {
 				fixture: { transport: "stdio", command: process.execPath, args: ["--import", "tsx", fixturePath] },
 				broken: { transport: "stdio", command: "/definitely/missing/mcp-server" },
+				off: { enabled: false, transport: "stdio", command: process.execPath, args: ["--import", "tsx", fixturePath] },
 			},
 		}),
 	);
@@ -84,7 +89,7 @@ test("keeps tools and the frozen summary stable while runtime changes append", a
 		assert.ok(frozen.startsWith("BASE\n\n"));
 		assert.ok(frozen.includes("fixture: 8 tools"));
 		assert.ok(!frozen.includes("ENOENT"), "broken-server error must not leak into the summary");
-		assert.match(extensionStatuses.get("mcp") ?? "", /MCP:\s*1\/2\s*!1/, "compact footers must be able to parse MCP health");
+		assert.match(extensionStatuses.get("mcp") ?? "", /MCP:\s*1\/2\s*!1\s*·\s*1 off/, "disabled servers must be reported separately from enabled-server health");
 
 		const turn2 = await fire("before_agent_start", { systemPrompt: "BASE" });
 		assert.equal(turn2?.systemPrompt, frozen, "system prompt must be byte-identical across turns");
@@ -99,6 +104,17 @@ test("keeps tools and the frozen summary stable while runtime changes append", a
 		const turn4 = await fire("before_agent_start", { systemPrompt: "BASE" });
 		assert.equal(turn4?.systemPrompt, frozen);
 		assert.equal(turn4?.message, undefined, "session disable must be announced exactly once");
+
+		await command.handler("disable broken", ctx);
+		assert.match(extensionStatuses.get("mcp") ?? "", /MCP:\s*3 off/, "an all-disabled session must not render an empty health ratio");
+		assert.equal(markerColors.at(-1), "dim", "an all-disabled session is neutral rather than degraded");
+		const allOffSearch = await tools.mcp.execute("search-all-off", { action: "search", query: "echo" });
+		const allOffSearchText = allOffSearch.content.map((block: { type: string; text?: string }) => block.type === "text" ? block.text ?? "" : "").join("\n");
+		assert.match(allOffSearchText, /no MCP servers enabled for this session/);
+		assert.match(allOffSearchText, /Enable a server with \/mcp before searching/);
+		assert.doesNotMatch(allOffSearchText, /0\/0/);
+		const allOffUpdate = await fire("before_agent_start", { systemPrompt: "BASE" });
+		assert.match(allOffUpdate?.message?.content ?? "", /broken is disabled for this session/);
 
 		await command.handler("enable fixture", ctx);
 		const turn5 = await fire("before_agent_start", { systemPrompt: "BASE" });

@@ -262,7 +262,9 @@ export class McpManager {
 	async search(serverName: string | undefined, query: string, cursor?: string, limit = 50, signal?: AbortSignal): Promise<CatalogPage<ToolMatch>> {
 		if (serverName) await this.ready(serverName, signal);
 		else await this.settleEnabledCatalogs(signal);
-		const states = serverName ? [this.requireServer(serverName)] : [...this.servers.values()];
+		const states = serverName
+			? [this.requireServer(serverName)]
+			: [...this.servers.values()].filter((state) => state.sessionEnabled);
 		const matches = states.flatMap((state) => state.tools
 			.map((tool) => ({ ...tool, server: state.name, score: scoreTool(query, state, tool) }))
 			.filter((tool) => tool.score > 0))
