@@ -134,7 +134,16 @@ build_typescript_packages() {
 	for package_name in "${PACKAGE_NAMES[@]}"; do
 		echo "==> Building packages/$package_name"
 		rm -rf "$WORK_DIR/packages/$package_name/dist"
+		if [[ "$package_name" == "ai" ]]; then
+			(
+				cd "$WORK_DIR/packages/ai"
+				PATH="$WORK_DIR/node_modules/.bin:$PATH" node "$MONO_DIR/packages/ai/scripts/generate-models.ts"
+			)
+		fi
 		"$WORK_DIR/node_modules/.bin/tsgo" -p "$WORK_DIR/packages/$package_name/tsconfig.build.json"
+		if [[ "$package_name" == "ai" ]]; then
+			copy_dir "$WORK_DIR/packages/ai/src/providers/data" "$WORK_DIR/packages/ai/dist/providers/data"
+		fi
 	done
 }
 
