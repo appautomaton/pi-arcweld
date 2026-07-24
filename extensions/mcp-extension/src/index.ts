@@ -141,11 +141,11 @@ export default function mcpExtension(pi: ExtensionAPI) {
 	});
 
 	pi.registerTool({
-		name: "mcp_call",
+		name: "call_mcp_tool",
 		label: "MCP Call",
 		description: "Call an exact tool on a configured MCP server. Use mcp search and describe first when the capability or schema is unknown.",
 		promptSnippet: "Call an exact MCP tool with an arguments object",
-		promptGuidelines: ["Use mcp_call only with an exact server/tool pair and arguments learned from mcp describe or the capability summary."],
+		promptGuidelines: ["Use call_mcp_tool only with an exact server/tool pair and arguments learned from mcp describe or the capability summary."],
 		parameters: CallParams,
 		async execute(_toolCallId, params, signal) {
 			const result = await requireManager(manager).call(params.server, params.tool, params.arguments ?? {}, signal);

@@ -72,7 +72,7 @@ test("keeps tools and the frozen summary stable while runtime changes append", a
 		registerCommand: (_name: string, options: never) => { command = options; },
 		appendEntry: (customType: string, data: unknown) => branch.push({ type: "custom", customType, data }),
 	} as never);
-	assert.deepEqual(Object.keys(tools), ["mcp", "mcp_call"]);
+	assert.deepEqual(Object.keys(tools), ["mcp", "call_mcp_tool"]);
 	const toolDefinitions = JSON.stringify(Object.values(tools).map((tool: any) => ({
 		name: tool.name,
 		description: tool.description,
@@ -124,7 +124,7 @@ test("keeps tools and the frozen summary stable while runtime changes append", a
 
 		// Mutate the live catalog through the real tool surface, then let the
 		// list_changed debounce and refresh land.
-		await tools.mcp_call.execute("t1", { server: "fixture", tool: "add_tool", arguments: {} });
+		await tools.call_mcp_tool.execute("t1", { server: "fixture", tool: "add_tool", arguments: {} });
 		await new Promise((resolve) => setTimeout(resolve, 700));
 
 		const turn6 = await fire("before_agent_start", { systemPrompt: "BASE" });

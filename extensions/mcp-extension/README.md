@@ -178,10 +178,10 @@ mcp({ action: "describe", server: "context7", tool: "resolve-library-id" })
 
 `list` and `search` are cursor-paginated. Search uses deterministic weighted keyword ranking over tool names, descriptions, server identity, and server instructions. Omit `server` to search every ready catalog. Listing remains available when search misses.
 
-### `mcp_call`
+### `call_mcp_tool`
 
 ```text
-mcp_call({
+call_mcp_tool({
   server: "context7",
   tool: "resolve-library-id",
   arguments: {

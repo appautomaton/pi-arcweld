@@ -44,7 +44,7 @@ Catalog and connection operations:
 
 Search is a convenience, not the only discovery path. The model can always list and page through the complete catalog.
 
-#### `mcp_call`
+#### `call_mcp_tool`
 
 Invoke one exact server/tool pair with an arguments object. The MCP server remains responsible for validating the arguments against its declared schema.
 
@@ -215,7 +215,7 @@ Pi 0.80.6 does not expose provider-native `defer_loading`, `tool_reference`, or 
 2. Inject a bounded summary containing server instructions, tool names, and short descriptions.
 3. Use `mcp search` for ranked cross-server discovery.
 4. Use `mcp describe` to retrieve one exact full schema.
-5. Use `mcp_call` to invoke the exact tool.
+5. Use `call_mcp_tool` to invoke the exact tool.
 
 The capability summary has a fixed global character budget. Small catalogs fit completely; large catalogs are explicitly marked partial and direct the model to `mcp search` or paginated `mcp list`. Full schemas never enter the summary.
 
