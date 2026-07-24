@@ -6,7 +6,7 @@ An always-on todo tool for [Pi](https://github.com/earendil-works/pi). It gives 
 
 - Registers one model-facing tool, `update_todos`, that maintains an ordered task list with whole-list-replace semantics. One call submits the complete list and replaces the previous one, so a single call can add, remove, reorder, rename, or re-scope items. There are no item IDs; position is identity.
 - Each item carries `content` (imperative, e.g. "Run the test suite"), `activeForm` (present-continuous, e.g. "Running the test suite", shown live while in progress), and `status` (`pending` | `in_progress` | `completed`).
-- Renders a live footer badge (`📋 2/5` plus the active item) and a progress widget above the editor, and offers a `/todos` overlay.
+- Renders a live footer badge (`📋 2/5` plus the active item) and a progress widget above the editor while work remains, and offers a `/todos` overlay. A final all-completed update stays in session history but automatically clears the live badge and widget, so finished work does not look stale.
 
 ## Cache safety
 
