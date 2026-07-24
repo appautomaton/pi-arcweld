@@ -7,6 +7,7 @@ import type { TodoItem } from "../utils.ts";
 type Handler = (event: unknown, ctx: ExtensionContext) => Promise<unknown> | unknown;
 type ToolDef = {
 	name: string;
+	description?: string;
 	executionMode?: string;
 	promptGuidelines?: string[];
 	execute: (id: string, params: unknown, signal: unknown, onUpdate: unknown, ctx: ExtensionContext) => Promise<{ content: { type: string; text: string }[]; details: { todos: TodoItem[]; version: number } }>;
@@ -88,6 +89,8 @@ test("registers update_todos once and never toggles the active tool set", () => 
 	const tool = fake.tool("update_todos");
 	assert.equal(tool.executionMode, "sequential");
 	assert.equal(tool.promptGuidelines?.length, 3);
+	assert.match(tool.description ?? "", /UI hides completed lists automatically/);
+	assert.match(tool.promptGuidelines?.join("\n") ?? "", /final all-completed update/);
 	assert.ok(fake.commands.has("todos"));
 	assert.equal(fake.setActiveToolsCalls, 0);
 });
@@ -162,13 +165,33 @@ test("session_tree rebuilds the badge from the latest branch todo result", async
 	assert.match(badge as string, /Running tests/);
 });
 
-test("empty list clears the badge and widget", async () => {
+test("empty and fully completed lists clear the live badge and widget", async () => {
 	const fake = new FakePi();
 	todosExtension(fake as unknown as ExtensionAPI);
 	const tool = fake.tool("update_todos");
 	const { ctx, statuses, widgets } = createContext([], true);
 
 	await tool.execute("c1", { todos: [] }, undefined, undefined, ctx);
+	assert.equal(statuses.get("todos"), undefined);
+	assert.equal(widgets.get("todos"), undefined);
+
+	await tool.execute(
+		"c2",
+		{ todos: [todo("Run tests", "Running tests", "in_progress")] },
+		undefined,
+		undefined,
+		ctx,
+	);
+	assert.ok(statuses.get("todos"));
+	assert.ok(widgets.get("todos"));
+
+	await tool.execute(
+		"c3",
+		{ todos: [todo("Run tests", "Running tests", "completed")] },
+		undefined,
+		undefined,
+		ctx,
+	);
 	assert.equal(statuses.get("todos"), undefined);
 	assert.equal(widgets.get("todos"), undefined);
 });
@@ -210,4 +233,15 @@ test("no reminder while the list is empty or fully complete", async () => {
 	for (let turn = 1; turn <= 8; turn++) {
 		assert.equal(await before({}, ctx), undefined);
 	}
+});
+
+test("session reconstruction keeps completed history but hides its live UI", async () => {
+	const fake = new FakePi();
+	todosExtension(fake as unknown as ExtensionAPI);
+	const entries = [toolResultEntry([todo("Done", "Doing", "completed")], 1)];
+	const { ctx, statuses, widgets } = createContext(entries, true);
+
+	await fake.handler("session_start")({}, ctx);
+	assert.equal(statuses.get("todos"), undefined);
+	assert.equal(widgets.get("todos"), undefined);
 });

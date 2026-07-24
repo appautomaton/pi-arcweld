@@ -35,34 +35,13 @@ const BADGE_ACTIVE_WIDTH = 32;
 /** Item rows shown in the persistent widget before collapsing the rest into "+N more". */
 const WIDGET_MAX_ROWS = 12;
 
-const TOOL_DESCRIPTION = `Maintain a shared, ordered todo list to plan and track multi-step work.
+const TOOL_DESCRIPTION = `Replace the shared ordered todo state for multi-step work.
 
-Call update_todos with the COMPLETE list every time anything changes. Each call
-replaces the previous list wholesale. That is how you add, remove, reorder, rename,
-or re-scope items. There are no item IDs. Position is identity.
-
-Each item has three fields:
-- content: the task in imperative form ("Run the test suite").
-- activeForm: the same task in present-continuous form ("Running the test suite").
-  It is shown live in the UI while the item is in progress.
-- status: pending | in_progress | completed.
-
-When to use it:
-- Any task with 3 or more meaningful steps, or that is non-trivial, multi-file, or multi-phase.
-- When the user gives you several tasks, or asks you to plan before acting.
-
-When NOT to use it:
-- Trivial or single-step requests, or purely conversational answers. Just do the work.
-
-Rules:
-- Keep EXACTLY ONE item in_progress at a time. Set an item in_progress before you
-  start it, not after.
-- Mark an item completed the moment it is fully done. Do not batch completions.
-- Never mark an item completed if its tests fail, the work is partial, or it is
-  blocked. Leave it in_progress and add a new item describing what is needed.
-- This list tracks work. It is NOT where you deliver the final answer or explain
-  results to the user. Do that in your normal reply.
-- When everything is done, submit the list with every item completed.`;
+Send the complete current list on every call; omitted items are deleted and position is identity.
+Keep exactly one item in_progress while work remains, update statuses immediately, and never
+complete partial, blocked, or failed work. Finish successful work with one all-completed update;
+the UI hides completed lists automatically. Use an empty list only to discard the state. Report
+outcomes in the normal assistant response, not in the todo list.`;
 
 /** One themed line per item, shared by the widget, the overlay, and the expanded tool result. */
 function formatLine(todo: TodoItem, theme: Theme): string {
@@ -171,20 +150,16 @@ export default function todosExtension(pi: ExtensionAPI): void {
 		if (!ctx.hasUI) return;
 		const th = ctx.ui.theme;
 
-		if (todos.length === 0) {
+		const { total, completed } = summarize(todos);
+		if (total === 0 || completed === total) {
 			ctx.ui.setStatus("todos", undefined);
 			ctx.ui.setWidget("todos", undefined);
 			return;
 		}
 
-		const { total, completed } = summarize(todos);
-		if (completed === total) {
-			ctx.ui.setStatus("todos", th.fg("success", `📋 ✓ ${completed}/${total}`));
-		} else {
-			const active = activeTodo(todos);
-			const now = active ? ` ${th.fg("muted", truncateToWidth(active.activeForm, BADGE_ACTIVE_WIDTH))}` : "";
-			ctx.ui.setStatus("todos", `${th.fg("accent", `📋 ${completed}/${total}`)}${now}`);
-		}
+		const active = activeTodo(todos);
+		const now = active ? ` ${th.fg("muted", truncateToWidth(active.activeForm, BADGE_ACTIVE_WIDTH))}` : "";
+		ctx.ui.setStatus("todos", `${th.fg("accent", `📋 ${completed}/${total}`)}${now}`);
 
 		const snapshot = todos;
 		ctx.ui.setWidget("todos", (_tui, theme) => new TodoWidget(snapshot, theme));
@@ -201,9 +176,9 @@ export default function todosExtension(pi: ExtensionAPI): void {
 		description: TOOL_DESCRIPTION,
 		promptSnippet: "Track and update the shared todo list for multi-step work",
 		promptGuidelines: [
-			"Use update_todos to plan and track any task with 3 or more steps or meaningful complexity; for a trivial single-step request, skip it and answer directly.",
-			"Call update_todos with the full ordered list on every change, since it replaces the prior list, so include every item each time.",
-			"Keep exactly one update_todos item in_progress, and mark items completed the moment each finishes; never mark completed while tests fail or the work is partial.",
+			"Use update_todos for non-trivial work (generally 3+ meaningful steps), multiple requested tasks, or an explicit planning request; skip it for trivial or conversational work.",
+			"Each update_todos call must send the complete current list. While work remains, keep exactly one item in_progress and update the list immediately after each completed step or scope change.",
+			"Never mark partial, blocked, or failed work completed. On success, send one final all-completed update; do not clear it merely to hide it, because completed lists leave the live UI automatically.",
 		],
 		parameters: UpdateTodosParams,
 		executionMode: "sequential",
