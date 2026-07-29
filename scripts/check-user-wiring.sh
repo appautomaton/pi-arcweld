@@ -22,11 +22,23 @@ check_link() {
 	fi
 }
 
+check_absent() {
+	local path="$1"
+	if [[ -e "$path" || -L "$path" ]]; then
+		echo "Obsolete user-level path still exists: $path" >&2
+		exit 1
+	fi
+}
+
 echo "==> Checking user-level symlinks"
 check_link "$AGENT_DIR/extensions/plan-mode" "$ROOT_DIR/extensions/plan-mode"
 check_link "$AGENT_DIR/extensions/pi-arcweld-todos" "$ROOT_DIR/extensions/pi-arcweld-todos"
 check_link "$AGENT_DIR/extensions/questionnaire.ts" "$ROOT_DIR/extensions/questionnaire.ts"
-check_link "$AGENT_DIR/extensions/web-search.ts" "$ROOT_DIR/extensions/web-search.ts"
+check_link "$AGENT_DIR/extensions/exa-search.ts" "$ROOT_DIR/extensions/exa-search.ts"
+check_link "$AGENT_DIR/extensions/codex-web-search.ts" "$ROOT_DIR/extensions/codex-web-search.ts"
+check_link "$AGENT_DIR/extensions/claude-web-search.ts" "$ROOT_DIR/extensions/claude-web-search.ts"
+check_absent "$AGENT_DIR/extensions/native-web-search.ts"
+check_absent "$AGENT_DIR/extensions/web-search.ts"
 check_link "$AGENT_DIR/extensions/grok-search.ts" "$ROOT_DIR/extensions/grok-search.ts"
 check_link "$AGENT_DIR/APPEND_SYSTEM.md" "$ROOT_DIR/system-instruction/APPEND_SYSTEM.md"
 

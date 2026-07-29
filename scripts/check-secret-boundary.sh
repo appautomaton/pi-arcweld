@@ -17,6 +17,7 @@ const forbiddenConfigNames = new Set([
 	"mcp.json",
 	"models.json",
 	"settings.json",
+	"exa-search.json",
 	"web-search.json",
 ]);
 
@@ -76,7 +77,7 @@ function collectSecrets(value, key = "") {
 	for (const [childKey, childValue] of Object.entries(value)) collectSecrets(childValue, childKey);
 }
 
-for (const name of ["web-search.json", "auth.json", "models.json", "settings.json", "mcp.json"]) {
+for (const name of ["exa-search.json", "web-search.json", "auth.json", "models.json", "settings.json", "mcp.json"]) {
 	const path = join(agentDir, name);
 	if (!existsSync(path)) continue;
 	try {

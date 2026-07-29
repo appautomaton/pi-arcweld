@@ -59,12 +59,61 @@ done
 echo "==> Checking self-contained extensions through their user-level loading shape"
 grep -Fq 'promptSnippet: "Ask focused clarification questions when material decisions require user input"' extensions/questionnaire.ts
 grep -Fq 'Use questionnaire only when missing input would materially change the result' extensions/questionnaire.ts
-grep -Fq 'name: "web_search"' extensions/web-search.ts
+grep -Fq 'name: "exa_search"' extensions/exa-search.ts
+grep -Fq 'When provider-side web_search is available, prefer web_search.' extensions/exa-search.ts
+grep -Fq 'tools: [...tools, { type: "web_search" }]' extensions/codex-web-search.ts
+grep -Fq 'type: CLAUDE_WEB_SEARCH_TOOL_TYPE, name: "web_search"' extensions/claude-web-search.ts
 grep -Fq 'name: "grok_search"' extensions/grok-search.ts
+node --input-type=module <<'NODE'
+import assert from "node:assert/strict";
+import { getCodexWebSearchRoute, injectCodexWebSearch } from "./extensions/codex-web-search.ts";
+import { getClaudeWebSearchRoute, injectClaudeWebSearch } from "./extensions/claude-web-search.ts";
+
+const oauthModel = { provider: "openai-codex", api: "openai-codex-responses", id: "gpt-5.6-sol" };
+const cpaModel = { provider: "cli-proxy-api", api: "openai-responses", id: "gpt-5.6-sol" };
+const otherModel = { provider: "openai", api: "openai-responses", id: "gpt-5.6" };
+const functionTool = { type: "function", name: "exa_search" };
+
+assert.equal(getCodexWebSearchRoute(oauthModel), "openai-codex-oauth");
+assert.equal(getCodexWebSearchRoute(cpaModel), "cli-proxy-api");
+assert.equal(getCodexWebSearchRoute(otherModel), undefined);
+assert.deepEqual(injectCodexWebSearch({ model: oauthModel.id }, oauthModel), {
+	model: oauthModel.id,
+	tools: [{ type: "web_search" }],
+});
+assert.deepEqual(injectCodexWebSearch({ tools: [functionTool] }, cpaModel), {
+	tools: [functionTool, { type: "web_search" }],
+});
+const duplicate = { tools: [{ type: "web_search" }] };
+assert.equal(injectCodexWebSearch(duplicate, cpaModel), duplicate);
+const ineligible = { tools: [functionTool] };
+assert.equal(injectCodexWebSearch(ineligible, otherModel), ineligible);
+
+const anthropicModel = { provider: "anthropic", api: "anthropic-messages", id: "claude-sonnet-5" };
+const cpaAnthropicModel = {
+	provider: "cli-proxy-api-anthropic",
+	api: "anthropic-messages",
+	id: "claude-sonnet-5",
+};
+const otherAnthropicModel = { provider: "kimi-coding", api: "anthropic-messages", id: "kimi" };
+const anthropicFunctionTool = { name: "read", input_schema: { type: "object" } };
+assert.equal(getClaudeWebSearchRoute(anthropicModel), "anthropic");
+assert.equal(getClaudeWebSearchRoute(cpaAnthropicModel), "cli-proxy-api-anthropic");
+assert.equal(getClaudeWebSearchRoute(otherAnthropicModel), undefined);
+assert.deepEqual(injectClaudeWebSearch({ tools: [anthropicFunctionTool] }, cpaAnthropicModel), {
+	tools: [anthropicFunctionTool, { type: "web_search_20250305", name: "web_search" }],
+});
+for (const type of ["web_search_20250305", "web_search_20260209", "web_search_20260318"]) {
+	const payload = { tools: [{ type, name: "web_search" }] };
+	assert.equal(injectClaudeWebSearch(payload, cpaAnthropicModel), payload);
+}
+const ineligibleAnthropic = { tools: [anthropicFunctionTool] };
+assert.equal(injectClaudeWebSearch(ineligibleAnthropic, otherAnthropicModel), ineligibleAnthropic);
+NODE
 agent_dir="$(mktemp -d)"
 trap 'rm -rf "$agent_dir"' EXIT
 mkdir -p "$agent_dir/extensions"
-for extension in questionnaire.ts web-search.ts grok-search.ts; do
+for extension in questionnaire.ts exa-search.ts codex-web-search.ts claude-web-search.ts grok-search.ts; do
 	ln -s "$ROOT_DIR/extensions/$extension" "$agent_dir/extensions/$extension"
 done
 PI_CODING_AGENT_DIR="$agent_dir" pi --list-models >/dev/null

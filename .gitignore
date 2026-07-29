@@ -21,6 +21,7 @@
 .env
 .env.*
 !.env.example
+**/exa-search.json
 **/web-search.json
 **/auth.json
 **/credentials.json
