@@ -36,7 +36,7 @@ check_link "$AGENT_DIR/extensions/pi-arcweld-todos" "$ROOT_DIR/extensions/pi-arc
 check_link "$AGENT_DIR/extensions/questionnaire.ts" "$ROOT_DIR/extensions/questionnaire.ts"
 check_link "$AGENT_DIR/extensions/exa-search.ts" "$ROOT_DIR/extensions/exa-search.ts"
 check_link "$AGENT_DIR/extensions/codex-web-search.ts" "$ROOT_DIR/extensions/codex-web-search.ts"
-check_link "$AGENT_DIR/extensions/claude-web-search.ts" "$ROOT_DIR/extensions/claude-web-search.ts"
+check_absent "$AGENT_DIR/extensions/claude-web-search.ts"
 check_absent "$AGENT_DIR/extensions/native-web-search.ts"
 check_absent "$AGENT_DIR/extensions/web-search.ts"
 check_link "$AGENT_DIR/extensions/grok-search.ts" "$ROOT_DIR/extensions/grok-search.ts"
