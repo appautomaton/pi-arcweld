@@ -1,4 +1,4 @@
-import { streamSimple as streamAnthropic } from "@earendil-works/pi-ai/api/anthropic-messages";
+import { streamSimple as streamAnthropic } from "@earendil-works/pi-ai/compat";
 import {
 	createAssistantMessageEventStream,
 	type AssistantMessage,

@@ -25,4 +25,4 @@ npm test
 npm run pack:check
 ```
 
-Tests use synthetic SSE and fake provider streams. They make no live model requests.
+Tests use synthetic SSE and fake provider streams. The suite also starts Pi in RPC mode through a temporary directory symlink to exercise the real extension-loader aliases. It makes no live model requests.

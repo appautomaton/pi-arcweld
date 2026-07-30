@@ -1,6 +1,6 @@
 {
   "name": "pi-arcweld-claude-web-search",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Replay-safe Anthropic provider-side web search for Pi",
   "type": "module",

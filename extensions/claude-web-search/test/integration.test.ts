@@ -212,7 +212,7 @@ describe("offline Anthropic adapter integration", () => {
 			role: "toolResult",
 			toolCallId: "toolu_bash",
 			toolName: "bash",
-			content: [{ type: "text", text: "/home/dev/agents/pi" }],
+			content: [{ type: "text", text: "/workspace/project" }],
 			isError: false,
 			timestamp: Date.now(),
 		};
