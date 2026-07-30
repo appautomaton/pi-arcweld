@@ -21,6 +21,7 @@ import { isPlanDocumentPath } from "./paths.ts";
 const PLAN_MODE_STATE_TYPE = "plan-mode";
 const PLAN_MODE_CONTEXT_TYPE = "plan-mode-context";
 const PLAN_MODE_ENDED_TYPE = "plan-mode-ended";
+const PLAN_MODE_EXECUTE_TYPE = "plan-mode-execute";
 const PLAN_DOCUMENT_GLOB = `${CONFIG_DIR_NAME}/plans/*.md`;
 
 interface PlanModeState {
@@ -80,6 +81,20 @@ function latestTodos(ctx: ExtensionContext): PlanTodo[] {
 		if (isRecord(details) && Array.isArray(details.todos)) todos = details.todos as PlanTodo[];
 	}
 	return todos;
+}
+
+function pendingTodos(ctx: ExtensionContext): PlanTodo[] {
+	return latestTodos(ctx).filter((todo) => todo.status !== "completed");
+}
+
+function executionHandoff(todos: readonly PlanTodo[]): string {
+	const active = todos.find((todo) => todo.status === "in_progress");
+	const next = active ?? todos[0];
+	if (!next) throw new Error("Cannot create a plan execution handoff without a pending todo");
+	const start = active
+		? `Resume the in-progress step: ${next.content}`
+		: `Set the first pending item in_progress and begin with: ${next.content}`;
+	return `[PLAN EXECUTION HANDOFF]\nPlan mode has ended. Execute the pending plan recorded by update_todos.\n${start}`;
 }
 
 function planInstructions(): string {
@@ -212,15 +227,13 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 		};
 	});
 
-	pi.on("agent_end", async (_event, ctx) => {
+	pi.on("agent_settled", async (_event, ctx) => {
 		if (!planModeEnabled || !ctx.hasUI) return;
 
-		// Offer the execute handoff only when an actionable plan is waiting: at least one
-		// step the model recorded but could not carry out, since writes are blocked in plan
-		// mode. Pure exploration and question-answering use only reads, so those todos are
-		// already completed and nothing is pending. In that case plan mode stays quiet
-		// rather than asking the user to "execute" an answer.
-		const pending = latestTodos(ctx).filter((todo) => todo.status !== "completed");
+		// Wait until the run is fully settled before offering the handoff. Sending from
+		// agent_end would enter Pi's follow-up queue while the run is still active, which
+		// can leave a stale execution instruction behind after the plan has already run.
+		const pending = pendingTodos(ctx);
 		if (pending.length === 0) return;
 
 		const choice = await ctx.ui.select("Plan mode - what next?", [
@@ -230,18 +243,39 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 		]);
 
 		if (choice === "Execute the plan") {
+			// The dialog is asynchronous, so validate the active branch again before
+			// triggering execution. A completed plan must never receive a stale handoff.
+			const remaining = pendingTodos(ctx);
 			planModeEnabled = false;
 			announcePlanModeEnded();
 			updateStatus(ctx);
 			persistState();
-			pi.sendUserMessage(
-				"Leave plan mode and execute the plan you recorded in the todo list. Set the first item in_progress and begin.",
-				{ deliverAs: "followUp" },
+
+			if (remaining.length === 0) {
+				ctx.ui.notify("Plan mode disabled. The todo plan is already complete.");
+				return;
+			}
+
+			pi.sendMessage(
+				{
+					customType: PLAN_MODE_EXECUTE_TYPE,
+					content: executionHandoff(remaining),
+					display: true,
+					details: {
+						episode,
+						kind: "execute",
+						pendingCount: remaining.length,
+						firstStep: remaining[0].content,
+					},
+				},
+				{ triggerTurn: true },
 			);
 		} else if (choice === "Refine the plan") {
 			const refinement = await ctx.ui.editor("Refine the plan:", "");
 			if (refinement?.trim()) {
-				pi.sendUserMessage(refinement.trim(), { deliverAs: "followUp" });
+				// This text was entered by the user in the refinement editor. Since the
+				// agent is settled, send it directly rather than queueing a follow-up.
+				pi.sendUserMessage(refinement.trim());
 			}
 		}
 	});

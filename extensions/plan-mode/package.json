@@ -1,6 +1,6 @@
 {
   "name": "pi-arcweld-plan-mode",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Cache-safe local plan mode for Pi",
   "type": "module",

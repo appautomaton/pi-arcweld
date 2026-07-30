@@ -13,8 +13,17 @@ class FakePi {
 	readonly handlers = new Map<string, EventHandler>();
 	readonly commands = new Map<string, CommandHandler>();
 	readonly entries: Array<{ customType: string; data: unknown }> = [];
-	readonly messages: Array<{ customType: string; content: unknown; details: unknown }> = [];
-	readonly userMessages: string[] = [];
+	readonly messages: Array<{
+		customType: string;
+		content: unknown;
+		display: boolean | undefined;
+		details: unknown;
+		options: { triggerTurn?: boolean; deliverAs?: "steer" | "followUp" | "nextTurn" } | undefined;
+	}> = [];
+	readonly userMessages: Array<{
+		text: string;
+		options: { deliverAs?: "steer" | "followUp" } | undefined;
+	}> = [];
 	readonly flags = new Map<string, boolean | string>();
 	setActiveToolsCalls = 0;
 
@@ -40,12 +49,21 @@ class FakePi {
 		this.entries.push({ customType, data });
 	}
 
-	sendMessage(message: { customType: string; content: unknown; details?: unknown }): void {
-		this.messages.push({ customType: message.customType, content: message.content, details: message.details });
+	sendMessage(
+		message: { customType: string; content: unknown; display?: boolean; details?: unknown },
+		options?: { triggerTurn?: boolean; deliverAs?: "steer" | "followUp" | "nextTurn" },
+	): void {
+		this.messages.push({
+			customType: message.customType,
+			content: message.content,
+			display: message.display,
+			details: message.details,
+			options,
+		});
 	}
 
-	sendUserMessage(text: string): void {
-		this.userMessages.push(text);
+	sendUserMessage(text: string, options?: { deliverAs?: "steer" | "followUp" }): void {
+		this.userMessages.push({ text, options });
 	}
 
 	setActiveTools(): void {
@@ -196,21 +214,24 @@ function todoResult(todos: Array<{ content: string; status: string }>): unknown 
 	return { type: "message", message: { role: "toolResult", toolName: "update_todos", details: { todos, version: 1 } } };
 }
 
-function createAgentEndContext(
+function createHandoffContext(
 	entries: unknown[],
 	selectChoice: string | undefined,
-): { ctx: ExtensionContext; calls: { select: number } } {
+	onSelect?: () => void,
+): { ctx: ExtensionContext; calls: { select: number }; notifications: string[] } {
 	const calls = { select: 0 };
+	const notifications: string[] = [];
 	const ctx = {
 		cwd: "/tmp/plan-mode",
 		hasUI: true,
 		ui: {
 			theme: { fg: (_color: string, text: string) => text, strikethrough: (text: string) => text },
-			notify: () => {},
+			notify: (message: string) => notifications.push(message),
 			setStatus: () => {},
 			setWidget: () => {},
 			select: async () => {
 				calls.select++;
+				onSelect?.();
 				return selectChoice;
 			},
 			editor: async () => undefined,
@@ -221,17 +242,17 @@ function createAgentEndContext(
 			getBranch: () => entries,
 		},
 	} as unknown as ExtensionContext;
-	return { ctx, calls };
+	return { ctx, calls, notifications };
 }
 
 test("does not offer the handoff when the recorded plan is already complete", async () => {
 	const fake = new FakePi();
 	planModeExtension(fake as unknown as ExtensionAPI);
 	const entries = [todoResult([{ content: "Review docs", status: "completed" }])];
-	const { ctx, calls } = createAgentEndContext(entries, "Execute the plan");
+	const { ctx, calls } = createHandoffContext(entries, "Execute the plan");
 
 	await fake.command("plan")("", ctx); // enter plan mode
-	await fake.handler("agent_end")({}, ctx);
+	await fake.handler("agent_settled")({}, ctx);
 
 	assert.equal(calls.select, 0);
 });
@@ -240,10 +261,50 @@ test("offers the handoff when the plan still has pending steps", async () => {
 	const fake = new FakePi();
 	planModeExtension(fake as unknown as ExtensionAPI);
 	const entries = [todoResult([{ content: "Add caching", status: "pending" }])];
-	const { ctx, calls } = createAgentEndContext(entries, "Stay in plan mode");
+	const { ctx, calls } = createHandoffContext(entries, "Stay in plan mode");
 
 	await fake.command("plan")("", ctx);
-	await fake.handler("agent_end")({}, ctx);
+	await fake.handler("agent_settled")({}, ctx);
 
 	assert.equal(calls.select, 1);
+});
+
+test("executes through one transparent settled custom message without a follow-up queue", async () => {
+	const fake = new FakePi();
+	planModeExtension(fake as unknown as ExtensionAPI);
+	const entries = [todoResult([{ content: "Add caching", status: "pending" }])];
+	const { ctx, calls } = createHandoffContext(entries, "Execute the plan");
+
+	await fake.command("plan")("", ctx);
+	assert.equal(fake.handlers.has("agent_end"), false);
+	await fake.handler("agent_settled")({}, ctx);
+
+	assert.equal(calls.select, 1);
+	assert.deepEqual(fake.userMessages, []);
+	const executeMessages = fake.messages.filter((message) => message.customType === "plan-mode-execute");
+	assert.equal(executeMessages.length, 1);
+	assert.equal(executeMessages[0].display, true);
+	assert.deepEqual(executeMessages[0].options, { triggerTurn: true });
+	assert.match(String(executeMessages[0].content), /\[PLAN EXECUTION HANDOFF\]/);
+	assert.match(String(executeMessages[0].content), /Add caching/);
+
+	await fake.handler("agent_settled")({}, ctx);
+	assert.equal(calls.select, 1);
+	assert.equal(fake.messages.filter((message) => message.customType === "plan-mode-execute").length, 1);
+});
+
+test("revalidates the todo list before execution and skips a plan completed while the dialog was open", async () => {
+	const fake = new FakePi();
+	planModeExtension(fake as unknown as ExtensionAPI);
+	const entries = [todoResult([{ content: "Add caching", status: "pending" }])];
+	const { ctx, notifications } = createHandoffContext(entries, "Execute the plan", () => {
+		entries.push(todoResult([{ content: "Add caching", status: "completed" }]));
+	});
+
+	await fake.command("plan")("", ctx);
+	await fake.handler("agent_settled")({}, ctx);
+
+	assert.equal(fake.messages.some((message) => message.customType === "plan-mode-execute"), false);
+	assert.equal(fake.userMessages.length, 0);
+	assert.ok(notifications.some((message) => message.includes("already complete")));
 });
