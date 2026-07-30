@@ -22,6 +22,7 @@ The active Pi configuration points back to this repository rather than copying c
 - `~/.pi/agent/extensions/questionnaire.ts` → `extensions/questionnaire.ts`
 - `~/.pi/agent/extensions/exa-search.ts` → `extensions/exa-search.ts`
 - `~/.pi/agent/extensions/codex-web-search.ts` → `extensions/codex-web-search.ts`
+- `~/.pi/agent/extensions/claude-web-search` → `extensions/claude-web-search/`
 - `~/.pi/agent/extensions/grok-search.ts` → `extensions/grok-search.ts`
 - `~/.pi/agent/APPEND_SYSTEM.md` → `system-instruction/APPEND_SYSTEM.md`
 - `~/.pi/agent/settings.json` registers `extensions/mcp-extension/` as a local-path package

@@ -1,0 +1,44 @@
+{
+  "name": "pi-arcweld-claude-web-search",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Replay-safe Anthropic provider-side web search for Pi",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "anthropic",
+    "web-search"
+  ],
+  "files": [
+    "index.ts",
+    "payload.ts",
+    "protocol.ts",
+    "provider.ts",
+    "sse-tunnel.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "pack:check": "npm pack --dry-run"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-ai": "0.83.0",
+    "@earendil-works/pi-coding-agent": "0.83.0",
+    "@types/node": "24.13.3",
+    "tsx": "4.23.0",
+    "typescript": "5.9.3"
+  }
+}

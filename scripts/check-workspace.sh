@@ -23,6 +23,8 @@ const { readFileSync } = require("node:fs");
 for (const path of [
 	"extensions/mcp-extension/package.json",
 	"extensions/mcp-extension/tsconfig.json",
+	"extensions/claude-web-search/package.json",
+	"extensions/claude-web-search/tsconfig.json",
 	"extensions/plan-mode/package.json",
 	"extensions/plan-mode/tsconfig.json",
 	"extensions/pi-arcweld-todos/package.json",
@@ -46,7 +48,7 @@ if (missing.length > 0) {
 }
 NODE
 
-for package_dir in extensions/plan-mode extensions/pi-arcweld-todos extensions/mcp-extension; do
+for package_dir in extensions/plan-mode extensions/pi-arcweld-todos extensions/mcp-extension extensions/claude-web-search; do
 	echo "==> Checking $package_dir"
 	(
 		cd "$package_dir"
@@ -62,12 +64,10 @@ grep -Fq 'Use questionnaire only when missing input would materially change the 
 grep -Fq 'name: "exa_search"' extensions/exa-search.ts
 grep -Fq 'When provider-side web_search is available, prefer web_search.' extensions/exa-search.ts
 grep -Fq 'tools: [...tools, { type: "web_search" }]' extensions/codex-web-search.ts
+grep -Fq 'pi.registerProvider(provider' extensions/claude-web-search/index.ts
+grep -Fq 'createReplaySafeFetch' extensions/claude-web-search/provider.ts
+grep -Fq 'web_search_tool_result' extensions/claude-web-search/protocol.ts
 grep -Fq 'name: "grok_search"' extensions/grok-search.ts
-if native_anthropic_search="$(git grep -n -F 'web_search_20' -- 'extensions/*.ts')"; then
-	printf '%s\n' "$native_anthropic_search" >&2
-	echo "Anthropic native web search injection is disabled until Pi preserves server-tool responses" >&2
-	exit 1
-fi
 node --input-type=module <<'NODE'
 import assert from "node:assert/strict";
 import { getCodexWebSearchRoute, injectCodexWebSearch } from "./extensions/codex-web-search.ts";
@@ -98,6 +98,7 @@ mkdir -p "$agent_dir/extensions"
 for extension in questionnaire.ts exa-search.ts codex-web-search.ts grok-search.ts; do
 	ln -s "$ROOT_DIR/extensions/$extension" "$agent_dir/extensions/$extension"
 done
+ln -s "$ROOT_DIR/extensions/claude-web-search" "$agent_dir/extensions/claude-web-search"
 PI_CODING_AGENT_DIR="$agent_dir" pi --list-models >/dev/null
 
 echo "==> Workspace checks passed"
