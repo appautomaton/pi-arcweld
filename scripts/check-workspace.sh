@@ -64,34 +64,12 @@ grep -Fq 'Use questionnaire only when missing input would materially change the 
 grep -Fq 'name: "exa_search"' extensions/exa-search.ts
 grep -Fq 'When provider-side web_search is available, prefer web_search.' extensions/exa-search.ts
 grep -Fq 'tools: [...tools, { type: "web_search" }]' extensions/codex-web-search.ts
+grep -Fq 'name: WEB_RUN_TOOL_NAME' extensions/codex-web-search.ts
 grep -Fq 'pi.registerProvider(provider' extensions/claude-web-search/index.ts
 grep -Fq 'createReplaySafeFetch' extensions/claude-web-search/provider.ts
 grep -Fq 'web_search_tool_result' extensions/claude-web-search/protocol.ts
 grep -Fq 'name: "grok_search"' extensions/grok-search.ts
-node --input-type=module <<'NODE'
-import assert from "node:assert/strict";
-import { getCodexWebSearchRoute, injectCodexWebSearch } from "./extensions/codex-web-search.ts";
-
-const oauthModel = { provider: "openai-codex", api: "openai-codex-responses", id: "gpt-5.6-sol" };
-const cpaModel = { provider: "cli-proxy-api", api: "openai-responses", id: "gpt-5.6-sol" };
-const otherModel = { provider: "openai", api: "openai-responses", id: "gpt-5.6" };
-const functionTool = { type: "function", name: "exa_search" };
-
-assert.equal(getCodexWebSearchRoute(oauthModel), "openai-codex-oauth");
-assert.equal(getCodexWebSearchRoute(cpaModel), "cli-proxy-api");
-assert.equal(getCodexWebSearchRoute(otherModel), undefined);
-assert.deepEqual(injectCodexWebSearch({ model: oauthModel.id }, oauthModel), {
-	model: oauthModel.id,
-	tools: [{ type: "web_search" }],
-});
-assert.deepEqual(injectCodexWebSearch({ tools: [functionTool] }, cpaModel), {
-	tools: [functionTool, { type: "web_search" }],
-});
-const duplicate = { tools: [{ type: "web_search" }] };
-assert.equal(injectCodexWebSearch(duplicate, cpaModel), duplicate);
-const ineligible = { tools: [functionTool] };
-assert.equal(injectCodexWebSearch(ineligible, otherModel), ineligible);
-NODE
+node --test extensions/test/codex-web-search.test.mts
 agent_dir="$(mktemp -d)"
 trap 'rm -rf "$agent_dir"' EXIT
 mkdir -p "$agent_dir/extensions"

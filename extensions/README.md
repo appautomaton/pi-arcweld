@@ -12,7 +12,7 @@
 | `questionnaire.ts` | Self-contained curated extension | Symlink at `~/.pi/agent/extensions/questionnaire.ts` |
 | `claude-cache-retention.ts` | Claude-only one-hour prompt-cache policy for the local CPA provider | Symlink at `~/.pi/agent/extensions/claude-cache-retention.ts` |
 | `exa-search.ts` | Exa-backed `exa_search` tool | Symlink at `~/.pi/agent/extensions/exa-search.ts` |
-| `codex-web-search.ts` | Codex `web_search` request injection | Symlink at `~/.pi/agent/extensions/codex-web-search.ts` |
+| `codex-web-search.ts` | Codex hosted `web_search` injection plus explicit `web_run` tool | Symlink at `~/.pi/agent/extensions/codex-web-search.ts` |
 | `claude-web-search/` | Replay-safe Claude provider-side `web_search` | Symlink at `~/.pi/agent/extensions/claude-web-search` |
 | `grok-search.ts` | Grok-backed web/X `grok_search` tool | Symlink at `~/.pi/agent/extensions/grok-search.ts` |
 
@@ -20,7 +20,11 @@ The questionnaire started from Pi's upstream example and is maintained here as a
 
 The search extensions are also self-contained. `exa-search.ts` reads `exaApiKey` only from the machine-local `~/.pi/agent/exa-search.json`; never commit that credential file. `grok-search.ts` resolves `cli-proxy-api/grok-4.5` and its credential through Pi's model registry, so the machine must configure that provider and model separately.
 
-`codex-web-search.ts` does not register another Pi function tool. It appends Codex's provider-side `{ "type": "web_search" }` declaration to requests for the built-in `openai-codex` OAuth provider and `cli-proxy-api` GPT models using the OpenAI Responses API. When that provider-side tool is available, the search guidance prefers it. `exa_search` remains available as a fallback for models without `web_search`, or when Exa results are explicitly requested. Pi currently displays the final model text but does not surface intermediate `web_search_call` activity or preserve structured citation annotations.
+`codex-web-search.ts` owns both Codex web-access modes. It appends Codex's provider-side `{ "type": "web_search" }` declaration to requests for the built-in `openai-codex` OAuth provider and `cli-proxy-api` GPT models using the OpenAI Responses API. In this hosted mode, OpenAI decides when to search or open pages while producing the response. Pi currently displays the final model text but does not surface intermediate `web_search_call` activity or preserve structured citation annotations.
+
+For eligible `cli-proxy-api` GPT Responses models, the same extension also registers the sequential `web_run` function tool. `web_run` sends explicit search, open, click, find, screenshot, finance, weather, sports, and time commands to the CPA provider's `/v1/alpha/search` route. CPA authenticates upstream with its stored Codex OAuth account and forwards the request to the ChatGPT Codex search service; the target webpage is fetched by OpenAI, not by Pi or CPA. The tool keeps a stable Pi session id so returned references such as `turn0search0` and `turn0view0` can be reused by later calls, returns bounded source metadata, omits opaque `encrypted_output`, and truncates oversized model-facing output using Pi's standard limits. Its TUI renderer keeps the default result view to six terminal lines and caps the expanded preview at 28 lines; this display-only limit does not reduce the result sent to the model.
+
+The explicit route is intentionally limited to the verified CPA path for now. Direct `openai-codex` models retain hosted `web_search`, but do not expose `web_run` until the direct alpha-search OAuth/account-header path is separately validated. The `/alpha/search` API is an internal alpha Codex endpoint and may change without the compatibility guarantees of a public stable API. Each call uses Codex account capacity, so batch independent operations when practical. `exa_search` remains available as a fallback for models without hosted search, or when Exa results are explicitly requested.
 
 `claude-web-search/` enables Anthropic's provider-side `web_search` for the built-in `anthropic` provider and the local `cli-proxy-api-anthropic` provider. The package wraps Pi's Anthropic `streamSimple` transport, tunnels native `server_tool_use` and `web_search_tool_result` blocks through session history as invisible validated replay markers, restores their exact ordering before the next request, and continues bounded `pause_turn` responses internally. Existing provider models, authentication, cache settings, headers, retries, timeouts, metadata, and cancellation remain composed by Pi. The tests use synthetic SSE and fake streams only; they make no live model requests. Structured Anthropic citation annotations are not rendered by Pi, and session branches that already lost native blocks must restart or branch before the failed turn.
 
@@ -64,6 +68,6 @@ pi -e ./extensions/claude-web-search
 pi -e ./extensions/grok-search.ts
 ```
 
-For search configuration checks, run `/exa-search-status` for Exa, `/codex-web-search-status` for the selected Codex model, `/claude-web-search-status` for the replay-safe Anthropic route, and confirm `cli-proxy-api/grok-4.5` appears in `pi --list-models` for Grok.
+For search configuration checks, run `/exa-search-status` for Exa, `/codex-web-search-status` to inspect both hosted `web_search` and explicit `web_run` availability for the selected model, `/claude-web-search-status` for the replay-safe Anthropic route, and confirm `cli-proxy-api/grok-4.5` appears in `pi --list-models` for Grok.
 
 After changing an auto-discovered extension, run `/reload` in an active Pi session. Restart Pi after changing package registration or dependencies.
