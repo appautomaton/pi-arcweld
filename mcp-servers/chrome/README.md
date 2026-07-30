@@ -35,7 +35,9 @@ Do not `dpkg -i` / `apt install` the .deb: its postinst registers Google's auto-
 
 ## Registration
 
-Used by Claude Code, registered in `~/.claude.json` (not in Pi's `~/.pi/agent/mcp.json`):
+Two stock MCP servers drive this Chrome binary:
+
+- **Claude Code** uses `@playwright/mcp`, registered in `~/.claude.json`:
 
 ```json
 "playwright": {
@@ -50,7 +52,28 @@ Used by Claude Code, registered in `~/.claude.json` (not in Pi's `~/.pi/agent/mc
 }
 ```
 
-`--no-sandbox` is required under PRoot (no kernel namespaces) and `--headless` is required (no display). A config change takes effect on the next Claude Code session, not the running one.
+- **Pi** uses `chrome-devtools-mcp`, registered in `~/.pi/agent/mcp.json` with the same flags as the Claude Code `chrome-devtools` entry. The Pi MCP extension requires an absolute `command` path and an explicit `transport`, so `npx` is fully qualified:
+
+```json
+"chrome-devtools": {
+  "transport": "stdio",
+  "command": "/home/dev/.nvm/versions/node/v24.13.0/bin/npx",
+  "args": [
+    "-y", "chrome-devtools-mcp@1.6.0",
+    "--executablePath", "/home/dev/.cache/chrome/current/opt/google/chrome/chrome",
+    "--headless",
+    "--userDataDir", "/home/dev/.cache/chrome/cdt-profile",
+    "--chromeArg=--no-sandbox",
+    "--chromeArg=--disable-dev-shm-usage",
+    "--chromeArg=--disable-gpu"
+  ],
+  "env": { "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "1" }
+}
+```
+
+The `npx` path embeds the nvm Node version; update it if the active Node changes. The Pi and Claude Code `chrome-devtools` entries share the `cdt-profile` directory, so only one of them can run a browser at a time (Chrome profile singleton lock).
+
+`--no-sandbox` is required under PRoot (no kernel namespaces) and `--headless` is required (no display). A config change takes effect on the next agent session, not the running one.
 
 ## Update
 
@@ -58,7 +81,7 @@ Used by Claude Code, registered in `~/.claude.json` (not in Pi's `~/.pi/agent/mc
 scripts/update.sh
 ```
 
-Downloads the newest stable .deb, extracts it, and swaps it in; the profile is untouched. Restart the Claude Code session afterwards.
+Downloads the newest stable .deb, extracts it, and swaps it in; the profile is untouched. Restart the agent sessions afterwards.
 
 ## PRoot quirks
 
