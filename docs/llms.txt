@@ -6,7 +6,7 @@ pi-arcweld keeps local agent behavior visible without turning Pi into a private 
 
 ## Canonical links
 
-- Project site: https://appautomaton.github.io/pi-arcweld/
+- Project site: https://appautomaton.renocrypt.com/pi-arcweld/
 - Source repository: https://github.com/appautomaton/pi-arcweld
 - Upstream Pi: https://pi.dev
 - Workspace overview: https://github.com/appautomaton/pi-arcweld/blob/main/README.md

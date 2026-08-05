@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://appautomaton.github.io/pi-arcweld/sitemap.xml
+Sitemap: https://appautomaton.renocrypt.com/pi-arcweld/sitemap.xml
