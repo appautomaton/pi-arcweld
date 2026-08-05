@@ -55,7 +55,7 @@ WORK_DIR="$BUILD_DIR/work"
 RUNTIME_DIR="$BUILD_DIR/runtime"
 NEXT_RUNTIME_DIR="$BUILD_DIR/runtime.next"
 TARBALL_DIR="$BUILD_DIR/artifacts/tarballs"
-PACKAGE_NAMES=(tui ai agent coding-agent)
+PACKAGE_NAMES=(tui ai agent protocol client coding-agent)
 
 if [[ ! -f "$MONO_DIR/package.json" ]]; then
 	echo "Missing pi-mono checkout at $MONO_DIR" >&2
@@ -179,10 +179,14 @@ write_runtime_package_json() {
 	local ai_tarball="$1"
 	local tui_tarball="$2"
 	local agent_tarball="$3"
-	local coding_agent_tarball="$4"
+	local protocol_tarball="$4"
+	local client_tarball="$5"
+	local coding_agent_tarball="$6"
 	local ai_spec="file:../artifacts/tarballs/$(basename "$ai_tarball")"
 	local tui_spec="file:../artifacts/tarballs/$(basename "$tui_tarball")"
 	local agent_spec="file:../artifacts/tarballs/$(basename "$agent_tarball")"
+	local protocol_spec="file:../artifacts/tarballs/$(basename "$protocol_tarball")"
+	local client_spec="file:../artifacts/tarballs/$(basename "$client_tarball")"
 	local coding_agent_spec="file:../artifacts/tarballs/$(basename "$coding_agent_tarball")"
 
 	mkdir -p "$NEXT_RUNTIME_DIR"
@@ -195,12 +199,16 @@ write_runtime_package_json() {
 		"@earendil-works/pi-ai": "$ai_spec",
 		"@earendil-works/pi-tui": "$tui_spec",
 		"@earendil-works/pi-agent-core": "$agent_spec",
+		"@earendil-works/pi-protocol": "$protocol_spec",
+		"@earendil-works/pi-client": "$client_spec",
 		"@earendil-works/pi-coding-agent": "$coding_agent_spec"
 	},
 	"overrides": {
 		"@earendil-works/pi-ai": "$ai_spec",
 		"@earendil-works/pi-tui": "$tui_spec",
 		"@earendil-works/pi-agent-core": "$agent_spec",
+		"@earendil-works/pi-protocol": "$protocol_spec",
+		"@earendil-works/pi-client": "$client_spec",
 		"@earendil-works/pi-coding-agent": "$coding_agent_spec"
 	}
 }
@@ -208,16 +216,18 @@ JSON
 }
 
 assemble_runtime() {
-	local ai_tarball tui_tarball agent_tarball coding_agent_tarball
+	local ai_tarball tui_tarball agent_tarball protocol_tarball client_tarball coding_agent_tarball
 
 	rm -rf "$NEXT_RUNTIME_DIR"
 	ai_tarball="$(pack_package ai)"
 	tui_tarball="$(pack_package tui)"
 	agent_tarball="$(pack_package agent)"
+	protocol_tarball="$(pack_package protocol)"
+	client_tarball="$(pack_package client)"
 	coding_agent_tarball="$(pack_package coding-agent)"
 
 	echo "==> Installing production runtime dependencies"
-	write_runtime_package_json "$ai_tarball" "$tui_tarball" "$agent_tarball" "$coding_agent_tarball"
+	write_runtime_package_json "$ai_tarball" "$tui_tarball" "$agent_tarball" "$protocol_tarball" "$client_tarball" "$coding_agent_tarball"
 	npm install --omit=dev --ignore-scripts --prefix "$NEXT_RUNTIME_DIR"
 
 	mkdir -p "$NEXT_RUNTIME_DIR/bin"
