@@ -6,6 +6,7 @@ MONO_DIR="$ROOT_DIR/pi-mono"
 BUILD_DIR="$ROOT_DIR/build/pi-agent"
 LINK_USER_BIN=false
 KEEP_WORK=false
+MIN_RELEASE_AGE_EXCLUDE=()
 
 usage() {
 	cat <<'USAGE'
@@ -17,6 +18,11 @@ Options:
   --link-user-bin      Repoint the current `pi` command to the external runtime after smoke checks.
   --keep-work          Keep the temporary build workspace after a successful build.
   --build-dir <dir>    Build root. Defaults to <repository>/build/pi-agent.
+  --min-release-age-exclude <pkg[,pkg...]>
+                       Exempt the named packages from the upstream .npmrc
+                       min-release-age gate during the runtime install only.
+                       Use when upstream pins a package that is newer than the
+                       gate; every other package stays gated.
   --help               Show this help.
 USAGE
 }
@@ -30,6 +36,16 @@ while [[ $# -gt 0 ]]; do
 		--keep-work)
 			KEEP_WORK=true
 			shift
+			;;
+		--min-release-age-exclude)
+			if [[ $# -lt 2 ]]; then
+				echo "--min-release-age-exclude requires a package list" >&2
+				exit 1
+			fi
+			IFS=',' read -r -a _exclude_entries <<< "$2"
+			MIN_RELEASE_AGE_EXCLUDE+=("${_exclude_entries[@]}")
+			unset _exclude_entries
+			shift 2
 			;;
 		--build-dir)
 			if [[ $# -lt 2 ]]; then
@@ -55,7 +71,18 @@ WORK_DIR="$BUILD_DIR/work"
 RUNTIME_DIR="$BUILD_DIR/runtime"
 NEXT_RUNTIME_DIR="$BUILD_DIR/runtime.next"
 TARBALL_DIR="$BUILD_DIR/artifacts/tarballs"
-PACKAGE_NAMES=(tui ai agent protocol client coding-agent)
+# Build order matters: a package must be listed after every workspace package it
+# type-checks against. Keep PACKAGE_NPM_NAMES in sync with PACKAGE_NAMES.
+PACKAGE_NAMES=(telemetry tui ai agent protocol client coding-agent)
+declare -A PACKAGE_NPM_NAMES=(
+	[telemetry]="@earendil-works/pi-telemetry"
+	[tui]="@earendil-works/pi-tui"
+	[ai]="@earendil-works/pi-ai"
+	[agent]="@earendil-works/pi-agent-core"
+	[protocol]="@earendil-works/pi-protocol"
+	[client]="@earendil-works/pi-client"
+	[coding-agent]="@earendil-works/pi-coding-agent"
+)
 
 if [[ ! -f "$MONO_DIR/package.json" ]]; then
 	echo "Missing pi-mono checkout at $MONO_DIR" >&2
@@ -176,18 +203,7 @@ pack_package() {
 }
 
 write_runtime_package_json() {
-	local ai_tarball="$1"
-	local tui_tarball="$2"
-	local agent_tarball="$3"
-	local protocol_tarball="$4"
-	local client_tarball="$5"
-	local coding_agent_tarball="$6"
-	local ai_spec="file:../artifacts/tarballs/$(basename "$ai_tarball")"
-	local tui_spec="file:../artifacts/tarballs/$(basename "$tui_tarball")"
-	local agent_spec="file:../artifacts/tarballs/$(basename "$agent_tarball")"
-	local protocol_spec="file:../artifacts/tarballs/$(basename "$protocol_tarball")"
-	local client_spec="file:../artifacts/tarballs/$(basename "$client_tarball")"
-	local coding_agent_spec="file:../artifacts/tarballs/$(basename "$coding_agent_tarball")"
+	local deps_json="$1"
 
 	mkdir -p "$NEXT_RUNTIME_DIR"
 	copy_file "$MONO_DIR/.npmrc" "$NEXT_RUNTIME_DIR/.npmrc"
@@ -196,39 +212,42 @@ write_runtime_package_json() {
 	"private": true,
 	"description": "Local Pi runtime built outside pi-mono",
 	"dependencies": {
-		"@earendil-works/pi-ai": "$ai_spec",
-		"@earendil-works/pi-tui": "$tui_spec",
-		"@earendil-works/pi-agent-core": "$agent_spec",
-		"@earendil-works/pi-protocol": "$protocol_spec",
-		"@earendil-works/pi-client": "$client_spec",
-		"@earendil-works/pi-coding-agent": "$coding_agent_spec"
+$deps_json
 	},
 	"overrides": {
-		"@earendil-works/pi-ai": "$ai_spec",
-		"@earendil-works/pi-tui": "$tui_spec",
-		"@earendil-works/pi-agent-core": "$agent_spec",
-		"@earendil-works/pi-protocol": "$protocol_spec",
-		"@earendil-works/pi-client": "$client_spec",
-		"@earendil-works/pi-coding-agent": "$coding_agent_spec"
+$deps_json
 	}
 }
 JSON
 }
 
 assemble_runtime() {
-	local ai_tarball tui_tarball agent_tarball protocol_tarball client_tarball coding_agent_tarball
+	local package_name npm_name tarball spec deps_json
+	local -a dep_lines=()
 
 	rm -rf "$NEXT_RUNTIME_DIR"
-	ai_tarball="$(pack_package ai)"
-	tui_tarball="$(pack_package tui)"
-	agent_tarball="$(pack_package agent)"
-	protocol_tarball="$(pack_package protocol)"
-	client_tarball="$(pack_package client)"
-	coding_agent_tarball="$(pack_package coding-agent)"
+	for package_name in "${PACKAGE_NAMES[@]}"; do
+		npm_name="${PACKAGE_NPM_NAMES[$package_name]:-}"
+		if [[ -z "$npm_name" ]]; then
+			echo "Missing PACKAGE_NPM_NAMES entry for packages/$package_name" >&2
+			exit 1
+		fi
+		tarball="$(pack_package "$package_name")"
+		spec="file:../artifacts/tarballs/$(basename "$tarball")"
+		dep_lines+=("$(printf '\t\t"%s": "%s"' "$npm_name" "$spec")")
+	done
+	deps_json="$(printf '%s,\n' "${dep_lines[@]}" | sed '$ s/,$//')"
 
 	echo "==> Installing production runtime dependencies"
-	write_runtime_package_json "$ai_tarball" "$tui_tarball" "$agent_tarball" "$protocol_tarball" "$client_tarball" "$coding_agent_tarball"
-	npm install --omit=dev --ignore-scripts --prefix "$NEXT_RUNTIME_DIR"
+	write_runtime_package_json "$deps_json"
+
+	local -a npm_install_args=(--omit=dev --ignore-scripts --prefix "$NEXT_RUNTIME_DIR")
+	local excluded
+	for excluded in ${MIN_RELEASE_AGE_EXCLUDE[@]+"${MIN_RELEASE_AGE_EXCLUDE[@]}"}; do
+		echo "==> Exempting $excluded from the min-release-age gate"
+		npm_install_args+=("--min-release-age-exclude=$excluded")
+	done
+	npm install "${npm_install_args[@]}"
 
 	mkdir -p "$NEXT_RUNTIME_DIR/bin"
 	ln -sfn ../node_modules/.bin/pi "$NEXT_RUNTIME_DIR/bin/pi"
