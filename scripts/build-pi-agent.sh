@@ -71,18 +71,13 @@ WORK_DIR="$BUILD_DIR/work"
 RUNTIME_DIR="$BUILD_DIR/runtime"
 NEXT_RUNTIME_DIR="$BUILD_DIR/runtime.next"
 TARBALL_DIR="$BUILD_DIR/artifacts/tarballs"
-# Build order matters: a package must be listed after every workspace package it
-# type-checks against. Keep PACKAGE_NPM_NAMES in sync with PACKAGE_NAMES.
-PACKAGE_NAMES=(telemetry tui ai agent protocol client coding-agent)
-declare -A PACKAGE_NPM_NAMES=(
-	[telemetry]="@earendil-works/pi-telemetry"
-	[tui]="@earendil-works/pi-tui"
-	[ai]="@earendil-works/pi-ai"
-	[agent]="@earendil-works/pi-agent-core"
-	[protocol]="@earendil-works/pi-protocol"
-	[client]="@earendil-works/pi-client"
-	[coding-agent]="@earendil-works/pi-coding-agent"
-)
+# Packages are derived, not hardcoded. resolve_runtime_packages() asks
+# scripts/resolve-runtime-packages.mjs for the dependency closure of
+# @earendil-works/pi-coding-agent over pi-mono's own package manifests, in
+# topological order, so upstream package additions and removals are picked up
+# without editing this script.
+PACKAGE_NAMES=()
+declare -A PACKAGE_NPM_NAMES=()
 
 if [[ ! -f "$MONO_DIR/package.json" ]]; then
 	echo "Missing pi-mono checkout at $MONO_DIR" >&2
@@ -93,6 +88,30 @@ if [[ "$BUILD_DIR" == "$MONO_DIR" || "$BUILD_DIR" == "$MONO_DIR"/* ]]; then
 	echo "Build directory must be outside pi-mono: $BUILD_DIR" >&2
 	exit 1
 fi
+
+resolve_runtime_packages() {
+	local resolved dir npm_name
+
+	if ! resolved="$(node "$ROOT_DIR/scripts/resolve-runtime-packages.mjs" "$MONO_DIR")"; then
+		echo "Failed to resolve runtime packages from $MONO_DIR" >&2
+		exit 1
+	fi
+
+	while IFS=$'\t' read -r dir npm_name; do
+		if [[ -z "$dir" || -z "$npm_name" ]]; then
+			continue
+		fi
+		PACKAGE_NAMES+=("$dir")
+		PACKAGE_NPM_NAMES["$dir"]="$npm_name"
+	done <<< "$resolved"
+
+	if [[ ${#PACKAGE_NAMES[@]} -eq 0 ]]; then
+		echo "Resolved an empty runtime package list from $MONO_DIR" >&2
+		exit 1
+	fi
+
+	echo "==> Runtime packages (dependencies first): ${PACKAGE_NAMES[*]}"
+}
 
 copy_file() {
 	local source="$1"
@@ -227,11 +246,7 @@ assemble_runtime() {
 
 	rm -rf "$NEXT_RUNTIME_DIR"
 	for package_name in "${PACKAGE_NAMES[@]}"; do
-		npm_name="${PACKAGE_NPM_NAMES[$package_name]:-}"
-		if [[ -z "$npm_name" ]]; then
-			echo "Missing PACKAGE_NPM_NAMES entry for packages/$package_name" >&2
-			exit 1
-		fi
+		npm_name="${PACKAGE_NPM_NAMES[$package_name]}"
 		tarball="$(pack_package "$package_name")"
 		spec="file:../artifacts/tarballs/$(basename "$tarball")"
 		dep_lines+=("$(printf '\t\t"%s": "%s"' "$npm_name" "$spec")")
@@ -311,6 +326,7 @@ cleanup_stale_layout() {
 	fi
 }
 
+resolve_runtime_packages
 prepare_workdir
 install_build_dependencies
 build_typescript_packages
