@@ -65,9 +65,17 @@ grep -Fq 'name: "exa_search"' extensions/exa-search.ts
 grep -Fq 'When provider-side web_search is available, prefer web_search.' extensions/exa-search.ts
 grep -Fq 'tools: [...tools, { type: "web_search" }]' extensions/codex-web-search.ts
 grep -Fq 'name: WEB_RUN_TOOL_NAME' extensions/codex-web-search.ts
-grep -Fq 'pi.registerProvider(provider' extensions/claude-web-search/index.ts
-grep -Fq 'createReplaySafeFetch' extensions/claude-web-search/provider.ts
-grep -Fq 'web_search_tool_result' extensions/claude-web-search/protocol.ts
+grep -Fq 'name: "WebSearch"' extensions/claude-web-search/index.ts
+grep -Fq 'runHostedWebSearch' extensions/claude-web-search/index.ts
+grep -Fq 'HOSTED_WEB_SEARCH_TOOL_TYPE' extensions/claude-web-search/payload.ts
+if grep -Fq 'before_provider_request' extensions/claude-web-search/index.ts; then
+	echo "Claude WebSearch must not rewrite main provider payloads" >&2
+	exit 1
+fi
+if grep -Fq 'registerProvider' extensions/claude-web-search/index.ts; then
+	echo "Claude WebSearch must not override providers" >&2
+	exit 1
+fi
 grep -Fq 'name: "grok_search"' extensions/grok-search.ts
 node --test extensions/test/codex-web-search.test.mts
 agent_dir="$(mktemp -d)"
