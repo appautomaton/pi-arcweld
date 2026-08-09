@@ -1,6 +1,6 @@
 {
   "name": "pi-arcweld-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Security-focused MCP client extension for Pi",
   "type": "module",
@@ -22,12 +22,12 @@
     ]
   },
   "scripts": {
-    "check": "tsc --noEmit",
-    "test": "node --import tsx --test test/*.test.ts",
+    "check": "../../scripts/check-mcp-extension.sh check",
+    "test": "../../scripts/check-mcp-extension.sh test",
     "pack:check": "npm pack --dry-run"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.29.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "zod": "4.4.3"
   },
   "peerDependencies": {
@@ -36,13 +36,23 @@
     "@earendil-works/pi-tui": "*",
     "typebox": "*"
   },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-ai": {
+      "optional": true
+    },
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    },
+    "@earendil-works/pi-tui": {
+      "optional": true
+    },
+    "typebox": {
+      "optional": true
+    }
+  },
   "devDependencies": {
-    "@earendil-works/pi-ai": "0.80.6",
-    "@earendil-works/pi-coding-agent": "0.80.6",
-    "@earendil-works/pi-tui": "0.80.6",
     "@types/node": "24.13.3",
     "tsx": "4.23.0",
-    "typebox": "1.1.38",
     "typescript": "5.9.3"
   }
 }

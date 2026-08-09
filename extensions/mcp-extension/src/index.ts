@@ -1,10 +1,20 @@
-import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext, Theme } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext, Theme } from "@earendil-works/pi-coding-agent";
 import { StringEnum } from "@earendil-works/pi-ai";
 import type { AutocompleteItem } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { loadConfig, setServerDefaultEnabled } from "./config.js";
-import { type CatalogFingerprint, McpManager, type ServerStatus } from "./manager.js";
+import { McpManager, type ServerStatus } from "./manager.js";
 import { convertMcpResult, guardTextOutput } from "./output.js";
+import {
+	activeContextHasCapabilitySnapshot,
+	capabilitySnapshotMessage,
+	collectRuntimeUpdate,
+	persistSessionState,
+	restoreSessionState,
+	runtimeUpdateMessage,
+	snapshotRuntime,
+	type ReportedRuntime,
+} from "./session-context.js";
 import { openMcpControlPanel } from "./ui.js";
 
 const CatalogParams = Type.Object({
@@ -22,26 +32,13 @@ const CallParams = Type.Object({
 	arguments: Type.Optional(Type.Record(Type.String(), Type.Unknown(), { description: "Tool arguments" })),
 });
 
-interface ReportedRuntime {
-	sessionEnabled: boolean;
-	fingerprint?: string;
-}
-
-interface PersistedMcpSnapshot {
-	summary: string;
-	runtime: Record<string, ReportedRuntime>;
-}
-
 export default function mcpExtension(pi: ExtensionAPI) {
 	let manager: McpManager | undefined;
 	let configPath = "";
 	let activePanelRefresh: (() => void) | undefined;
-	// The capability summary is rendered once and reused verbatim every turn.
-	// The system prompt sits ahead of the whole conversation in the provider
-	// prompt-cache prefix, so re-rendering it from live connection state would
-	// re-bill the entire context on every status flicker. Runtime changes reach
-	// the model only as append-only custom messages.
-	let frozenSummary: string | undefined;
+	// Dynamic MCP metadata is appended as hidden session messages. The system
+	// prompt and the two public tool definitions remain byte-stable.
+	let capabilitySnapshot: string | undefined;
 	let reportedRuntime: Record<string, ReportedRuntime> = {};
 	let lifecycleGeneration = 0;
 
@@ -51,8 +48,8 @@ export default function mcpExtension(pi: ExtensionAPI) {
 		manager = undefined;
 		activePanelRefresh = undefined;
 		await previous?.shutdown();
-		const restored = restoreSnapshot(ctx);
-		frozenSummary = restored?.summary;
+		const restored = restoreSessionState(ctx);
+		capabilitySnapshot = restored?.summary;
 		reportedRuntime = restored?.runtime ?? {};
 		try {
 			const config = await loadConfig();
@@ -90,26 +87,24 @@ export default function mcpExtension(pi: ExtensionAPI) {
 		await current?.shutdown();
 	});
 
-	pi.on("before_agent_start", async (event) => {
+	pi.on("before_agent_start", async (_event, ctx) => {
 		const current = manager;
 		const generation = lifecycleGeneration;
 		if (!current) return;
-		if (frozenSummary === undefined) {
+		if (capabilitySnapshot === undefined) {
 			await current.waitForWarmup();
 			if (manager !== current || generation !== lifecycleGeneration) return;
-			frozenSummary = current.capabilitySummary();
+			capabilitySnapshot = current.capabilitySummary();
 			reportedRuntime = snapshotRuntime(current);
-			persistSnapshot(pi, frozenSummary, reportedRuntime);
-			if (frozenSummary) return { systemPrompt: `${event.systemPrompt}\n\n${frozenSummary}` };
-			return;
+			persistSessionState(pi, capabilitySnapshot, reportedRuntime);
+		}
+		if (!activeContextHasCapabilitySnapshot(ctx, capabilitySnapshot)) {
+			return { message: capabilitySnapshotMessage(capabilitySnapshot) };
 		}
 		const update = collectRuntimeUpdate(current, reportedRuntime);
-		if (update) persistSnapshot(pi, frozenSummary, reportedRuntime);
-		if (!frozenSummary && !update) return;
-		return {
-			...(frozenSummary ? { systemPrompt: `${event.systemPrompt}\n\n${frozenSummary}` } : {}),
-			...(update ? { message: { customType: "mcp-runtime-update", content: update, display: false } } : {}),
-		};
+		if (!update) return;
+		persistSessionState(pi, capabilitySnapshot, reportedRuntime);
+		return { message: runtimeUpdateMessage(update) };
 	});
 
 	pi.registerTool({
@@ -259,53 +254,6 @@ function commandCompletions(prefix: string, statuses: ServerStatus[]): Autocompl
 		}));
 	}
 	return null;
-}
-
-function restoreSnapshot(ctx: ExtensionContext): PersistedMcpSnapshot | undefined {
-	let restored: PersistedMcpSnapshot | undefined;
-	for (const entry of ctx.sessionManager.getBranch()) {
-		if (entry.type !== "custom" || entry.customType !== "mcp-session-snapshot") continue;
-		const data = entry.data as PersistedMcpSnapshot | undefined;
-		if (data && typeof data.summary === "string" && data.runtime && typeof data.runtime === "object") restored = data;
-	}
-	return restored;
-}
-
-function persistSnapshot(pi: ExtensionAPI, summary: string, runtime: Record<string, ReportedRuntime>): void {
-	pi.appendEntry<PersistedMcpSnapshot>("mcp-session-snapshot", {
-		summary,
-		runtime: Object.fromEntries(Object.entries(runtime).map(([name, value]) => [name, { ...value }])),
-	});
-}
-
-function snapshotRuntime(manager: McpManager): Record<string, ReportedRuntime> {
-	const fingerprints = manager.catalogFingerprints();
-	return Object.fromEntries(manager.status().map((status) => [status.name, {
-		sessionEnabled: status.sessionEnabled,
-		fingerprint: fingerprints[status.name]?.signature,
-	}]));
-}
-
-function collectRuntimeUpdate(manager: McpManager, reported: Record<string, ReportedRuntime>): string | undefined {
-	const notes: string[] = [];
-	const fingerprints = manager.catalogFingerprints();
-	for (const status of manager.status()) {
-		const previous = reported[status.name] ?? { sessionEnabled: status.sessionEnabled };
-		if (previous.sessionEnabled !== status.sessionEnabled) {
-			notes.push(status.sessionEnabled
-				? `${status.name} is enabled for this session; its catalog may still be loading.`
-				: `${status.name} is disabled for this session; calls will fail until the user enables it.`);
-			previous.sessionEnabled = status.sessionEnabled;
-		}
-		const fingerprint: CatalogFingerprint | undefined = fingerprints[status.name];
-		if (fingerprint?.ready && fingerprint.signature && fingerprint.signature !== previous.fingerprint) {
-			notes.push(`${status.name}'s catalog changed; ${fingerprint.toolCount} tools are currently available.`);
-			previous.fingerprint = fingerprint.signature;
-		}
-		reported[status.name] = previous;
-	}
-	if (notes.length === 0) return undefined;
-	return `MCP runtime update (authoritative after the frozen session snapshot):\n${notes.map((note) => `- ${note}`).join("\n")}\nUse mcp status, search, list, or describe for current details.`;
 }
 
 function requireManager(manager: McpManager | undefined): McpManager {

@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented production baseline for version 0.1.0.
+Implemented cache-stable production baseline for version 0.2.0.
 
 ## Goal
 
@@ -209,26 +209,30 @@ Tool descriptions, schemas, annotations, server identity, instructions, and outp
 
 ## Progressive Discovery
 
-Pi 0.80.6 does not expose provider-native `defer_loading`, `tool_reference`, or `tool_search`. The extension therefore implements a host-side fallback:
+The extension uses a provider-independent two-tool router rather than registering every MCP capability as a Pi tool:
 
 1. Fetch and cache complete catalogs in the background.
-2. Inject a bounded summary containing server instructions, tool names, and short descriptions.
+2. Append one bounded hidden capability snapshot containing server instructions, tool names, and short descriptions.
 3. Use `mcp search` for ranked cross-server discovery.
 4. Use `mcp describe` to retrieve one exact full schema.
 5. Use `call_mcp_tool` to invoke the exact tool.
 
-The capability summary has a fixed global character budget. Small catalogs fit completely; large catalogs are explicitly marked partial and direct the model to `mcp search` or paginated `mcp list`. Full schemas never enter the summary.
+The capability snapshot has a fixed global character budget. Small catalogs fit completely; large catalogs are explicitly marked partial and direct the model to `mcp search` or paginated `mcp list`. Full schemas remain host-side.
 
 ### Prompt-cache safety
 
-The system prompt sits ahead of the entire conversation in every provider's prompt-cache prefix, so a system prompt that changes between turns re-bills the whole context. The summary is therefore a frozen session snapshot:
+The model-facing prefix follows four invariants:
 
-- It is rendered once, on the first agent turn after the bounded warmup wait, and reused byte-for-byte on every later turn.
-- The exact summary and reported runtime state are stored in a private session entry. Extension reloads and resumed branches restore that snapshot rather than rendering a new early prompt prefix.
-- It contains no volatile state: no connection status words, no live errors, no text that a status flicker can change. A server that is not ready at snapshot time gets one stable line directing the model to `mcp status` and `mcp search`.
-- Current-session enable/disable and semantic catalog changes after the freeze are coalesced into hidden appended messages. Appended messages extend the cached prefix instead of invalidating it.
-- Catalog fingerprints cover server identity/instructions and tool descriptions/schemas/annotations, with recursively sorted object keys. A ready zero-tool server is distinct from a non-ready server.
-- Connection-state flicker, transient disconnects, error-text changes, and future-session-default-only changes are not announced. `mcp status` remains the live view, and a reconnect that restores an identical catalog produces no message.
+- The extension never modifies the system prompt.
+- The `mcp` and `call_mcp_tool` definitions are registered once and remain byte-identical.
+- The capability snapshot is appended as a hidden custom message only when active context does not already contain the exact snapshot.
+- Runtime changes are hidden append-only messages; they never rewrite earlier context.
+
+The exact snapshot and reported runtime state are stored in a private session entry. Reloads and resumed branches restore that state without duplicating an active snapshot. If compaction removes the snapshot from active context, the same text is appended again after the compacted prefix.
+
+The snapshot excludes volatile state: no connection status words, live errors, or text that changes with status flicker. A server that is not ready at snapshot time gets one stable line directing the model to `mcp status` and `mcp search`. Catalog fingerprints cover server identity/instructions and tool descriptions/schemas/annotations with recursively sorted object keys. Connection flicker, transient errors, future-session-default-only changes, and identical reconnects stay silent; `mcp status` remains the live view.
+
+Direct MCP-tool registration is intentionally avoided. It would require schema conversion and collision policy, and providers without native deferred loading would receive an expanded tool list that invalidates the fixed prefix.
 
 ## Non-goals
 
@@ -250,7 +254,9 @@ The system prompt sits ahead of the entire conversation in every provider's prom
 
 ## Packaging
 
-The private package is named `pi-arcweld-mcp`, version `0.1.0`, under the MIT license. npm publication remains disabled with `"private": true`.
+The private package is named `pi-arcweld-mcp`, version `0.2.0`, under the MIT license. npm publication remains disabled with `"private": true`.
+
+Pi core packages and `typebox` are optional wildcard peers supplied by the host runtime. Only the MCP SDK, Zod, and package-local development tools are versioned in the lockfile.
 
 ## Files
 
@@ -265,8 +271,10 @@ extensions/mcp-extension/
 │   ├── config.ts
 │   ├── manager.ts
 │   ├── output.ts
+│   ├── session-context.ts
 │   └── ui.ts
 └── test/
+    ├── cache-integration.test.ts
     ├── fixture-server.ts
     ├── freeze.test.ts
     ├── mcp.test.ts
@@ -277,10 +285,12 @@ extensions/mcp-extension/
 - `config.ts`: strict user-global configuration loading.
 - `manager.ts`: official SDK transports, lifecycle controls, catalogs, semantic fingerprints, and calls.
 - `output.ts`: MCP result conversion and truncation.
+- `session-context.ts`: capability snapshot restoration, active-context detection, and append-only runtime state.
 - `ui.ts`: responsive themed MCP control panel.
+- `cache-integration.test.ts`: real Pi package loading and model-request prefix hashing with the faux provider.
 - `fixture-server.ts`: local deterministic stdio MCP server.
 - `mcp.test.ts`: config, manager, transport, and output checks.
-- `freeze.test.ts`: frozen-prefix and append-only runtime regression checks.
+- `freeze.test.ts`: fixed-system/tool and append-only context regression checks.
 - `ui.test.ts`: responsive rendering and keyboard-flow checks.
 
 ## Verification Coverage
@@ -301,9 +311,11 @@ The deterministic test suite verifies:
 12. The fixture completes connect, list, describe, call, and shutdown over stdio.
 13. Default-disabled servers skip warmup; session enable/disable/reconnect are race-safe and do not retry calls.
 14. Durable default writes preserve raw secret placeholders, exact permissions, symlink targets, and unrelated configuration.
-15. Tool definitions and the frozen MCP system-prompt suffix stay byte-identical across runtime controls, catalog changes, and extension lifecycle restoration.
-16. Shared startup cancellation, cleanup serialization, and trailing catalog refreshes are regression-tested.
-17. The TUI remains readable at narrow and wide widths, bounds large server lists, strips terminal controls, and requires explicit confirmation for persistent changes.
+15. The system prompt remains untouched and both public tool definitions stay byte-identical across runtime controls, catalog changes, tool continuations, and lifecycle restoration.
+16. Capability snapshots appear once per active context, survive reload/resume without duplication, and are re-appended exactly after compaction removes them.
+17. A real Pi session with the faux provider keeps identical system/tool hashes before and after MCP calls and append-only runtime updates.
+18. Shared startup cancellation, cleanup serialization, and trailing catalog refreshes are regression-tested.
+19. The TUI remains readable at narrow and wide widths, bounds large server lists, strips terminal controls, and requires explicit confirmation for persistent changes.
 
 ## Future Work
 
@@ -312,5 +324,5 @@ Add only in response to a concrete use case:
 1. Standards-compliant OAuth for Streamable HTTP.
 2. Trusted project-local configuration gated by Pi project trust.
 3. Resources and prompts.
-4. Provider-native deferred tool loading when Pi exposes it.
+4. Direct MCP tool registration only if a concrete use case justifies schema conversion and provider fallback behavior.
 5. Sampling, elicitation, or MCP Apps.

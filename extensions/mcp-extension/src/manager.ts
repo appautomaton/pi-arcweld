@@ -133,11 +133,10 @@ export class McpManager {
 	}
 
 	/**
-	 * Renders the model-facing capability summary. The output must stay byte-stable
-	 * for unchanged catalogs: it is frozen into the system prompt for the whole
-	 * session, and any variation would invalidate the provider prompt cache for the
-	 * entire conversation. Connection status words, live errors, and other volatile
-	 * state are deliberately excluded; mcp status remains the live view.
+	 * Renders the model-facing capability snapshot. Unchanged catalogs must produce
+	 * byte-identical output because the snapshot is appended once to session context.
+	 * Connection status words, live errors, and other volatile state are excluded;
+	 * mcp status remains the live view.
 	 */
 	capabilitySummary(maxChars = SUMMARY_CHARS): string {
 		if (this.servers.size === 0) return "";
