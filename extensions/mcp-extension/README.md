@@ -19,6 +19,8 @@ pi install ./extensions/mcp-extension
 
 A local-path install records the package path in Pi settings; it does not copy or rebuild the package. During development, edit `src/*.ts` and run `/reload` in Pi. Run `npm ci --ignore-scripts` after cloning or whenever the lockfile changes.
 
+The lockfile covers the extension's MCP SDK and development toolchain only. Pi core packages and `typebox` remain optional wildcard peers supplied by the active Pi runtime; the check harness links those host packages temporarily and removes the links afterward.
+
 For a one-run test without changing settings:
 
 ```bash
@@ -156,11 +158,11 @@ At session startup, the extension starts non-blocking discovery for every server
 initialize → complete paginated tools/list → cache metadata and schemas
 ```
 
-The first agent turn waits up to three seconds for discovery, then freezes a bounded capability summary containing server instructions, tool names, and short descriptions. Full JSON schemas remain host-side. Slow or failed servers do not block the turn indefinitely; a cross-server `mcp search` waits on the existing background discovery promise when the model needs those capabilities.
+The first agent turn waits up to three seconds for discovery, then renders a bounded capability snapshot containing server instructions, tool names, and short descriptions. Full JSON schemas remain host-side. Slow or failed servers do not block the turn indefinitely; a cross-server `mcp search` waits on the existing background discovery promise when the model needs those capabilities.
 
-The frozen summary is reused byte-for-byte on every later turn to keep the provider prompt-cache prefix intact. It is also stored as a private session entry so extension reloads and resumed session branches restore the exact same snapshot and current-session enablement. It contains no connection status or error text. Session enable/disable and semantic catalog changes after the freeze are coalesced into hidden append-only messages instead of rewriting the system prompt. Catalog fingerprints include descriptions and schemas, while reconnects that restore identical catalogs stay silent. `mcp status` is always the live view.
+The extension never modifies Pi's system prompt and always exposes the same two public tool schemas. The capability snapshot is appended once as a hidden session message after the fixed prompt/tool prefix. Its exact content and current-session enablement are also stored in private session state so reloads and resumed branches do not duplicate it; if compaction removes it from active context, the same snapshot is appended again. Session enable/disable and semantic catalog changes are hidden append-only runtime messages. Connection flicker and identical reconnects stay silent, while `mcp status` remains the live view.
 
-This is a host-side progressive-discovery fallback for Pi 0.80.6, which does not expose provider-native `defer_loading`, `tool_reference`, or `tool_search`. stdio servers are therefore started during session discovery, not on their first business tool call. Tool invocations remain strictly on demand.
+The two-tool host-side discovery model is deliberately provider-independent. MCP tools are not dynamically registered as Pi tools, so unsupported provider fallbacks cannot expand the main tool schema or invalidate its cached prefix. Enabled stdio servers still start during bounded session discovery; business tool calls remain strictly on demand.
 
 ## Pi tools
 
