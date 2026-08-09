@@ -1,42 +1,109 @@
-import type { Model } from "@earendil-works/pi-ai";
+import { hasApi } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { getClaudeWebSearchRoute, prepareClaudeWebSearchPayload } from "./payload.ts";
-import { replaySafeAnthropicStream } from "./provider.ts";
+import {
+	DEFAULT_MAX_BYTES,
+	DEFAULT_MAX_LINES,
+	formatSize,
+	truncateHead,
+} from "@earendil-works/pi-coding-agent";
+import { Type } from "typebox";
+import { formatHostedSearchResult, runHostedWebSearch } from "./hosted-search.ts";
+import { getHostedWebSearchRoute } from "./payload.ts";
 
-const PROVIDERS = ["anthropic", "cli-proxy-api-anthropic"] as const;
+const webSearchParameters = Type.Object(
+	{
+		query: Type.String({
+			minLength: 2,
+			maxLength: 2_000,
+			description: "The concrete web search query to execute.",
+		}),
+		allowed_domains: Type.Optional(
+			Type.Array(Type.String({ minLength: 1 }), {
+				maxItems: 20,
+				description: "Only include results from these domains.",
+			}),
+		),
+		blocked_domains: Type.Optional(
+			Type.Array(Type.String({ minLength: 1 }), {
+				maxItems: 20,
+				description: "Exclude results from these domains.",
+			}),
+		),
+	},
+	{ additionalProperties: false },
+);
 
 export default function claudeWebSearchExtension(pi: ExtensionAPI) {
-	for (const provider of PROVIDERS) {
-		pi.registerProvider(provider, {
-			api: "anthropic-messages",
-			streamSimple(model, context, options) {
-				if (model.api !== "anthropic-messages") {
-					throw new Error(`Replay-safe Claude web search cannot stream API ${model.api}`);
-				}
-				return replaySafeAnthropicStream(model as Model<"anthropic-messages">, context, options);
-			},
-		});
-	}
+	pi.registerTool({
+		name: "WebSearch",
+		label: "Web Search",
+		description:
+			"Search the public web for current or externally verifiable information. Provide a specific non-empty query. The tool returns a concise synthesis plus source URLs; cite relevant returned sources in the final answer.",
+		parameters: webSearchParameters,
+		async execute(_toolCallId, params, signal, onUpdate, ctx) {
+			const model = ctx.model;
+			const route = getHostedWebSearchRoute(model);
+			if (!model || !route || !hasApi(model, "anthropic-messages")) {
+				const selected = model ? `${model.provider}/${model.id} (${model.api})` : "no selected model";
+				throw new Error(`WebSearch requires a supported Anthropic Messages Claude/Kimi model; selected ${selected}`);
+			}
 
-	pi.on("before_provider_request", (event, ctx) => {
-		const payload = prepareClaudeWebSearchPayload(event.payload, ctx.model);
-		if (payload !== event.payload) return payload;
+			const result = await runHostedWebSearch(
+				model,
+				{
+					query: params.query,
+					allowedDomains: params.allowed_domains,
+					blockedDomains: params.blocked_domains,
+				},
+				{
+					complete: (searchModel, context, options) => ctx.modelRegistry.complete(searchModel, context, options),
+					signal: signal ?? ctx.signal,
+					onProgress(message) {
+						onUpdate?.({
+							content: [{ type: "text", text: message }],
+							details: { query: params.query, status: message },
+						});
+					},
+				},
+			);
+
+			const formatted = formatHostedSearchResult(result);
+			const truncation = truncateHead(formatted, {
+				maxBytes: DEFAULT_MAX_BYTES,
+				maxLines: DEFAULT_MAX_LINES,
+			});
+			const text = truncation.truncated
+				? `${truncation.content}\n\n[WebSearch output truncated to ${truncation.outputLines} of ${truncation.totalLines} lines (${formatSize(truncation.outputBytes)} of ${formatSize(truncation.totalBytes)}).]`
+				: truncation.content;
+
+			return {
+				content: [{ type: "text", text }],
+				details: {
+					query: result.query,
+					sources: result.sources,
+					warnings: result.errors,
+					requestCount: result.requestCount,
+					durationSeconds: result.durationSeconds,
+					truncated: truncation.truncated,
+				},
+				usage: result.usage,
+			};
+		},
 	});
 
 	pi.registerCommand("claude-web-search-status", {
-		description: "Show whether replay-safe Claude web_search is enabled for the current model",
+		description: "Show isolated WebSearch support and cache behavior for the current model",
 		handler: async (_args, ctx) => {
-			const route = getClaudeWebSearchRoute(ctx.model);
-			if (route === "anthropic") {
-				ctx.ui.notify("Replay-safe Claude web_search is enabled for the built-in Anthropic provider", "info");
-				return;
-			}
-			if (route === "cli-proxy-api-anthropic") {
-				ctx.ui.notify("Replay-safe Claude web_search is enabled for this CPA Anthropic model", "info");
+			const route = getHostedWebSearchRoute(ctx.model);
+			if (route) {
+				ctx.ui.notify(
+					`Isolated WebSearch is enabled via ${route}; the main request keeps a stable ordinary tool schema and hosted search runs only on tool invocation`,
+					"info",
+				);
 				return;
 			}
 			const selected = ctx.model ? `${ctx.model.provider}/${ctx.model.id} (${ctx.model.api})` : "no selected model";
-			ctx.ui.notify(`Claude web_search is not injected for ${selected}`, "warning");
+			ctx.ui.notify(`Isolated WebSearch is unavailable for ${selected}`, "warning");
 		},
 	});
 }

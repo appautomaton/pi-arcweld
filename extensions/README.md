@@ -13,7 +13,7 @@
 | `claude-cache-retention.ts` | Claude-only one-hour prompt-cache policy for the local CPA provider | Symlink at `~/.pi/agent/extensions/claude-cache-retention.ts` |
 | `exa-search.ts` | Exa-backed `exa_search` tool | Symlink at `~/.pi/agent/extensions/exa-search.ts` |
 | `codex-web-search.ts` | Codex hosted `web_search` injection plus explicit `web_run` tool | Symlink at `~/.pi/agent/extensions/codex-web-search.ts` |
-| `claude-web-search/` | Replay-safe Claude provider-side `web_search` | Symlink at `~/.pi/agent/extensions/claude-web-search` |
+| `claude-web-search/` | Cache-stable isolated Anthropic `WebSearch` tool | Symlink at `~/.pi/agent/extensions/claude-web-search` |
 | `grok-search.ts` | Grok-backed web/X `grok_search` tool | Symlink at `~/.pi/agent/extensions/grok-search.ts` |
 
 The questionnaire started from Pi's upstream example and is maintained here as a self-contained local variant. Keeping its imports package-based makes it safe to load through the user-level symlink, while the local copy owns its model-facing clarification policy.
@@ -26,7 +26,7 @@ For eligible `cli-proxy-api` GPT Responses models, the same extension also regis
 
 The explicit route is intentionally limited to the verified CPA path for now. Direct `openai-codex` models retain hosted `web_search`, but do not expose `web_run` until the direct alpha-search OAuth/account-header path is separately validated. The `/alpha/search` API is an internal alpha Codex endpoint and may change without the compatibility guarantees of a public stable API. Each call uses Codex account capacity, so batch independent operations when practical. `exa_search` remains available as a fallback for models without hosted search, or when Exa results are explicitly requested.
 
-`claude-web-search/` enables Anthropic's provider-side `web_search` for the built-in `anthropic` provider and the local `cli-proxy-api-anthropic` provider. The package wraps Pi's Anthropic `streamSimple` transport, tunnels native `server_tool_use` and `web_search_tool_result` blocks through session history as invisible validated replay markers, restores their exact ordering before the next request, and continues bounded `pause_turn` responses internally. Existing provider models, authentication, cache settings, headers, retries, timeouts, metadata, and cancellation remain composed by Pi. The tests use synthetic SSE and fake streams only; they make no live model requests. Structured Anthropic citation annotations are not rendered by Pi, and session branches that already lost native blocks must restart or branch before the failed turn.
+`claude-web-search/` exposes one stable ordinary `WebSearch` tool for built-in Anthropic Claude models and `claude-*` plus `kimi-*` models on the local `cli-proxy-api-anthropic` provider. Normal agent requests are never rewritten and never receive a hosted-search declaration. When the model explicitly calls `WebSearch`, the tool sends a minimal nested request through Pi's model registry using the same model, endpoint, authentication, headers, cancellation, retries, and usage accounting; only that isolated request receives `web_search_20250305`. Its system/tool prefix is fixed and cache-eligible, while the query is the dynamic suffix. Hosted server blocks and bounded `pause_turn` history remain in memory, CPA Kimi's malformed IDs are normalized there, and the outer conversation receives only an ordinary tool result with text and source URLs. The extension does not register a provider, mutate active tools, persist replay markers, or alter the main conversation's cache prefix after load.
 
 `claude-cache-retention.ts` upgrades existing Anthropic `cache_control` markers to a one-hour TTL only for the `cli-proxy-api-anthropic` provider. This keeps `PI_CACHE_RETENTION` unset so OpenAI and other Pi providers retain their default cache policies.
 
@@ -58,7 +58,7 @@ npm test
 npm run pack:check
 ```
 
-Use the same command sequence in `extensions/plan-mode/` and `extensions/claude-web-search/`. Test the self-contained extensions through their user-level symlinks or explicitly with:
+Use the same command sequence in `extensions/plan-mode/` and `extensions/claude-web-search/`. The Claude web-search package borrows the workspace's existing TypeScript/TSX toolchain and temporarily links only the built Pi runtime packages during checks; it keeps no extension-local dependency tree. Test the self-contained extensions through their user-level symlinks or explicitly with:
 
 ```bash
 pi -e ./extensions/questionnaire.ts
@@ -68,6 +68,6 @@ pi -e ./extensions/claude-web-search
 pi -e ./extensions/grok-search.ts
 ```
 
-For search configuration checks, run `/exa-search-status` for Exa, `/codex-web-search-status` to inspect both hosted `web_search` and explicit `web_run` availability for the selected model, `/claude-web-search-status` for the replay-safe Anthropic route, and confirm `cli-proxy-api/grok-4.5` appears in `pi --list-models` for Grok.
+For search configuration checks, run `/exa-search-status` for Exa, `/codex-web-search-status` to inspect both hosted `web_search` and explicit `web_run` availability for the selected model, `/claude-web-search-status` for the isolated cache-stable Anthropic route, and confirm `cli-proxy-api/grok-4.5` appears in `pi --list-models` for Grok.
 
 After changing an auto-discovered extension, run `/reload` in an active Pi session. Restart Pi after changing package registration or dependencies.

@@ -1,133 +1,98 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
-	getClaudeWebSearchRoute,
-	injectClaudeWebSearch,
-	prepareClaudeWebSearchPayload,
-	restoreClaudeReplayPayload,
+	buildHostedSearchPayload,
+	getHostedWebSearchRoute,
+	HOSTED_WEB_SEARCH_MAX_USES,
+	HOSTED_WEB_SEARCH_TOOL_NAME,
+	HOSTED_WEB_SEARCH_TOOL_TYPE,
 } from "../payload.ts";
-import { encodePauseBoundaryMarker, encodeServerBlockMarker, ReplayMarkerError } from "../protocol.ts";
 
-const model = { provider: "cli-proxy-api-anthropic", api: "anthropic-messages", id: "claude-opus-5" };
-const serverUse = {
-	type: "server_tool_use" as const,
-	id: "srvtoolu_01",
-	name: "web_search" as const,
-	input: { query: "Chrome DevTools MCP" },
-	caller: { type: "direct" },
-};
-const searchResult = {
-	type: "web_search_tool_result" as const,
-	tool_use_id: "srvtoolu_01",
-	caller: { type: "direct" },
-	content: [
-		{
-			type: "web_search_result" as const,
-			encrypted_content: "encrypted-content",
-			title: "Chrome DevTools MCP",
-			url: "https://example.com/chrome-devtools",
-		},
-	],
-};
+const cpaClaude = { provider: "cli-proxy-api-anthropic", api: "anthropic-messages", id: "claude-opus-5" };
 
-function marker(signature: string) {
-	return { type: "thinking", thinking: "", signature };
+function basePayload(text = "Perform a web search for the query: Pi") {
+	return {
+		model: cpaClaude.id,
+		max_tokens: 8192,
+		stream: true,
+		system: [{ type: "text", text: "fixed", cache_control: { type: "ephemeral" } }],
+		messages: [{ role: "user", content: [{ type: "text", text, cache_control: { type: "ephemeral" } }] }],
+	};
 }
 
-describe("Claude web-search payload rewriting", () => {
-	it("identifies only the supported Anthropic routes", () => {
-		assert.equal(getClaudeWebSearchRoute(model), "cli-proxy-api-anthropic");
+describe("isolated hosted-search payload", () => {
+	it("supports only the intended Anthropic Messages Claude/Kimi routes", () => {
+		assert.equal(getHostedWebSearchRoute(cpaClaude), "cli-proxy-api-anthropic");
 		assert.equal(
-			getClaudeWebSearchRoute({ provider: "anthropic", api: "anthropic-messages", id: "claude-sonnet-5" }),
+			getHostedWebSearchRoute({ provider: "cli-proxy-api-anthropic", api: "anthropic-messages", id: "kimi-k3" }),
+			"cli-proxy-api-anthropic",
+		);
+		assert.equal(
+			getHostedWebSearchRoute({ provider: "anthropic", api: "anthropic-messages", id: "claude-sonnet-5" }),
 			"anthropic",
 		);
-		assert.equal(getClaudeWebSearchRoute({ provider: "kimi-coding", api: "anthropic-messages", id: "kimi" }), undefined);
+		assert.equal(getHostedWebSearchRoute({ provider: "anthropic", api: "anthropic-messages", id: "other" }), undefined);
+		assert.equal(getHostedWebSearchRoute({ provider: "kimi-coding", api: "anthropic-messages", id: "kimi" }), undefined);
+		assert.equal(getHostedWebSearchRoute({ provider: "cli-proxy-api-anthropic", api: "openai-completions", id: "kimi-k3" }), undefined);
 	});
 
-	it("restores server blocks in exact order and injects native search once", () => {
-		const payload = {
-			model: model.id,
-			messages: [
-				{ role: "user", content: [{ type: "text", text: "Search, then inspect locally" }] },
-				{
-					role: "assistant",
-					content: [
-						{ type: "thinking", thinking: "", signature: "thinking-a" },
-						marker(encodeServerBlockMarker(serverUse)),
-						marker(encodeServerBlockMarker(searchResult)),
-						{ type: "thinking", thinking: "", signature: "thinking-b" },
-						{ type: "tool_use", id: "toolu_bash", name: "bash", input: { command: "pwd" } },
-					],
-				},
-			],
-			tools: [{ name: "bash", input_schema: { type: "object" } }],
+	it("replaces the isolated request tool list without mutating its stable prefix", () => {
+		const original = basePayload();
+		const rewritten = buildHostedSearchPayload(original, { query: "Pi" }) as typeof original & {
+			tools: Array<Record<string, unknown>>;
 		};
-
-		const rewritten = prepareClaudeWebSearchPayload(payload, model) as typeof payload;
-		assert.notEqual(rewritten, payload);
-		assert.deepEqual(rewritten.messages[1]?.content, [
-			{ type: "thinking", thinking: "", signature: "thinking-a" },
-			serverUse,
-			searchResult,
-			{ type: "thinking", thinking: "", signature: "thinking-b" },
-			{ type: "tool_use", id: "toolu_bash", name: "bash", input: { command: "pwd" } },
-		]);
-		assert.deepEqual(rewritten.tools.at(-1), { type: "web_search_20250305", name: "web_search" });
-	});
-
-	it("expands pause boundaries into consecutive assistant messages", () => {
-		const payload = {
-			messages: [
-				{
-					role: "assistant",
-					content: [
-						marker(encodeServerBlockMarker(serverUse)),
-						marker(encodePauseBoundaryMarker()),
-						marker(encodeServerBlockMarker(searchResult)),
-						{ type: "text", text: "Finished" },
-					],
-				},
-			],
-		};
-		const restored = restoreClaudeReplayPayload(payload);
-		assert.equal(restored.changed, true);
-		assert.deepEqual((restored.payload as typeof payload).messages, [
-			{ role: "assistant", content: [serverUse] },
-			{ role: "assistant", content: [searchResult, { type: "text", text: "Finished" }] },
+		assert.notEqual(rewritten, original);
+		assert.deepEqual(rewritten.system, original.system);
+		assert.deepEqual(rewritten.messages, original.messages);
+		assert.equal((original as Record<string, unknown>).tools, undefined);
+		assert.deepEqual(rewritten.tools, [
+			{
+				type: HOSTED_WEB_SEARCH_TOOL_TYPE,
+				name: HOSTED_WEB_SEARCH_TOOL_NAME,
+				max_uses: HOSTED_WEB_SEARCH_MAX_USES,
+			},
 		]);
 	});
 
-	it("does not duplicate an existing native search declaration", () => {
-		const payload = { tools: [{ type: "web_search_20260209", name: "web_search" }] };
-		const injected = injectClaudeWebSearch(payload, model);
-		assert.equal(injected.changed, false);
-		assert.equal(injected.payload, payload);
+	it("keeps the tool schema byte-stable across different queries", () => {
+		const first = buildHostedSearchPayload(basePayload("Perform a web search for the query: alpha"), {
+			query: "alpha",
+		}) as Record<string, unknown>;
+		const second = buildHostedSearchPayload(basePayload("Perform a web search for the query: beta"), {
+			query: "beta",
+		}) as Record<string, unknown>;
+		assert.equal(JSON.stringify(first.system), JSON.stringify(second.system));
+		assert.equal(JSON.stringify(first.tools), JSON.stringify(second.tools));
+		assert.notEqual(JSON.stringify(first.messages), JSON.stringify(second.messages));
 	});
 
-	it("leaves ineligible provider payloads untouched", () => {
-		const payload = { messages: [], tools: [] };
-		const result = prepareClaudeWebSearchPayload(payload, {
-			provider: "kimi-coding",
-			api: "anthropic-messages",
-			id: "kimi",
-		});
-		assert.equal(result, payload);
+	it("adds domain filters only to the isolated hosted tool", () => {
+		const rewritten = buildHostedSearchPayload(basePayload(), {
+			query: "Pi",
+			allowedDomains: ["example.com"],
+		}) as { tools: Array<Record<string, unknown>> };
+		assert.deepEqual(rewritten.tools[0]?.allowed_domains, ["example.com"]);
+		assert.equal(rewritten.tools[0]?.blocked_domains, undefined);
 	});
 
-	it("fails closed for malformed marker placement", () => {
+	it("appends in-memory pause history after the single user message", () => {
+		const assistant = {
+			role: "assistant",
+			content: [{ type: "server_tool_use", id: "srv_1", name: "web_search", input: { query: "Pi" } }],
+		};
+		const rewritten = buildHostedSearchPayload(basePayload(), {
+			query: "Pi",
+			assistantHistory: [assistant],
+		}) as { messages: Array<Record<string, unknown>> };
+		assert.equal(rewritten.messages.length, 2);
+		assert.deepEqual(rewritten.messages[1], assistant);
+	});
+
+	it("fails closed when called with a non-isolated base payload", () => {
+		assert.throws(() => buildHostedSearchPayload({}, { query: "Pi" }), /exactly one user message/);
 		assert.throws(
-			() =>
-				restoreClaudeReplayPayload({
-					messages: [{ role: "assistant", content: [marker(encodePauseBoundaryMarker())] }],
-				}),
-			ReplayMarkerError,
-		);
-		assert.throws(
-			() =>
-				restoreClaudeReplayPayload({
-					messages: [{ role: "user", content: [marker(encodeServerBlockMarker(serverUse))] }],
-				}),
-			ReplayMarkerError,
+			() => buildHostedSearchPayload({ messages: [{ role: "user" }, { role: "assistant" }] }, { query: "Pi" }),
+			/exactly one user message/,
 		);
 	});
 });

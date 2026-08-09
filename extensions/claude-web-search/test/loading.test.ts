@@ -7,7 +7,10 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const piCli = resolve(packageRoot, "node_modules/@earendil-works/pi-coding-agent/dist/cli.js");
+const piCli = resolve(
+	packageRoot,
+	"../../build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent/dist/cli.js",
+);
 
 interface ProcessResult {
 	code: number | null;
