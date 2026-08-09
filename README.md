@@ -47,6 +47,12 @@ scripts/build-pi-agent.sh --link-user-bin
 pi --version
 ```
 
+The build prefers the repository's pinned native `tsgo` compiler when it is
+runnable and otherwise falls back to the pinned `tsc` compiler. The fallback
+targets ES2024 because the TUI source uses the RegExp `v` flag. Compiler
+selection is capability-based and does not require platform-specific source
+branches.
+
 See [`extensions/README.md`](extensions/README.md) for extension loading and validation. Run the repository and machine-specific checks with:
 
 ```bash

@@ -78,6 +78,8 @@ TARBALL_DIR="$BUILD_DIR/artifacts/tarballs"
 # without editing this script.
 PACKAGE_NAMES=()
 declare -A PACKAGE_NPM_NAMES=()
+TYPESCRIPT_COMPILER=""
+TYPESCRIPT_COMPILER_ARGS=()
 
 if [[ ! -f "$MONO_DIR/package.json" ]]; then
 	echo "Missing pi-mono checkout at $MONO_DIR" >&2
@@ -175,6 +177,25 @@ install_build_dependencies() {
 	npm ci --ignore-scripts --prefix "$WORK_DIR"
 }
 
+select_typescript_compiler() {
+	local tsgo="$WORK_DIR/node_modules/.bin/tsgo"
+	local tsc="$WORK_DIR/node_modules/.bin/tsc"
+
+	if [[ -x "$tsgo" ]] && "$tsgo" --version >/dev/null 2>&1; then
+		TYPESCRIPT_COMPILER="$tsgo"
+	else
+		if [[ ! -x "$tsc" ]]; then
+			echo "Neither tsgo nor tsc is runnable" >&2
+			exit 1
+		fi
+		TYPESCRIPT_COMPILER="$tsc"
+		# The TUI uses the RegExp v flag, which tsc accepts only with an ES2024 target.
+		TYPESCRIPT_COMPILER_ARGS=(--target ES2024)
+	fi
+
+	echo "==> Using TypeScript compiler: $TYPESCRIPT_COMPILER"
+}
+
 build_typescript_packages() {
 	echo "==> Building package dist outputs outside pi-mono"
 	for package_name in "${PACKAGE_NAMES[@]}"; do
@@ -186,7 +207,7 @@ build_typescript_packages() {
 				PATH="$WORK_DIR/node_modules/.bin:$PATH" node "$MONO_DIR/packages/ai/scripts/generate-models.ts"
 			)
 		fi
-		"$WORK_DIR/node_modules/.bin/tsgo" -p "$WORK_DIR/packages/$package_name/tsconfig.build.json"
+		"$TYPESCRIPT_COMPILER" "${TYPESCRIPT_COMPILER_ARGS[@]}" -p "$WORK_DIR/packages/$package_name/tsconfig.build.json"
 		if [[ "$package_name" == "ai" ]]; then
 			copy_dir "$WORK_DIR/packages/ai/src/providers/data" "$WORK_DIR/packages/ai/dist/providers/data"
 		fi
@@ -329,6 +350,7 @@ cleanup_stale_layout() {
 resolve_runtime_packages
 prepare_workdir
 install_build_dependencies
+select_typescript_compiler
 build_typescript_packages
 copy_coding_agent_assets
 assemble_runtime
