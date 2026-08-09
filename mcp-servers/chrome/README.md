@@ -4,13 +4,16 @@ Setup notes for browser automation with real Google Chrome. Unlike `camoufox/`, 
 
 Design decisions (2026-07-26): always current Chrome, no version pinning; binary lives user-locally with no system install and no auto-updater; the downloaded `.deb` is kept next to the extraction so re-extracting never depends on the network.
 
-## Layout on disk
+## Recommended layout on disk
+
+The project scripts use `$HOME/.cache/chrome` as the recommended user-local location. Chrome and the MCP servers do not require this location; if you choose another one, update the scripts and MCP configuration accordingly.
 
 ```
-~/.cache/chrome/
+$HOME/.cache/chrome/
 ├── current/opt/google/chrome/chrome        # extracted binary (run directly)
 ├── google-chrome-stable_current_arm64.deb  # the archive it came from
-└── mcp-chrome-profile/                     # persistent browser profile
+├── mcp-chrome-profile/                     # Playwright MCP profile
+└── cdt-profile/                            # Chrome DevTools MCP profile
 ```
 
 ## Setup
@@ -45,9 +48,9 @@ Two stock MCP servers drive this Chrome binary:
   "args": [
     "-y", "@playwright/mcp@0.0.68",
     "--browser", "chromium",
-    "--executable-path", "/home/dev/.cache/chrome/current/opt/google/chrome/chrome",
+    "--executable-path", "<absolute-home>/.cache/chrome/current/opt/google/chrome/chrome",
     "--headless", "--no-sandbox",
-    "--user-data-dir", "/home/dev/.cache/chrome/mcp-chrome-profile"
+    "--user-data-dir", "<absolute-home>/.cache/chrome/mcp-chrome-profile"
   ]
 }
 ```
@@ -57,12 +60,12 @@ Two stock MCP servers drive this Chrome binary:
 ```json
 "chrome-devtools": {
   "transport": "stdio",
-  "command": "/home/dev/.nvm/versions/node/v24.13.0/bin/npx",
+  "command": "<absolute-path-to-npx>",
   "args": [
     "-y", "chrome-devtools-mcp@1.6.0",
-    "--executablePath", "/home/dev/.cache/chrome/current/opt/google/chrome/chrome",
+    "--executablePath", "<absolute-home>/.cache/chrome/current/opt/google/chrome/chrome",
     "--headless",
-    "--userDataDir", "/home/dev/.cache/chrome/cdt-profile",
+    "--userDataDir", "<absolute-home>/.cache/chrome/cdt-profile",
     "--chromeArg=--no-sandbox",
     "--chromeArg=--disable-dev-shm-usage",
     "--chromeArg=--disable-gpu"
@@ -71,7 +74,9 @@ Two stock MCP servers drive this Chrome binary:
 }
 ```
 
-The `npx` path embeds the nvm Node version; update it if the active Node changes. The Pi and Claude Code `chrome-devtools` entries share the `cdt-profile` directory, so only one of them can run a browser at a time (Chrome profile singleton lock).
+Replace `<absolute-home>` with the home directory of the environment that runs Chrome, and `<absolute-path-to-npx>` with the output of `command -v npx`. MCP configuration does not perform shell expansion, so do not put `$HOME` or `~` in these JSON argument values. The recommended cache location may be changed as long as the installer, updater, executable path, and profile paths remain consistent.
+
+If multiple MCP clients use the same `cdt-profile` directory, only one can run the browser at a time because Chrome holds a singleton profile lock.
 
 `--no-sandbox` is required under PRoot (no kernel namespaces) and `--headless` is required (no display). A config change takes effect on the next agent session, not the running one.
 
