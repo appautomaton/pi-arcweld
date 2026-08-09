@@ -9,7 +9,7 @@ This keeps a clear boundary: `extensions/` is client-side code loaded into Pi, a
 | Path | Server | Loading |
 | --- | --- | --- |
 | `camoufox/` | Camoufox browser-automation MCP server (stdio) | Registered in `~/.pi/agent/mcp.json` by absolute launcher path |
-| `chrome/` | Provisioning docs and an update script for the Google Chrome binary used by `chrome-devtools-mcp` | Registered in `~/.pi/agent/mcp.json` |
+| `chrome/` | Provisioning guidance and an update script for a user-local Google Chrome browser; no MCP server code | Not loaded |
 
 ## Loading model
 
