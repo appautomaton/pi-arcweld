@@ -4,10 +4,13 @@ import { spawn } from "node:child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
+const entry = new URL("../src/index.js", import.meta.url).pathname;
+const serverArgs = [entry, "--executable-path", process.execPath];
+
 test("stdio server exposes only the local bounded tool set", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
-    args: [new URL("../src/index.js", import.meta.url).pathname],
+    args: serverArgs,
     stderr: "pipe",
   });
   const client = new Client({ name: "local-test", version: "1.0.0" });
@@ -58,7 +61,7 @@ test("stdio server exposes only the local bounded tool set", async () => {
     assert.equal(status.structuredContent.schemaVersion, "2");
     assert.equal(status.structuredContent.ok, true);
     assert.equal(status.structuredContent.operation, "camoufox_status");
-    assert.equal(status.structuredContent.version, "0.3.0");
+    assert.equal(status.structuredContent.version, "0.4.0");
     assert.equal(status.structuredContent.policy.evaluateAllowed, false);
   } finally {
     await client.close();
@@ -68,7 +71,7 @@ test("stdio server exposes only the local bounded tool set", async () => {
 test("invalid action locator combinations are rejected by the public schema", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
-    args: [new URL("../src/index.js", import.meta.url).pathname],
+    args: serverArgs,
     stderr: "pipe",
   });
   const client = new Client({ name: "schema-test", version: "1.0.0" });
@@ -90,7 +93,7 @@ test("cancelled MCP call reaches the handler and returns promptly", async () => 
     import { Client } from ${JSON.stringify(new URL("../node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js", import.meta.url).href)};
     import { StdioClientTransport } from ${JSON.stringify(new URL("../node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js", import.meta.url).href)};
     const client = new Client({name:'cancel-test',version:'1'});
-    const transport = new StdioClientTransport({command:process.execPath,args:[${JSON.stringify(new URL("../src/index.js", import.meta.url).pathname)}],stderr:'pipe'});
+    const transport = new StdioClientTransport({command:process.execPath,args:[${JSON.stringify(new URL("../src/index.js", import.meta.url).pathname)},'--executable-path',process.execPath],stderr:'pipe'});
     await client.connect(transport);
     const controller = new AbortController();
     const call = client.callTool({name:'browse',arguments:{url:'https://example.com'}}, undefined, {signal:controller.signal});

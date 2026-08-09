@@ -1,84 +1,73 @@
-# Chrome for Playwright MCP
+# Chrome for Chrome DevTools MCP
 
-Setup notes for browser automation with real Google Chrome. Unlike `camoufox/`, there is no server code here: the MCP server is the stock `@playwright/mcp` package fetched by `npx`, and this folder only documents how the Chrome binary it drives is installed and updated.
+This directory documents a user-local Google Chrome installation for `chrome-devtools-mcp`. It contains no MCP server code.
 
-Design decisions (2026-07-26): always current Chrome, no version pinning; binary lives user-locally with no system install and no auto-updater; the downloaded `.deb` is kept next to the extraction so re-extracting never depends on the network.
+The browser stays outside the system package manager and uses no Google auto-updater. The downloaded `.deb` is retained beside the extracted browser for repeatable installation.
 
-## Recommended layout on disk
+## Recommended layout
 
-The project scripts use `$HOME/.cache/chrome` as the recommended user-local location. Chrome and the MCP servers do not require this location; if you choose another one, update the scripts and MCP configuration accordingly.
-
-```
-$HOME/.cache/chrome/
-├── current/opt/google/chrome/chrome        # extracted binary (run directly)
-├── google-chrome-stable_current_arm64.deb  # the archive it came from
-├── mcp-chrome-profile/                     # Playwright MCP profile
-└── cdt-profile/                            # Chrome DevTools MCP profile
+```text
+$HOME/.local/chrome/
+├── current/opt/google/chrome/chrome
+├── google-chrome-stable_current_arm64.deb
+└── cdt-profile/
 ```
 
-## Setup
+This location is a project convention, not a Chrome requirement. The MCP configuration passes the browser executable as an absolute runtime path.
 
-Check first — if this prints a version, Chrome is already installed and you are done:
+## Install
+
+Check for an existing browser first:
 
 ```bash
-~/.cache/chrome/current/opt/google/chrome/chrome --version
+$HOME/.local/chrome/current/opt/google/chrome/chrome --version
 ```
 
-Otherwise install fresh:
+Install the current stable Linux ARM64 package when needed:
 
 ```bash
-mkdir -p ~/.cache/chrome && cd ~/.cache/chrome
-curl -L -o google-chrome-stable_current_arm64.deb \
+mkdir -p "$HOME/.local/chrome"
+cd "$HOME/.local/chrome"
+curl -fL -o google-chrome-stable_current_arm64.deb \
   https://dl.google.com/linux/direct/google-chrome-stable_current_arm64.deb
-dpkg -x google-chrome-stable_current_arm64.deb current || true   # tar chmod warnings under PRoot are harmless
+dpkg -x google-chrome-stable_current_arm64.deb current || true
 current/opt/google/chrome/chrome --version
 ```
 
-Do not `dpkg -i` / `apt install` the .deb: its postinst registers Google's auto-updating apt repository.
+Do not use `dpkg -i` or `apt install`; the package post-install script registers Google's update repository.
 
-## Registration
+## Pi configuration
 
-Two stock MCP servers drive this Chrome binary:
-
-- **Claude Code** uses `@playwright/mcp`, registered in `~/.claude.json`:
+Register the stock Chrome DevTools MCP server in `~/.pi/agent/mcp.json`:
 
 ```json
-"playwright": {
-  "command": "npx",
-  "args": [
-    "-y", "@playwright/mcp@0.0.68",
-    "--browser", "chromium",
-    "--executable-path", "<absolute-home>/.cache/chrome/current/opt/google/chrome/chrome",
-    "--headless", "--no-sandbox",
-    "--user-data-dir", "<absolute-home>/.cache/chrome/mcp-chrome-profile"
-  ]
+{
+  "servers": {
+    "chrome-devtools": {
+      "transport": "stdio",
+      "command": "<absolute-path-to-npx>",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@1.6.0",
+        "--executable-path",
+        "<absolute-home>/.local/chrome/current/opt/google/chrome/chrome",
+        "--headless",
+        "--user-data-dir",
+        "<absolute-home>/.local/chrome/cdt-profile",
+        "--chrome-arg=--no-sandbox",
+        "--chrome-arg=--disable-dev-shm-usage",
+        "--chrome-arg=--disable-gpu",
+        "--no-usage-statistics"
+      ],
+      "enabled": false
+    }
+  }
 }
 ```
 
-- **Pi** uses `chrome-devtools-mcp`, registered in `~/.pi/agent/mcp.json` with the same flags as the Claude Code `chrome-devtools` entry. The Pi MCP extension requires an absolute `command` path and an explicit `transport`, so `npx` is fully qualified:
+Replace the placeholders with absolute paths. MCP configuration does not expand `$HOME` or `~`. Find `npx` with `command -v npx`.
 
-```json
-"chrome-devtools": {
-  "transport": "stdio",
-  "command": "<absolute-path-to-npx>",
-  "args": [
-    "-y", "chrome-devtools-mcp@1.6.0",
-    "--executablePath", "<absolute-home>/.cache/chrome/current/opt/google/chrome/chrome",
-    "--headless",
-    "--userDataDir", "<absolute-home>/.cache/chrome/cdt-profile",
-    "--chromeArg=--no-sandbox",
-    "--chromeArg=--disable-dev-shm-usage",
-    "--chromeArg=--disable-gpu"
-  ],
-  "env": { "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "1" }
-}
-```
-
-Replace `<absolute-home>` with the home directory of the environment that runs Chrome, and `<absolute-path-to-npx>` with the output of `command -v npx`. MCP configuration does not perform shell expansion, so do not put `$HOME` or `~` in these JSON argument values. The recommended cache location may be changed as long as the installer, updater, executable path, and profile paths remain consistent.
-
-If multiple MCP clients use the same `cdt-profile` directory, only one can run the browser at a time because Chrome holds a singleton profile lock.
-
-`--no-sandbox` is required under PRoot (no kernel namespaces) and `--headless` is required (no display). A config change takes effect on the next agent session, not the running one.
+A Chrome profile can be opened by only one process at a time. Use a separate profile path for each concurrent MCP server.
 
 ## Update
 
@@ -86,10 +75,10 @@ If multiple MCP clients use the same `cdt-profile` directory, only one can run t
 scripts/update.sh
 ```
 
-Downloads the newest stable .deb, extracts it, and swaps it in; the profile is untouched. Restart the agent sessions afterwards.
+The script downloads the current stable package, verifies that the extracted browser runs, swaps it into `current/`, and leaves the profile untouched. Restart or reload the MCP client afterward.
 
-## PRoot quirks
+## Runtime notes
 
-- WebGL is software (SwiftShader): screenshots are truthful for layout, FPS numbers are not.
-- dbus/udev errors on stderr are harmless; there is no session bus in the container.
-- Autoplaying videos can stall the software renderer enough to time out screenshots; pause them via JS first.
+- Headless mode is required when no display server is available.
+- `--no-sandbox` is required when the runtime cannot provide Chrome's namespace sandbox.
+- Software rendering is suitable for screenshots and layout checks, not graphics-performance measurements.

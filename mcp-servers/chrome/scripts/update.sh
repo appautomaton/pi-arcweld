@@ -1,12 +1,13 @@
 #!/bin/sh
-# Update ~/.cache/chrome to the newest stable Chrome (linux arm64).
+# Update ~/.local/chrome to the newest stable Chrome (Linux ARM64).
 # Keeps the .deb, swaps the extraction only after it verifies, leaves the profile untouched.
 set -eu
 
-CHROME_DIR="$HOME/.cache/chrome"
+CHROME_DIR="$HOME/.local/chrome"
 DEB="google-chrome-stable_current_arm64.deb"
 URL="https://dl.google.com/linux/direct/$DEB"
 
+mkdir -p "$CHROME_DIR"
 cd "$CHROME_DIR"
 
 echo "current: $(current/opt/google/chrome/chrome --version 2>/dev/null || echo 'none')"
@@ -30,4 +31,4 @@ rm -rf previous
 mv next current
 rm -rf previous
 
-echo "done — restart the Claude Code session to pick it up"
+echo "done — restart or reload the MCP client to pick it up"

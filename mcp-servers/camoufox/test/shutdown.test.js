@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 
 const entry = new URL("../src/index.js", import.meta.url).pathname;
+const serverArgs = [entry, "--executable-path", process.execPath];
 
 async function waitForReady(child) {
   let stderr = "";
@@ -36,7 +37,7 @@ async function waitForExit(child, stderr) {
 }
 
 test("stdin EOF triggers graceful shutdown", async () => {
-  const child = spawn(process.execPath, [entry], { stdio: ["pipe", "ignore", "pipe"] });
+  const child = spawn(process.execPath, serverArgs, { stdio: ["pipe", "ignore", "pipe"] });
   const stderr = await waitForReady(child);
   child.stdin.end();
   const exited = await waitForExit(child, stderr);
@@ -45,7 +46,7 @@ test("stdin EOF triggers graceful shutdown", async () => {
 });
 
 test("SIGHUP triggers graceful shutdown", { skip: process.platform === "win32" }, async () => {
-  const child = spawn(process.execPath, [entry], { stdio: ["pipe", "ignore", "pipe"] });
+  const child = spawn(process.execPath, serverArgs, { stdio: ["pipe", "ignore", "pipe"] });
   const stderr = await waitForReady(child);
   child.kill("SIGHUP");
   const exited = await waitForExit(child, stderr);

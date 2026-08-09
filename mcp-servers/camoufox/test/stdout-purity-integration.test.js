@@ -2,8 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import { homedir, platform } from "node:os";
+import { join } from "node:path";
 
 const runIntegration = process.env.CAMOUFOX_INTEGRATION === "1";
+const browserExecutable = process.env.CAMOUFOX_EXECUTABLE_PATH ?? join(
+  homedir(),
+  ".local",
+  "camoufox",
+  ...(platform() === "darwin" ? ["Camoufox.app", "Contents", "MacOS", "camoufox"] : ["camoufox-bin"]),
+);
 
 // Strict MCP clients close the connection on any stdout line that is not a
 // JSON-RPC frame, so this drives a real browser launch through the launcher
@@ -13,7 +21,7 @@ const runIntegration = process.env.CAMOUFOX_INTEGRATION === "1";
 // the tool-level integration tests.
 test("stdout carries only JSON-RPC frames through a real browser launch", { skip: !runIntegration, timeout: 120_000 }, async () => {
   const launcher = new URL("../bin/camoufox-mcp", import.meta.url).pathname;
-  const child = spawn(launcher, [], { stdio: ["pipe", "pipe", "pipe"] });
+  const child = spawn(launcher, ["--executable-path", browserExecutable], { stdio: ["pipe", "pipe", "pipe"] });
   const polluted = [];
   let buffer = "";
   let resolveDone;

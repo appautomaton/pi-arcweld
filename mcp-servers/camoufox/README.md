@@ -4,12 +4,12 @@ A small, locally owned MCP stdio server for the shared Camoufox runtime on ARM64
 
 ## Supported systems
 
-Two verified runtime profiles, selected automatically by `scripts/runtime-profile.js`:
+Two runtime profiles are selected automatically by `scripts/runtime-profile.js`:
 
-| Profile | System |
-| --- | --- |
-| `proot-arm64` | Debian 13 AArch64 under PRoot |
-| `darwin-arm64` | macOS on Apple Silicon |
+| Profile | System | Status |
+| --- | --- | --- |
+| `proot-arm64` | Debian 13 AArch64 under PRoot | Pending revalidation |
+| `darwin-arm64` | macOS on Apple Silicon | Verified |
 
 [docs/runtime-support.md](docs/runtime-support.md) is the single source of truth for the support boundary and roadmap. Each `config/<profile>-runtime.json` records only that profile's verified pins and hashes.
 
@@ -44,10 +44,10 @@ Each bootstrap:
 2. restores the exact npm dependency tree with `npm ci`;
 3. downloads the pinned Camoufox `150.0.2-beta.25` archive for that platform;
 4. verifies its byte size, archive SHA-256, and executable SHA-256;
-5. installs it into the platform browser cache (`$HOME/.cache/camoufox` on Linux, `$HOME/Library/Caches/camoufox` on macOS) without overwriting an unknown cache;
+5. installs it into `$HOME/.local/camoufox` without overwriting an unknown installation;
 6. runs `npm run doctor`.
 
-The browser archive (roughly 622 MiB for Linux ARM64, 297 MiB for macOS ARM64) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide: the browser, its libraries, and its profile state all live in the user cache directory. To use an already downloaded verified archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap.
+The browser archive (roughly 622 MiB for Linux ARM64, 297 MiB for macOS ARM64) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide. To use an already downloaded verified archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap.
 
 See [docs/runtime-support.md](docs/runtime-support.md) and the manifests in [config/](config/) for the support boundary and recorded hashes.
 
@@ -55,26 +55,30 @@ General Debian AArch64 is a planned follow-up target but is not yet validated. W
 
 ## Pi configuration
 
-Pi loads this server as a user-global stdio MCP server:
+Pass the installed browser as an absolute runtime path:
 
 ```json
 {
   "servers": {
     "camoufox": {
       "transport": "stdio",
-      "command": "/absolute/path/to/camoufox/bin/camoufox-mcp",
-      "args": []
+      "command": "<absolute-repository>/mcp-servers/camoufox/bin/camoufox-mcp",
+      "args": [
+        "--executable-path",
+        "<absolute-home>/.local/camoufox/camoufox-bin"
+      ],
+      "enabled": false
     }
   }
 }
 ```
 
-The live configuration is in `~/.pi/agent/mcp.json`.
+On macOS, use `<absolute-home>/.local/camoufox/Camoufox.app/Contents/MacOS/camoufox`. Replace the placeholders with absolute paths; MCP configuration does not expand `$HOME` or `~`.
 
 ## Run directly
 
 ```bash
-./bin/camoufox-mcp
+./bin/camoufox-mcp --executable-path "$HOME/.local/camoufox/camoufox-bin"
 ```
 
 ## Tools

@@ -17,11 +17,8 @@ function isProot() {
   }
 }
 
-// Must mirror camoufox-js userCacheDir(): the launcher resolves the browser
-// from this directory, so the installer has to agree with it exactly.
 function browserInstallDir() {
-  if (platform() === "darwin") return join(homedir(), "Library", "Caches", "camoufox");
-  return join(homedir(), ".cache", "camoufox");
+  return join(homedir(), ".local", "camoufox");
 }
 
 export function resolveProfile() {

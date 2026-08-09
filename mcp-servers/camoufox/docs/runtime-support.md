@@ -44,10 +44,10 @@ The working installation is deliberately split into four parts:
 
 1. Project source, lockfile, bootstraps, tests, and documentation in this directory.
 2. npm dependencies restored into `node_modules/` with `npm ci` (install scripts enabled, so `better-sqlite3` obtains its native binding).
-3. The pinned Camoufox browser installed into the platform browser cache: `$HOME/.cache/camoufox` on Linux, `$HOME/Library/Caches/camoufox` on macOS. These directories mirror `camoufox-js`'s own cache resolution, so the launcher finds the browser without any extra configuration.
-4. Pi's external MCP registration, which points to this checkout's `bin/camoufox-mcp`.
+3. The pinned Camoufox browser installed into `$HOME/.local/camoufox`.
+4. Pi's external MCP registration, which points to this checkout's `bin/camoufox-mcp` and passes the browser through `--executable-path`.
 
-The browser binary, npm dependency tree, and user configuration are runtime state and must not be committed to Git. Nothing is installed system-wide and no system package manager is involved: the browser, its bundled libraries, and its profile state live entirely in the user cache. For repeatable/offline installs, `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` may be supplied to the installer; the same size and SHA-256 checks still apply.
+The browser binary, npm dependency tree, and user configuration are runtime state and must not be committed to Git. Nothing is installed system-wide and no system package manager is involved. For repeatable or offline installs, `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` may be supplied to the installer; the same size and SHA-256 checks still apply.
 
 ## PRoot-specific behavior
 
@@ -58,7 +58,7 @@ The browser binary, npm dependency tree, and user configuration are runtime stat
 - `LIBGL_ALWAYS_SOFTWARE=1`
 - `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`
 
-The first two settings accommodate the restricted PRoot process environment. Software rendering avoids relying on host GPU integration. `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` prevents ordinary MCP startup from performing network downloads or changing the browser cache.
+The first two settings accommodate the restricted PRoot process environment. Software rendering avoids relying on host GPU integration. `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` prevents ordinary MCP startup from downloading a Playwright browser.
 
 These settings are not general recommendations for normal Debian or macOS installations.
 

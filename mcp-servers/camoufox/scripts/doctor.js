@@ -4,7 +4,6 @@ import { arch, homedir, platform, release } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { installedVerStr, launchPath } from "camoufox-js/dist/pkgman.js";
 import { resolveProfile } from "./runtime-profile.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -34,9 +33,11 @@ for (const [name, version] of Object.entries(expected)) {
 }
 
 try {
-  const path = String(launchPath());
+  const path = join(profile.installDir, ...profile.manifest.browser.executablePath.split("/"));
+  const installed = JSON.parse(readFileSync(join(profile.installDir, "version.json"), "utf8"));
   accessSync(path, constants.X_OK);
-  check(installedVerStr() === expectedBrowser, `browser ${installedVerStr()} at ${path}`);
+  const installedBrowser = `${installed.version}-${installed.release}`;
+  check(installedBrowser === expectedBrowser, `browser ${installedBrowser} at ${path}`);
 } catch (error) {
   check(false, `browser ${error instanceof Error ? error.message : error}`);
 }

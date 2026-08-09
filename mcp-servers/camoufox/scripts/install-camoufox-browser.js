@@ -39,8 +39,8 @@ if (installedMatches()) {
 }
 
 if (existsSync(installDir)) {
-  console.error(`FAIL existing Camoufox cache does not match ${browser.version}-${browser.release}: ${installDir}`);
-  console.error("Move or remove that cache deliberately, then rerun this installer. It will not overwrite an unknown installation.");
+  console.error(`FAIL existing Camoufox installation does not match ${browser.version}-${browser.release}: ${installDir}`);
+  console.error("Move or remove that directory deliberately, then rerun this installer. It will not overwrite an unknown installation.");
   process.exit(1);
 }
 

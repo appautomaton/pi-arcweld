@@ -9,7 +9,7 @@ This keeps a clear boundary: `extensions/` is client-side code loaded into Pi, a
 | Path | Server | Loading |
 | --- | --- | --- |
 | `camoufox/` | Camoufox browser-automation MCP server (stdio) | Registered in `~/.pi/agent/mcp.json` by absolute launcher path |
-| `chrome/` | No server code — provisioning docs + update script for the Google Chrome binary used by the stock `@playwright/mcp` server (Claude Code) and `chrome-devtools-mcp` server (Pi) | Registered in `~/.claude.json` (Claude Code) and in `~/.pi/agent/mcp.json` (Pi) |
+| `chrome/` | Provisioning docs and an update script for the Google Chrome binary used by `chrome-devtools-mcp` | Registered in `~/.pi/agent/mcp.json` |
 
 ## Loading model
 
@@ -20,8 +20,11 @@ A stdio MCP server is registered in the user-owned `~/.pi/agent/mcp.json`, which
   "servers": {
     "camoufox": {
       "transport": "stdio",
-      "command": "<repository>/mcp-servers/camoufox/bin/camoufox-mcp",
-      "args": []
+      "command": "<absolute-repository>/mcp-servers/camoufox/bin/camoufox-mcp",
+      "args": [
+        "--executable-path",
+        "<absolute-home>/.local/camoufox/camoufox-bin"
+      ]
     }
   }
 }

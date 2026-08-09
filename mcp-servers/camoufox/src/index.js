@@ -3,7 +3,8 @@ import "./stdio-guard.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { browserStatus, raceAbort, shutdownBrowsers, withBrowser, assertPageSafe } from "./browser.js";
+import { browserStatus, configureBrowser, raceAbort, shutdownBrowsers, withBrowser, assertPageSafe } from "./browser.js";
+import { parseCliArgs } from "./cli.js";
 import { redactUrl } from "./redact.js";
 import { validateUrl } from "./policy.js";
 import { pageSnapshot } from "./snapshot.js";
@@ -21,7 +22,14 @@ import {
   startSession,
 } from "./sessions.js";
 
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
+
+try {
+  configureBrowser(parseCliArgs(process.argv.slice(2)));
+} catch (error) {
+  console.error(`[Camoufox] ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
 const waitUntil = z.enum(["domcontentloaded", "load", "networkidle"]).optional();
 const readOptions = {
   selector: z.string().min(1).max(1_000).optional(),

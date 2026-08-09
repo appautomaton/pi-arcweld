@@ -1,5 +1,5 @@
+import { accessSync, constants } from "node:fs";
 import { Camoufox } from "camoufox-js";
-import { launchPath } from "camoufox-js/dist/pkgman.js";
 import { validateBrowserRequest, validateUrl } from "./policy.js";
 import { redactUrl } from "./redact.js";
 import { boundedEnv } from "./env.js";
@@ -10,20 +10,38 @@ const QUEUE_TIMEOUT_MS = boundedEnv("CAMOUFOX_MCP_QUEUE_TIMEOUT_MS", 30_000, 1_0
 const LAUNCH_TIMEOUT_MS = boundedEnv("CAMOUFOX_MCP_LAUNCH_TIMEOUT_MS", 45_000, 1_000, 300_000);
 const MAX_REQUESTS = boundedEnv("CAMOUFOX_MCP_MAX_REQUESTS", 1_024, 32, 10_000);
 
+let browserExecutablePath;
 let activeSlots = 0;
 let shuttingDown = false;
 const queue = [];
 const activeBrowsers = new Set();
 const launchingOwners = new Set();
 
-export function browserStatus() {
-  let browserPath;
+export function configureBrowser({ executablePath }) {
+  browserExecutablePath = executablePath;
+}
+
+function requireBrowserExecutable() {
+  if (!browserExecutablePath) throw new Error("Camoufox browser executable is not configured.");
   try {
-    browserPath = String(launchPath());
-  } catch {}
+    accessSync(browserExecutablePath, constants.X_OK);
+  } catch {
+    throw new Error(`Camoufox browser executable is not runnable: ${browserExecutablePath}`);
+  }
+  return browserExecutablePath;
+}
+
+export function browserStatus() {
+  let browserAvailable = false;
+  if (browserExecutablePath) {
+    try {
+      accessSync(browserExecutablePath, constants.X_OK);
+      browserAvailable = true;
+    } catch {}
+  }
   return {
-    browserAvailable: Boolean(browserPath),
-    browserPath,
+    browserAvailable,
+    browserPath: browserExecutablePath,
     activeBrowsers: activeBrowsers.size,
     queuedRequests: queue.length,
     maxConcurrency: MAX_CONCURRENCY,
@@ -112,14 +130,10 @@ export async function raceAbort(promise, signal, onAbort) {
 }
 
 async function launchBrowser(signal, options = {}) {
-  try {
-    launchPath();
-  } catch {
-    throw new Error("Camoufox browser binary is missing from the shared cache.");
-  }
-
+  const executablePath = requireBrowserExecutable();
   let lateBrowser;
   const launch = Camoufox({
+    executable_path: executablePath,
     os: process.platform === "darwin" ? ["macos"] : ["linux"],
     headless: process.platform === "linux" ? "virtual" : true,
     humanize: true,
