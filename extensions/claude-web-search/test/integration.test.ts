@@ -18,6 +18,13 @@ const model: Model<"anthropic-messages"> = {
 	compat: { forceAdaptiveThinking: true },
 };
 
+const gptModel = {
+	id: "gpt-5.6-sol",
+	name: "GPT 5.6",
+	api: "openai-responses",
+	provider: "cli-proxy-api",
+};
+
 function usage(): Usage {
 	return {
 		input: 10,
@@ -79,12 +86,14 @@ function successfulSearchResponse(): string {
 }
 
 describe("extension integration", () => {
-	it("registers only a stable ordinary WebSearch tool and performs hosted search inside its execution", async () => {
+	it("keeps WebSearch active only for supported models and performs hosted search inside its execution", async () => {
 		let tool: any;
 		const commands = new Map<string, any>();
+		const handlers = new Map<string, Array<(event: any, ctx: any) => unknown>>();
 		const events: string[] = [];
 		let providerRegistrations = 0;
 		let activeToolMutations = 0;
+		let activeTools = ["read", "WebSearch"];
 		const pi = {
 			registerTool(definition: unknown) {
 				tool = definition;
@@ -95,11 +104,16 @@ describe("extension integration", () => {
 			registerProvider() {
 				providerRegistrations++;
 			},
-			on(name: string) {
+			on(name: string, handler: (event: any, ctx: any) => unknown) {
 				events.push(name);
+				handlers.set(name, [...(handlers.get(name) ?? []), handler]);
 			},
-			setActiveTools() {
+			getActiveTools() {
+				return [...activeTools];
+			},
+			setActiveTools(names: string[]) {
 				activeToolMutations++;
+				activeTools = [...names];
 			},
 		} as unknown as ExtensionAPI;
 		claudeWebSearchExtension(pi);
@@ -107,8 +121,25 @@ describe("extension integration", () => {
 		assert.equal(tool?.name, "WebSearch");
 		assert.equal(providerRegistrations, 0);
 		assert.equal(activeToolMutations, 0);
-		assert.deepEqual(events, []);
+		assert.deepEqual(events, ["session_start", "model_select"]);
 		assert.equal(commands.has("claude-web-search-status"), true);
+
+		const sessionStart = handlers.get("session_start")?.[0];
+		const modelSelect = handlers.get("model_select")?.[0];
+		assert.ok(sessionStart);
+		assert.ok(modelSelect);
+
+		sessionStart({}, { model });
+		assert.deepEqual(activeTools, ["read", "WebSearch"]);
+		assert.equal(activeToolMutations, 0);
+
+		modelSelect({ model: gptModel }, {});
+		assert.deepEqual(activeTools, ["read"]);
+		assert.equal(activeToolMutations, 1);
+
+		modelSelect({ model }, {});
+		assert.deepEqual(activeTools, ["read", "WebSearch"]);
+		assert.equal(activeToolMutations, 2);
 
 		const originalFetch = globalThis.fetch;
 		const payloads: Array<Record<string, unknown>> = [];

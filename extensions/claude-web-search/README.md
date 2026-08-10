@@ -1,6 +1,6 @@
 # Cache-stable isolated Anthropic web search
 
-A Pi extension that exposes one ordinary `WebSearch` tool and executes Anthropic-compatible hosted `web_search_20250305` only inside a minimal isolated request.
+A Pi extension that exposes one ordinary `WebSearch` tool only for supported Anthropic Messages models and executes hosted `web_search_20250305` inside a minimal isolated request.
 
 Supported routes:
 
@@ -9,13 +9,13 @@ Supported routes:
 
 ## Architecture
 
-The main agent request always sees the same ordinary tool schema:
+For a supported selected model, the main agent request sees the same ordinary tool schema:
 
 ```text
 WebSearch(query, allowed_domains?, blocked_domains?)
 ```
 
-When the model calls it, the extension makes a nested request through Pi's model registry using the same selected provider, model, resolved authentication, configured endpoint, headers, cancellation signal, and usage accounting. That request contains only:
+The tool definition is registered once, but `session_start` and `model_select` keep it inactive for unsupported models so GPT and other routes cannot call an Anthropic-only tool. When a supported model calls it, the extension makes a nested request through Pi's model registry using the same selected provider, model, resolved authentication, configured endpoint, headers, cancellation signal, and usage accounting. That request contains only:
 
 - A fixed search-specific system prompt.
 - One user message whose final suffix is the concrete query.
@@ -30,13 +30,13 @@ The extension is deliberately cache-friendly:
 
 - It does not register or override a provider.
 - It does not use `before_provider_request` or rewrite main-agent payloads.
-- It does not dynamically enable or disable tools between turns.
-- The ordinary `WebSearch` schema is byte-stable after extension load.
+- It changes `WebSearch` availability only at session start or model selection, never between turns for a fixed selected model.
+- The registered `WebSearch` schema is byte-stable after extension load.
 - `bash`, `read`, `edit`, and other tool continuations receive the same main tool list and cannot trigger hosted search by declaration alone.
 - The isolated request has a fixed system/tool prefix; only its query message and optional domain filters vary.
 - Nested model usage is attached to the ordinary tool result so Pi's session totals remain accurate.
 
-Reloading the extension changes the main tool list once and therefore creates one unavoidable new cache prefix. Subsequent turns keep that prefix stable.
+Reloading the extension may change the active tool list once and therefore create one unavoidable new cache prefix. Subsequent turns with the same selected model keep that prefix stable.
 
 ## Robustness
 
@@ -66,4 +66,4 @@ npm test
 npm run pack:check
 ```
 
-Tests use synthetic SSE, fake nested model calls, and a real Pi RPC loading check. They verify cache-prefix stability, in-memory pause continuation, malformed Kimi ID normalization, output formatting, cancellation/error boundaries, and directory-symlink loading without invoking a live model.
+Tests use synthetic SSE, fake nested model calls, and a real Pi RPC loading check. They verify model-gated tool availability, cache-prefix stability for a fixed route, in-memory pause continuation, malformed Kimi ID normalization, output formatting, cancellation/error boundaries, and directory-symlink loading without invoking a live model.

@@ -10,6 +10,8 @@ import { Type } from "typebox";
 import { formatHostedSearchResult, runHostedWebSearch } from "./hosted-search.ts";
 import { getHostedWebSearchRoute } from "./payload.ts";
 
+const WEB_SEARCH_TOOL_NAME = "WebSearch";
+
 const webSearchParameters = Type.Object(
 	{
 		query: Type.String({
@@ -33,12 +35,26 @@ const webSearchParameters = Type.Object(
 	{ additionalProperties: false },
 );
 
+function syncWebSearchAvailability(
+	pi: ExtensionAPI,
+	model: Parameters<typeof getHostedWebSearchRoute>[0],
+): void {
+	const active = pi.getActiveTools();
+	const isActive = active.includes(WEB_SEARCH_TOOL_NAME);
+	const shouldBeActive = Boolean(getHostedWebSearchRoute(model));
+	if (shouldBeActive && !isActive) {
+		pi.setActiveTools([...active, WEB_SEARCH_TOOL_NAME]);
+	} else if (!shouldBeActive && isActive) {
+		pi.setActiveTools(active.filter((name) => name !== WEB_SEARCH_TOOL_NAME));
+	}
+}
+
 export default function claudeWebSearchExtension(pi: ExtensionAPI) {
 	pi.registerTool({
-		name: "WebSearch",
+		name: WEB_SEARCH_TOOL_NAME,
 		label: "Web Search",
 		description:
-			"Search the public web for current or externally verifiable information. Provide a specific non-empty query. The tool returns a concise synthesis plus source URLs; cite relevant returned sources in the final answer.",
+			"Search the public web through Anthropic-hosted search for supported Anthropic Messages Claude/Kimi models. Provide a specific non-empty query. The tool returns a concise synthesis plus source URLs; cite relevant returned sources in the final answer.",
 		parameters: webSearchParameters,
 		async execute(_toolCallId, params, signal, onUpdate, ctx) {
 			const model = ctx.model;
@@ -89,6 +105,13 @@ export default function claudeWebSearchExtension(pi: ExtensionAPI) {
 				usage: result.usage,
 			};
 		},
+	});
+
+	pi.on("session_start", (_event, ctx) => {
+		syncWebSearchAvailability(pi, ctx.model);
+	});
+	pi.on("model_select", (event) => {
+		syncWebSearchAvailability(pi, event.model);
 	});
 
 	pi.registerCommand("claude-web-search-status", {
