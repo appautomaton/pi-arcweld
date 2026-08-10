@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="pi-arcweld welds a curated local layer to pinned upstream Pi: extensions, system guidance, MCP tooling, and a reproducible runtime, joined along one auditable seam.">
-  <meta name="keywords" content="Pi coding agent, AI agent workspace, agent extensions, MCP client, model context protocol, cache-safe plan mode, reproducible runtime, local AI tooling">
+  <meta name="keywords" content="pi-arcweld, Pi Arcweld, pi arcweld, Pi coding agent, AI agent workspace, agent extensions, MCP client, model context protocol, cache-safe plan mode, reproducible runtime, local AI tooling">
   <meta name="author" content="appautomaton">
   <meta name="application-name" content="pi-arcweld">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
@@ -15,9 +15,16 @@
   <meta property="og:title" content="pi-arcweld — Don't fork it. Weld it.">
   <meta property="og:description" content="A curated local layer welded to pinned upstream Pi along one auditable seam. Upstream stays upstream. The workspace stays yours.">
   <meta property="og:url" content="https://appautomaton.renocrypt.com/pi-arcweld/">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://appautomaton.renocrypt.com/pi-arcweld/og-card.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="pi-arcweld — Don't fork it. Weld it. A Pi symbol whose crossbar is a titanium weld bead.">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="pi-arcweld — Don't fork it. Weld it.">
   <meta name="twitter:description" content="A curated local layer welded to pinned upstream Pi along one auditable seam. Upstream stays upstream. The workspace stays yours.">
+  <meta name="twitter:image" content="https://appautomaton.renocrypt.com/pi-arcweld/og-card.png">
+  <meta name="twitter:image:alt" content="pi-arcweld — Don't fork it. Weld it. A Pi symbol whose crossbar is a titanium weld bead.">
   <title>pi-arcweld — Don't fork it. Weld it.</title>
   <link rel="canonical" href="https://appautomaton.renocrypt.com/pi-arcweld/">
   <link rel="icon" type="image/svg+xml" href="arcweld-mark.svg">
@@ -27,12 +34,18 @@
       "@context": "https://schema.org",
       "@type": "SoftwareSourceCode",
       "name": "pi-arcweld",
+      "alternateName": ["Pi Arcweld", "pi arcweld"],
       "description": "An auditable local workspace for Pi with pinned upstream source, curated extensions, bounded MCP tooling, and a reproducible external runtime.",
       "url": "https://appautomaton.renocrypt.com/pi-arcweld/",
       "codeRepository": "https://github.com/appautomaton/pi-arcweld",
       "license": "https://github.com/appautomaton/pi-arcweld/blob/main/LICENSE",
       "programmingLanguage": ["TypeScript", "Shell", "HTML"],
       "runtimePlatform": "Node.js",
+      "sameAs": [
+        "https://github.com/appautomaton/pi-arcweld",
+        "https://github.com/appautomaton",
+        "https://appautomaton.renocrypt.com/"
+      ],
       "isPartOf": { "@type": "SoftwareApplication", "name": "Pi", "url": "https://pi.dev" },
       "author": { "@type": "Organization", "name": "appautomaton", "url": "https://github.com/appautomaton" }
     }
@@ -221,6 +234,19 @@
     }
 
     .skip-link:focus { transform: translateY(0); }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
 
     /* ============================================================
        Seam rail — the weld runs the length of the page.
@@ -1306,6 +1332,12 @@
 
     .footer-meta { margin: 0; color: var(--ink-faint); }
 
+    .footer-maintainer { flex-basis: 100%; margin: 0; color: var(--ink-faint); font-size: 0.9em; }
+
+    .footer-maintainer a { color: var(--ink-dim); text-decoration: none; border-bottom: 1px solid var(--line-strong); transition: color 160ms ease; }
+
+    .footer-maintainer a:hover { color: var(--arc); }
+
     .footer-links {
       display: flex;
       flex-wrap: wrap;
@@ -1484,6 +1516,7 @@
         <p class="tag">A local workspace for the Pi coding agent</p>
 
         <h1 id="hero-title">
+          <span class="visually-hidden">pi-arcweld: </span>
           <span>Don't fork it.</span>
           <span class="hero-line2">
             <span>Weld&nbsp;it.</span>
@@ -1751,11 +1784,13 @@
 
   <footer class="footer">
     <div class="shell footer-inner">
-      <p class="footer-meta">pi-arcweld · welded locally · MIT 2026</p>
+      <p class="footer-meta">pi-arcweld · welded locally · MIT</p>
+      <p class="footer-maintainer">Pi Arcweld is maintained by <a href="https://github.com/appautomaton">App Automaton</a> · <a href="https://appautomaton.renocrypt.com/">appautomaton.renocrypt.com</a></p>
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="https://github.com/appautomaton/pi-arcweld">GitHub</a>
         <a href="https://pi.dev">Upstream Pi</a>
         <a href="https://github.com/appautomaton/pi-arcweld/blob/main/LICENSE">MIT license</a>
+        <a href="llms.txt">llms.txt</a>
       </nav>
     </div>
   </footer>

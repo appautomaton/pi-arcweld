@@ -2,7 +2,7 @@
 
 > An auditable local workspace for Pi: pinned upstream source, curated extensions, deliberate system guidance, bounded MCP tooling, and a reproducible external runtime.
 
-pi-arcweld keeps local agent behavior visible without turning Pi into a private fork. The upstream `pi-mono` source remains pinned and clean; maintained extensions live under `extensions/`; global response guidance is appended from `system-instruction/`; generated packages and the runnable Pi artifact stay under the untracked `build/pi-agent/` tree.
+pi-arcweld keeps local agent behavior visible without turning Pi into a private fork. The name is also written Pi Arcweld or pi arcweld. The upstream `pi-mono` source remains pinned and clean. Maintained extensions live under `extensions/`, global response guidance is appended from `system-instruction/`, and generated packages plus the runnable Pi artifact stay under the untracked `build/pi-agent/` tree.
 
 ## Canonical links
 
@@ -11,6 +11,7 @@ pi-arcweld keeps local agent behavior visible without turning Pi into a private 
 - Upstream Pi: https://pi.dev
 - Workspace overview: https://github.com/appautomaton/pi-arcweld/blob/main/README.md
 - Workspace rules: https://github.com/appautomaton/pi-arcweld/blob/main/AGENTS.md
+- Maintainer: https://github.com/appautomaton and https://appautomaton.renocrypt.com/
 
 ## Curated components
 

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pi-arcweld social card</title>
+  <!-- Source for og-card.png. Render at exactly 1200x630 and screenshot; do not hand-edit the PNG. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:opsz,wght@10..72,100..900&family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&family=Martian+Mono:wdth,wght@75..112.5,100..800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body { width: 1200px; height: 630px; }
+
+    body {
+      font-family: "Schibsted Grotesk", system-ui, sans-serif;
+      color: #e9eef6;
+      background: #0a0f17;
+    }
+
+    .card {
+      position: relative;
+      width: 1200px;
+      height: 630px;
+      padding: 64px 80px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background:
+        radial-gradient(720px 420px at 88% 10%, rgba(75, 147, 240, 0.16), transparent 62%),
+        radial-gradient(900px 620px at 6% 110%, rgba(183, 107, 214, 0.12), transparent 60%),
+        #0a0f17;
+    }
+
+    header { display: flex; align-items: center; gap: 20px; }
+
+    header svg { width: 62px; height: 62px; flex: none; }
+
+    .wordmark {
+      font-family: "Martian Mono", ui-monospace, monospace;
+      font-size: 25px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+
+    .wordmark small {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #55657b;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin-top: auto;
+      font-family: "Big Shoulders", "Arial Narrow", sans-serif;
+      font-size: 150px;
+      line-height: 0.92;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+    }
+
+    h1 .weld { position: relative; display: inline-block; color: #edf5ff; }
+
+    h1 .bead {
+      position: absolute;
+      left: -4px;
+      right: -12px;
+      bottom: 10px;
+      height: 13px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #f5c34d, #e2894f 30%, #b76bd6 55%, #7b7df2 78%, #4b93f0);
+      opacity: 0.95;
+    }
+
+    .sub {
+      margin-top: 26px;
+      max-width: 920px;
+      font-size: 29px;
+      line-height: 1.35;
+      color: #94a4ba;
+    }
+
+    footer {
+      margin-top: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      font-family: "Martian Mono", ui-monospace, monospace;
+      font-size: 17px;
+      letter-spacing: 0.1em;
+      color: #55657b;
+    }
+
+    footer .url { color: #7fb2ff; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <header>
+      <svg viewBox="0 0 48 48" role="img" aria-label="pi-arcweld mark">
+        <defs>
+          <linearGradient id="heat" gradientUnits="userSpaceOnUse" x1="9.5" y1="0" x2="38.5" y2="0">
+            <stop offset="0" stop-color="#f5c34d"/>
+            <stop offset="0.3" stop-color="#e2894f"/>
+            <stop offset="0.55" stop-color="#b76bd6"/>
+            <stop offset="0.78" stop-color="#7b7df2"/>
+            <stop offset="1" stop-color="#4b93f0"/>
+          </linearGradient>
+        </defs>
+        <rect width="48" height="48" rx="10" fill="#0e1520"/>
+        <path d="M17 19v16" fill="none" stroke="#e9eef6" stroke-width="4.2" stroke-linecap="round"/>
+        <path d="M31 19v12q0 4 4 4" fill="none" stroke="#e9eef6" stroke-width="4.2" stroke-linecap="round"/>
+        <path d="M9.5 15.5h29" fill="none" stroke="url(#heat)" stroke-width="5.4" stroke-linecap="round"/>
+        <circle cx="38.5" cy="15.5" r="2.8" fill="#edf5ff"/>
+      </svg>
+      <div class="wordmark">pi-arcweld<small>App Automaton</small></div>
+    </header>
+
+    <h1>Don't fork it.<br><span class="weld">Weld it.<span class="bead" aria-hidden="true"></span></span></h1>
+
+    <p class="sub">An auditable local workspace for the Pi coding agent: pinned upstream source, curated extensions, bounded MCP tooling, and a reproducible runtime.</p>
+
+    <footer>
+      <span class="url">appautomaton.renocrypt.com/pi-arcweld</span>
+      <span>github.com/appautomaton/pi-arcweld</span>
+    </footer>
+  </main>
+</body>
+</html>

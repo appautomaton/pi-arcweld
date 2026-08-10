@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/arcweld-mark.svg" width="96" alt="pi-arcweld logo — a Pi symbol whose crossbar is a titanium weld bead">
+<img src="docs/arcweld-mark.svg" width="96" alt="pi-arcweld logo: a Pi symbol whose crossbar is a titanium weld bead">
 
 # pi-arcweld
 
@@ -9,33 +9,33 @@
 An auditable local workspace for the [Pi](https://pi.dev) coding agent:<br>
 pinned upstream source, curated extensions, bounded MCP tooling, and a reproducible runtime.
 
-<a href="https://appautomaton.renocrypt.com/pi-arcweld/"><img alt="pi arcweld — project site" src="https://img.shields.io/badge/site-pi--arcweld-1d5bd6"></a>
+<a href="https://appautomaton.renocrypt.com/pi-arcweld/"><img alt="pi arcweld project site" src="https://img.shields.io/badge/site-pi--arcweld-1d5bd6"></a>
 <a href="https://appautomaton.renocrypt.com/"><img alt="appautomaton" src="https://img.shields.io/badge/by-appautomaton-e2894f"></a>
 <a href="https://github.com/appautomaton"><img alt="App Automaton on GitHub" src="https://img.shields.io/badge/github-App_Automaton-0f1621?logo=github"></a>
 <a href="LICENSE"><img alt="pi-arcweld is MIT licensed" src="https://img.shields.io/badge/license-MIT-b76bd6"></a>
-<a href="https://github.com/earendil-works/pi"><img alt="tracks upstream Pi — earendil-works/pi" src="https://img.shields.io/badge/pi-upstream-7b7df2"></a>
+<a href="https://github.com/earendil-works/pi"><img alt="tracks upstream Pi at earendil-works/pi" src="https://img.shields.io/badge/pi-upstream-7b7df2"></a>
 <a href="https://github.com/appautomaton/pi-arcweld/actions/workflows/deploy-pages.yml"><img alt="Deploy landing page to GitHub Pages" src="https://github.com/appautomaton/pi-arcweld/actions/workflows/deploy-pages.yml/badge.svg"></a>
 
 </div>
 
 ## What is pi-arcweld?
 
-> **pi-arcweld** is an auditable local workspace for the [Pi coding agent](https://github.com/earendil-works/pi). It welds a curated local layer — user extensions, global system guidance, bounded MCP tooling, and a reproducible runtime — onto pinned upstream Pi source, along one visible seam. Pi Arcweld is not a fork: upstream stays upstream, and the workspace stays yours.
+> **pi-arcweld** is an auditable local workspace for the [Pi coding agent](https://github.com/earendil-works/pi). It welds a curated local layer of user extensions, global system guidance, bounded MCP tooling, and a reproducible runtime onto pinned upstream Pi source, along one visible seam. Pi Arcweld is not a fork: upstream stays upstream, and the workspace stays yours.
 
 ## Why weld instead of fork?
 
 - **Pinned upstream, no drift.** `pi-mono/` is a submodule locked to a known commit; moving to a newer Pi is an explicit, reviewable fast-forward.
-- **One visible seam.** Every local behavior — extensions, MCP wiring, system guidance — is a plain file in this repository, so changes surface in `git diff`, not in hidden machine state.
+- **One visible seam.** Every local behavior, from extensions and MCP wiring to system guidance, is a plain file in this repository, so changes surface in `git diff`, not in hidden machine state.
 - **Reproducible runtime.** `scripts/build-pi-agent.sh` assembles and verifies the runnable Pi agent outside the upstream tree; `pi-mono/` never accumulates build state.
 - **Bounded tooling, guarded secrets.** MCP servers run as separate stdio processes, and `scripts/check-secret-boundary.sh` fails any commit that would leak credentials into the repository.
 
 ## Curated components
 
-- **[External runtime builder](scripts/build-pi-agent.sh)** — assembles and verifies Pi without writing build state into upstream source.
-- **[Cache-safe plan mode](extensions/plan-mode/)** — appends plan state while preserving the provider prompt-cache prefix.
-- **[MCP client](extensions/mcp-extension/)** — discovers configured servers behind a fixed, bounded model-facing tool surface.
-- **[Questionnaire](extensions/questionnaire.ts)** — presents explicit, keyboard-operable clarification flows.
-- **[System-instruction append](system-instruction/APPEND_SYSTEM.md)** — refines response behavior without replacing Pi's generated system prompt.
+- **[External runtime builder](scripts/build-pi-agent.sh):** assembles and verifies Pi without writing build state into upstream source.
+- **[Cache-safe plan mode](extensions/plan-mode/):** appends plan state while preserving the provider prompt-cache prefix.
+- **[MCP client](extensions/mcp-extension/):** discovers configured servers behind a fixed, bounded model-facing tool surface.
+- **[Questionnaire](extensions/questionnaire.ts):** presents explicit, keyboard-operable clarification flows.
+- **[System-instruction append](system-instruction/APPEND_SYSTEM.md):** refines response behavior without replacing Pi's generated system prompt.
 
 ## Repository layout
 
@@ -47,7 +47,7 @@ pinned upstream source, curated extensions, bounded MCP tooling, and a reproduci
 | [`system-instruction/`](system-instruction/README.md) | The global `APPEND_SYSTEM.md` source and capture notes |
 | `scripts/` | Runtime build, upstream-update, and validation scripts |
 | [`docs/`](docs/index.html) | The pi arcweld landing page, `llms.txt`, and sitemap served by GitHub Pages |
-| `build/` | Generated local runtime and package artifacts — intentionally untracked |
+| `build/` | Generated local runtime and package artifacts, intentionally untracked |
 
 ## Quickstart
 

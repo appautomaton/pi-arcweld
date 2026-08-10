@@ -10,7 +10,7 @@
     .arcdot { fill: var(--core); }
   </style>
   <defs>
-    <linearGradient id="heat" x1="0" y1="0" x2="1" y2="0">
+    <linearGradient id="heat" gradientUnits="userSpaceOnUse" x1="9.5" y1="0" x2="38.5" y2="0">
       <stop offset="0" stop-color="#f5c34d"/>
       <stop offset="0.3" stop-color="#e2894f"/>
       <stop offset="0.55" stop-color="#b76bd6"/>
