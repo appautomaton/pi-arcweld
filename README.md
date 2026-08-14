@@ -43,7 +43,7 @@ pinned upstream source, curated extensions, bounded MCP tooling, and a reproduci
 |---|---|
 | `pi-mono/` | Pinned upstream Pi source, managed as a Git submodule and kept clean of local build state |
 | [`extensions/`](extensions/README.md) | Curated user-level Pi extensions and package-backed extensions |
-| [`mcp-servers/`](mcp-servers/README.md) | Local MCP servers the client launches over stdio, such as `camoufox/` |
+| [`mcp-servers/`](mcp-servers/README.md) | Canonical source for local MCP servers, deployed as tested versioned releases under `~/.local/mcps/` |
 | [`system-instruction/`](system-instruction/README.md) | The global `APPEND_SYSTEM.md` source and capture notes |
 | `scripts/` | Runtime build, upstream-update, and validation scripts |
 | [`docs/`](docs/index.html) | The pi arcweld landing page, `llms.txt`, and sitemap served by GitHub Pages |
@@ -87,7 +87,7 @@ The helper never commits or pushes. Review the resulting submodule pointer befor
 
 ## User-level integration
 
-The active Pi configuration points back to this repository rather than copying curated files:
+The active Pi configuration uses explicit user-level wiring: extensions point to canonical repository source, while the Camoufox MCP runs from a tested local deployment:
 
 - `~/.pi/agent/extensions/plan-mode` → `extensions/plan-mode/`
 - `~/.pi/agent/extensions/questionnaire.ts` → `extensions/questionnaire.ts`
@@ -97,7 +97,7 @@ The active Pi configuration points back to this repository rather than copying c
 - `~/.pi/agent/extensions/grok-search.ts` → `extensions/grok-search.ts`
 - `~/.pi/agent/APPEND_SYSTEM.md` → `system-instruction/APPEND_SYSTEM.md`
 - `~/.pi/agent/settings.json` registers `extensions/mcp-extension/` as a local-path package
-- `~/.pi/agent/mcp.json` registers `mcp-servers/camoufox/bin/camoufox-mcp` as a stdio MCP server
+- `~/.pi/agent/mcp.json` runs the deployed Camoufox MCP at `~/.local/mcps/camoufox/current/bin/camoufox-mcp`
 - the user `pi` command resolves to `build/pi-agent/runtime/bin/pi`
 
 ### Secret boundary

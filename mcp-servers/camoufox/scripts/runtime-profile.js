@@ -21,12 +21,12 @@ function browserInstallDir() {
   return join(homedir(), ".local", "camoufox");
 }
 
-export function resolveProfile() {
-  if (platform() === "darwin" && arch() === "arm64") {
+export function resolveProfile({ runtimePlatform = platform(), runtimeArch = arch(), proot = isProot() } = {}) {
+  if (runtimePlatform === "darwin" && runtimeArch === "arm64") {
     const manifest = readManifest("darwin-arm64-runtime.json");
     return {
       name: "darwin-arm64",
-      verified: true,
+      verified: manifest.support.status === "verified",
       manifest,
       installDir: browserInstallDir(),
       browserInstallSupported: true,
@@ -34,12 +34,11 @@ export function resolveProfile() {
       requiredCommands: manifest.launcher.requiredCommands,
     };
   }
-  if (platform() === "linux" && arch() === "arm64") {
+  if (runtimePlatform === "linux" && runtimeArch === "arm64") {
     const manifest = readManifest("proot-arm64-runtime.json");
-    const proot = isProot();
     return {
       name: proot ? "proot-arm64" : "generic-unverified",
-      verified: proot,
+      verified: proot && manifest.support.status === "verified",
       manifest,
       installDir: browserInstallDir(),
       browserInstallSupported: true,

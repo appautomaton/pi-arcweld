@@ -1,5 +1,5 @@
-import { accessSync, constants } from "node:fs";
-import { Camoufox } from "camoufox-js";
+import { accessSync, constants, existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { validateBrowserRequest, validateUrl } from "./policy.js";
 import { redactUrl } from "./redact.js";
 import { boundedEnv } from "./env.js";
@@ -11,14 +11,41 @@ const LAUNCH_TIMEOUT_MS = boundedEnv("CAMOUFOX_MCP_LAUNCH_TIMEOUT_MS", 45_000, 1
 const MAX_REQUESTS = boundedEnv("CAMOUFOX_MCP_MAX_REQUESTS", 1_024, 32, 10_000);
 
 let browserExecutablePath;
+let camoufoxImport;
 let activeSlots = 0;
 let shuttingDown = false;
 const queue = [];
 const activeBrowsers = new Set();
 const launchingOwners = new Set();
 
+// camoufox-js >= 0.12.0 reads the installed browser's version.json from its own
+// install directory (CAMOUFOX_INSTALL_DIR, default ~/.cache/camoufox) even when an
+// explicit executable path is supplied. This installation lives elsewhere, so derive
+// the install root by walking up from the executable to the directory holding
+// version.json. On Linux that is the executable's own directory; on macOS the
+// executable sits inside Camoufox.app/Contents/MacOS.
+function adoptInstallDir(executablePath) {
+  if (process.env.CAMOUFOX_INSTALL_DIR) return;
+  let directory = dirname(executablePath);
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (existsSync(join(directory, "version.json"))) {
+      process.env.CAMOUFOX_INSTALL_DIR = directory;
+      return;
+    }
+    const parent = dirname(directory);
+    if (parent === directory) return;
+    directory = parent;
+  }
+}
+
+async function loadCamoufox() {
+  camoufoxImport ??= import("camoufox-js");
+  return (await camoufoxImport).Camoufox;
+}
+
 export function configureBrowser({ executablePath }) {
   browserExecutablePath = executablePath;
+  if (executablePath) adoptInstallDir(executablePath);
 }
 
 function requireBrowserExecutable() {
@@ -131,8 +158,16 @@ export async function raceAbort(promise, signal, onAbort) {
 
 async function launchBrowser(signal, options = {}) {
   const executablePath = requireBrowserExecutable();
+  let timer;
+  const timed = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error("Browser launch timed out.")), LAUNCH_TIMEOUT_MS);
+  });
   let lateBrowser;
-  const launch = Camoufox({
+  let launch;
+  try {
+    const Camoufox = await raceAbort(Promise.race([loadCamoufox(), timed]), signal);
+    throwIfAborted(signal);
+    launch = Camoufox({
     executable_path: executablePath,
     os: process.platform === "darwin" ? ["macos"] : ["linux"],
     headless: process.platform === "linux" ? "virtual" : true,
@@ -141,17 +176,12 @@ async function launchBrowser(signal, options = {}) {
     block_webrtc: true,
     enable_cache: false,
     exclude_addons: options.allowCachedDefaultAddons ? undefined : ["UBO"],
-  }).then((browser) => {
-    if (signal?.aborted) void closeBrowser(browser, "cancelled during launch");
-    lateBrowser = browser;
-    return browser;
-  });
+    }).then((browser) => {
+      if (signal?.aborted) void closeBrowser(browser, "cancelled during launch");
+      lateBrowser = browser;
+      return browser;
+    });
 
-  let timer;
-  const timed = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error("Browser launch timed out.")), LAUNCH_TIMEOUT_MS);
-  });
-  try {
     const browser = await raceAbort(Promise.race([launch, timed]), signal, () => {
       if (lateBrowser) void closeBrowser(lateBrowser, "cancelled during launch");
     });
@@ -161,7 +191,7 @@ async function launchBrowser(signal, options = {}) {
     }
     return browser;
   } catch (error) {
-    launch.then((browser) => closeBrowser(browser, "late launch cleanup"), () => {});
+    launch?.then((browser) => closeBrowser(browser, "late launch cleanup"), () => {});
     throw error;
   } finally {
     clearTimeout(timer);

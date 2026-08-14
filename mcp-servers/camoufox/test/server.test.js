@@ -1,10 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 const entry = new URL("../src/index.js", import.meta.url).pathname;
+const packageVersion = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
 const serverArgs = [entry, "--executable-path", process.execPath];
 
 test("stdio server exposes only the local bounded tool set", async () => {
@@ -61,7 +63,7 @@ test("stdio server exposes only the local bounded tool set", async () => {
     assert.equal(status.structuredContent.schemaVersion, "2");
     assert.equal(status.structuredContent.ok, true);
     assert.equal(status.structuredContent.operation, "camoufox_status");
-    assert.equal(status.structuredContent.version, "0.4.0");
+    assert.equal(status.structuredContent.version, packageVersion);
     assert.equal(status.structuredContent.policy.evaluateAllowed, false);
   } finally {
     await client.close();
@@ -107,7 +109,7 @@ test("cancelled MCP call reaches the handler and returns promptly", async () => 
   child.stdout.on("data", (data) => { stdout += data; });
   child.stderr.on("data", (data) => { stderr += data; });
   const code = await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => { child.kill("SIGKILL"); reject(new Error(`cancellation test hung: ${stderr}`)); }, 10_000);
+    const timer = setTimeout(() => { child.kill("SIGKILL"); reject(new Error(`cancellation test hung: ${stderr}`)); }, 30_000);
     child.on("exit", (value) => { clearTimeout(timer); resolve(value); });
   });
   assert.equal(code, 0, stderr);

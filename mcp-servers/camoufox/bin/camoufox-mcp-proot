@@ -8,4 +8,4 @@ export MOZ_DISABLE_CONTENT_SANDBOX=1
 export LIBGL_ALWAYS_SOFTWARE=1
 export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
-exec node "$ROOT/src/index.js"
+exec node "$ROOT/src/index.js" "$@"

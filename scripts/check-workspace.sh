@@ -30,6 +30,8 @@ for (const path of [
 	"extensions/pi-arcweld-todos/package.json",
 	"extensions/pi-arcweld-todos/tsconfig.json",
 	"mcp-servers/camoufox/package.json",
+	"mcp-servers/camoufox/config/proot-arm64-runtime.json",
+	"mcp-servers/camoufox/config/darwin-arm64-runtime.json",
 ]) {
 	JSON.parse(readFileSync(path, "utf8"));
 }
@@ -48,6 +50,8 @@ if (missing.length > 0) {
 }
 NODE
 
+node --check mcp-servers/camoufox/scripts/deploy-local.js
+
 for package_dir in extensions/plan-mode extensions/pi-arcweld-todos extensions/mcp-extension extensions/claude-web-search; do
 	echo "==> Checking $package_dir"
 	(
@@ -58,6 +62,12 @@ for package_dir in extensions/plan-mode extensions/pi-arcweld-todos extensions/m
 	)
 done
 
+echo "==> Checking mcp-servers/camoufox"
+(
+	cd mcp-servers/camoufox
+	npm test
+)
+
 echo "==> Checking self-contained extensions through their user-level loading shape"
 grep -Fq 'promptSnippet: "Ask focused clarification questions when material decisions require user input"' extensions/questionnaire.ts
 grep -Fq 'Use questionnaire only when missing input would materially change the result' extensions/questionnaire.ts
@@ -65,7 +75,8 @@ grep -Fq 'name: "exa_search"' extensions/exa-search.ts
 grep -Fq 'When provider-side web_search is available, prefer web_search.' extensions/exa-search.ts
 grep -Fq 'tools: [...tools, { type: "web_search" }]' extensions/codex-web-search.ts
 grep -Fq 'name: WEB_RUN_TOOL_NAME' extensions/codex-web-search.ts
-grep -Fq 'name: "WebSearch"' extensions/claude-web-search/index.ts
+grep -Fq 'const WEB_SEARCH_TOOL_NAME = "WebSearch"' extensions/claude-web-search/index.ts
+grep -Fq 'name: WEB_SEARCH_TOOL_NAME' extensions/claude-web-search/index.ts
 grep -Fq 'runHostedWebSearch' extensions/claude-web-search/index.ts
 grep -Fq 'HOSTED_WEB_SEARCH_TOOL_TYPE' extensions/claude-web-search/payload.ts
 if grep -Fq 'before_provider_request' extensions/claude-web-search/index.ts; then

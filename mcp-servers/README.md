@@ -1,46 +1,67 @@
 # MCP servers
 
-`mcp-servers/` holds local Model Context Protocol servers. An MCP server is a standalone process that the Pi MCP client launches over stdio and talks to over the protocol. These are not Pi extensions. They are never loaded into the agent and they own their own dependencies and lifecycle.
+`mcp-servers/` contains the canonical source for locally maintained Model Context Protocol servers. An MCP server is a standalone process that Pi's MCP client launches and talks to over the protocol. These are not Pi extensions and are never loaded into the agent process.
 
-This keeps a clear boundary: `extensions/` is client-side code loaded into Pi, and `mcp-servers/` is the separate server processes that client connects to.
+The source checkout and the active runtime are deliberately separate:
+
+```text
+source:   <repository>/mcp-servers/<server>/
+runtime:  ~/.local/mcps/<server>/current/
+config:   ~/.pi/agent/mcp.json
+```
+
+Develop and review source here, deploy a tested versioned release, then register the deployed `current` launcher. Pi must not run mutable MCP source directly from the Git checkout.
 
 ## Inventory
 
-| Path | Server | Loading |
+| Path | Server | Runtime |
 | --- | --- | --- |
-| `camoufox/` | Camoufox browser-automation MCP server (stdio) | Registered in `~/.pi/agent/mcp.json` by absolute launcher path |
-| `chrome/` | Provisioning guidance and an update script for a user-local Google Chrome browser; no MCP server code | Not loaded |
+| `camoufox/` | Bounded Camoufox browser-automation MCP server (stdio) | `~/.local/mcps/camoufox/current/` |
+| `chrome/` | Provisioning guidance and update script for the user-local Chrome browser; no MCP server code | Not loaded as an MCP server |
 
-## Loading model
+## Camoufox deployment
 
-A stdio MCP server is registered in the user-owned `~/.pi/agent/mcp.json`, which the MCP client reads. The client requires an absolute command path, so the registration points at the launcher inside this repository, for example:
+From the canonical source directory:
+
+```bash
+cd <absolute-repository>/mcp-servers/camoufox
+npm run deploy:local
+```
+
+For first-time browser installation, platform support, Pi registration, and verification, follow [`camoufox/README.md`](camoufox/README.md).
+
+The deployment command creates and tests a new versioned release before atomically changing `current`:
+
+```text
+~/.local/mcps/camoufox/
+├── releases/<version>-<timestamp>-<source-fingerprint>/
+├── current  -> releases/<active-release>/
+└── previous -> releases/<previous-release>/
+```
+
+Useful commands:
+
+```bash
+npm run deploy:status
+npm run deploy:rollback
+```
+
+The active Pi registration uses an absolute path:
 
 ```json
 {
   "servers": {
     "camoufox": {
       "transport": "stdio",
-      "command": "<absolute-repository>/mcp-servers/camoufox/bin/camoufox-mcp",
+      "command": "<absolute-home>/.local/mcps/camoufox/current/bin/camoufox-mcp",
       "args": [
         "--executable-path",
         "<absolute-home>/.local/camoufox/camoufox-bin"
-      ]
+      ],
+      "enabled": true
     }
   }
 }
 ```
 
-`mcp.json` is machine-local and is not tracked in this repository. The launcher script resolves its own root relatively, so only the registration in `mcp.json` needs the absolute path.
-
-## Development
-
-Each server owns its dependencies and checks. Install and validate from the server directory:
-
-```bash
-cd mcp-servers/camoufox
-npm ci --ignore-scripts
-npm run doctor
-npm test
-```
-
-`npm test` runs the unit suite serialized, which keeps the server-spawning tests reliable in constrained runtimes where parallel process launches would otherwise contend. Integration tests that launch a real browser are gated behind `CAMOUFOX_INTEGRATION=1` and run with `npm run test:integration`.
+`~/.pi/agent/mcp.json` is machine-local and is not tracked in this repository. Restart Pi after first adding the registration. After a later deploy or rollback, run `/mcp reconnect camoufox` or restart Pi so the active server process uses the new `current` release.

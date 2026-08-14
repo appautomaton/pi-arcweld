@@ -8,4 +8,5 @@ if [ "$(uname -s)" = Linux ] && { grep -qi 'PRoot' /proc/version 2>/dev/null || 
 fi
 
 export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-exec node "$ROOT/src/index.js"
+
+exec node "$ROOT/src/index.js" "$@"

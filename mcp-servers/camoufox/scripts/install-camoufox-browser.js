@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
 import { copyFileSync, createReadStream, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { installWorkPrefix } from "./install-layout.js";
 import { resolveProfile } from "./runtime-profile.js";
 
 const profile = resolveProfile();
@@ -44,7 +44,11 @@ if (existsSync(installDir)) {
   process.exit(1);
 }
 
-const work = mkdtempSync(join(tmpdir(), "camoufox-install-"));
+const installParent = dirname(installDir);
+mkdirSync(installParent, { recursive: true });
+// Stage beside the final install so the verified directory can be activated
+// with one same-filesystem rename. /tmp may be a separate filesystem.
+const work = mkdtempSync(installWorkPrefix(installDir));
 const archive = join(work, browser.asset);
 const extracted = join(work, "extracted");
 try {
@@ -79,7 +83,6 @@ try {
   const chmod = spawnSync("chmod", ["-R", "u+rwX,go+rX", extracted], { stdio: "inherit" });
   if (chmod.status !== 0) throw new Error(`chmod exited with status ${chmod.status ?? "unknown"}`);
 
-  mkdirSync(dirname(installDir), { recursive: true });
   renameSync(extracted, installDir);
   console.log(`ok installed Camoufox ${browser.version}-${browser.release} at ${installDir}`);
 } catch (error) {

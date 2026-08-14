@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import "./stdio-guard.js";
+import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -22,7 +23,7 @@ import {
   startSession,
 } from "./sessions.js";
 
-const VERSION = "0.4.0";
+const VERSION = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
 
 try {
   configureBrowser(parseCliArgs(process.argv.slice(2)));

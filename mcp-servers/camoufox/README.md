@@ -8,46 +8,84 @@ Two runtime profiles are selected automatically by `scripts/runtime-profile.js`:
 
 | Profile | System | Status |
 | --- | --- | --- |
-| `proot-arm64` | Debian 13 AArch64 under PRoot | Pending revalidation |
-| `darwin-arm64` | macOS on Apple Silicon | Verified |
+| `proot-arm64` | Debian 13 AArch64 under PRoot | Verified |
+| `darwin-arm64` | macOS on Apple Silicon | Pending revalidation |
 
-[docs/runtime-support.md](docs/runtime-support.md) is the single source of truth for the support boundary and roadmap. Each `config/<profile>-runtime.json` records only that profile's verified pins and hashes.
+[docs/runtime-support.md](docs/runtime-support.md) is the single source of truth for the support boundary and roadmap. Each `config/<profile>-runtime.json` records that profile's configured pins, artifact hashes, and current verification status.
+
+## Directory roles
+
+| Location | Purpose |
+| --- | --- |
+| `<repository>/mcp-servers/camoufox/` | Canonical source, tests, manifests, and deployment scripts |
+| `$HOME/.local/mcps/camoufox/current/` | Tested MCP release that Pi actually runs |
+| `$HOME/.local/camoufox/` | Camoufox browser runtime; it contains no MCP server code |
+| `$HOME/.pi/agent/mcp.json` | Machine-local Pi registration; never committed to Git |
+
+Source changes do not affect the running MCP until `npm run deploy:local` succeeds and Pi reconnects to the server.
 
 ## Architecture
 
 ```text
 Pi / MCP host
-  -> <checkout>/bin/camoufox-mcp
-  -> src/index.js (@modelcontextprotocol/sdk)
+  -> ~/.local/mcps/camoufox/current/bin/camoufox-mcp
+  -> deployed src/index.js (@modelcontextprotocol/sdk)
   -> guarded tools, compact/full snapshots, completion, sessions, queue, cleanup
-  -> camoufox-js 0.11.1
-  -> playwright-core 1.59.0
-  -> Camoufox 150.0.2-beta.25 ARM64
+  -> camoufox-js 0.12.0
+  -> playwright-core 1.60.0
+  -> profile-pinned Camoufox ARM64 (152.0.4-beta.28 on PRoot Linux)
 ```
+
+`playwright-core` is held below 1.61.0 because `camoufox-js` 0.12.0 declares that upper bound; see [docs/runtime-support.md](docs/runtime-support.md).
 
 `camoufox-js` launches and configures Camoufox. `playwright-core` performs navigation and browser actions. The local server translates MCP calls into a deliberately bounded tool surface and adds URL policy, output control, completion observation, cancellation, and cleanup.
 
 The server does not contain host-side confirmation prompts; those belong to the MCP client.
 
-## Fresh setup
+## Prerequisites
 
-There are two verified setup targets, each with its own one-command bootstrap:
+- Pi's MCP client extension must be installed or registered; see [`../../extensions/mcp-extension/README.md`](../../extensions/mcp-extension/README.md).
+- Use Node.js 24 or newer.
+- The verified PRoot workflow requires Debian 13 AArch64 plus `curl`, `sha256sum`, `unzip`, and `Xvfb`.
+- Keep at least 3 GiB of free space available under `$HOME/.local` during first installation; the compressed archive and extracted browser coexist there while verification runs.
+- Use absolute paths in `~/.pi/agent/mcp.json`; the config does not expand `$HOME` or `~`.
+
+## First-time setup
+
+Run setup commands from the canonical Camoufox MCP source directory, not from the repository root or a deployed release:
 
 ```bash
-npm run bootstrap:proot-arm64    # Debian 13 AArch64 under PRoot
-npm run bootstrap:darwin-arm64   # macOS on Apple Silicon
+cd <absolute-repository>/mcp-servers/camoufox
+
+# Verified target: Debian 13 AArch64 under PRoot
+npm run bootstrap:proot-arm64
+
+# Install and test an independent MCP release under ~/.local/mcps/camoufox/
+npm run deploy:local
 ```
 
-Each bootstrap:
+The Apple Silicon command also exists:
+
+```bash
+npm run bootstrap:darwin-arm64
+```
+
+However, the macOS profile is currently **pending revalidation**. Treat only the PRoot ARM64 workflow as verified until the macOS checks are rerun.
+
+The bootstrap:
 
 1. verifies the platform, architecture, Node 24+, and required commands;
 2. restores the exact npm dependency tree with `npm ci`;
-3. downloads the pinned Camoufox `150.0.2-beta.25` archive for that platform;
+3. downloads the browser archive pinned by the selected runtime profile;
 4. verifies its byte size, archive SHA-256, and executable SHA-256;
-5. installs it into `$HOME/.local/camoufox` without overwriting an unknown installation;
+5. installs the browser into `$HOME/.local/camoufox` without overwriting an unknown installation;
 6. runs `npm run doctor`.
 
-The browser archive (roughly 622 MiB for Linux ARM64, 297 MiB for macOS ARM64) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide. To use an already downloaded verified archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap.
+`npm run deploy:local` then copies the MCP source into a staging release, installs that release's dependencies, runs doctor, unit tests, and real-browser integration tests, and changes `current` only after all checks pass.
+
+The browser archive (roughly 624 MiB for Linux ARM64, 297 MiB for macOS ARM64) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide. To use an already downloaded copy of the exact pinned archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap; the installer still checks its recorded byte size and SHA-256.
+
+The browser installer never overwrites `$HOME/.local/camoufox`. For an upgrade, keep or move the existing directory first, install and validate the pinned replacement, then remove the old copy only after the new browser works.
 
 See [docs/runtime-support.md](docs/runtime-support.md) and the manifests in [config/](config/) for the support boundary and recorded hashes.
 
@@ -55,19 +93,19 @@ General Debian AArch64 is a planned follow-up target but is not yet validated. W
 
 ## Pi configuration
 
-Pass the installed browser as an absolute runtime path:
+Merge the `camoufox` entry below into the existing `servers` object in `~/.pi/agent/mcp.json`; do not replace unrelated server entries. Pass both the deployed launcher and installed browser as absolute paths:
 
 ```json
 {
   "servers": {
     "camoufox": {
       "transport": "stdio",
-      "command": "<absolute-repository>/mcp-servers/camoufox/bin/camoufox-mcp",
+      "command": "<absolute-home>/.local/mcps/camoufox/current/bin/camoufox-mcp",
       "args": [
         "--executable-path",
         "<absolute-home>/.local/camoufox/camoufox-bin"
       ],
-      "enabled": false
+      "enabled": true
     }
   }
 }
@@ -75,11 +113,71 @@ Pass the installed browser as an absolute runtime path:
 
 On macOS, use `<absolute-home>/.local/camoufox/Camoufox.app/Contents/MacOS/camoufox`. Replace the placeholders with absolute paths; MCP configuration does not expand `$HOME` or `~`.
 
-## Run directly
+The deploy command does not edit `mcp.json` and does not restart an existing MCP process. After first adding the registration, restart Pi. After a later deploy or rollback, run:
+
+```text
+/mcp reconnect camoufox
+```
+
+A full Pi restart is also valid. Then verify:
+
+1. `/mcp status` reports `camoufox` as `ready`;
+2. `camoufox_status` reports the expected MCP version and `browserAvailable: true`;
+3. from the repository root, `scripts/check-user-wiring.sh` passes when the rest of the Pi workspace is configured.
+
+## Deployment and direct runs
 
 ```bash
-./bin/camoufox-mcp --executable-path "$HOME/.local/camoufox/camoufox-bin"
+npm run deploy:local      # test and deploy a new versioned release
+npm run deploy:status     # show current, previous, and all releases
+npm run deploy:rollback   # swap current and previous; reconnect Pi afterward
 ```
+
+Pi should run the deployed launcher:
+
+```bash
+$HOME/.local/mcps/camoufox/current/bin/camoufox-mcp \
+  --executable-path "$HOME/.local/camoufox/camoufox-bin"
+```
+
+Running `./bin/camoufox-mcp` from the source checkout is for development and tests only.
+
+## Current runtime defaults
+
+The MCP server currently launches Camoufox with these defaults:
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| Fingerprint platform | Linux on PRoot; macOS on Darwin | Keeps generated fingerprints aligned with the selected platform |
+| Display mode | `virtual` on Linux; ordinary headless on macOS | Linux uses an Xvfb virtual display |
+| Humanized input | Enabled | Camoufox applies humanized pointer behavior |
+| GeoIP lookup | Disabled | No automatic locale, timezone, or geolocation adjustment from the public IP |
+| WebRTC | Disabled | Reduces network-address exposure; WebRTC applications will not work |
+| Browser cache | Disabled | Reduces retained state between isolated browser runs |
+| Default UBO addon | Excluded | Avoids addon download, startup overhead, and page changes from ad blocking |
+| Service workers | Blocked per browser context | Reduces persistent background state |
+| Browser concurrency | 1 | Additional work waits in the bounded queue |
+| Queue capacity | 8 | Excess work is rejected instead of growing without bound |
+| Persistent sessions | 1 | A session expires after 10 minutes of inactivity |
+| Request budget | 1,024 per browser context | Stops pages that exceed the configured network-request limit |
+
+Each new browser process receives a newly generated Camoufox fingerprint. A persistent MCP session keeps the same browser instance and fingerprint until the session closes or expires.
+
+These resource defaults are read once when the MCP server process starts:
+
+| Environment variable | Default | Accepted range |
+| --- | ---: | ---: |
+| `CAMOUFOX_MCP_MAX_CONCURRENCY` | 1 | 1–4 |
+| `CAMOUFOX_MCP_MAX_QUEUE` | 8 | 0–50 |
+| `CAMOUFOX_MCP_QUEUE_TIMEOUT_MS` | 30,000 | 1,000–300,000 |
+| `CAMOUFOX_MCP_LAUNCH_TIMEOUT_MS` | 45,000 | 1,000–300,000 |
+| `CAMOUFOX_MCP_MAX_REQUESTS` | 1,024 | 32–10,000 |
+| `CAMOUFOX_MCP_MAX_SESSIONS` | 1 | 1–4 |
+| `CAMOUFOX_MCP_SESSION_TTL_MS` | 600,000 | 60,000–900,000 |
+
+Set overrides in the Camoufox server's `env` object in `~/.pi/agent/mcp.json`, then reconnect or restart the server. Values outside the accepted range are clamped. `camoufox_status` reports the active concurrency, queue, session, and session-TTL values, but it intentionally does not expose arbitrary process environment data.
+
+Callers cannot supply arbitrary browser options, proxy settings, Firefox preferences, or page-evaluation code.
 
 ## Tools
 

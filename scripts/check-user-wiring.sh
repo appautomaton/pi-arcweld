@@ -57,6 +57,44 @@ if (!packages.includes(expectedPath)) {
 }
 NODE
 
+echo "==> Checking deployed Camoufox MCP registration"
+camoufox_deploy="$HOME/.local/mcps/camoufox"
+camoufox_launcher="$camoufox_deploy/current/bin/camoufox-mcp"
+case "$(uname -s)" in
+	Darwin) camoufox_browser="$HOME/.local/camoufox/Camoufox.app/Contents/MacOS/camoufox" ;;
+	*) camoufox_browser="$HOME/.local/camoufox/camoufox-bin" ;;
+esac
+if [[ ! -L "$camoufox_deploy/current" ]]; then
+	echo "Expected deployed Camoufox current symlink: $camoufox_deploy/current" >&2
+	exit 1
+fi
+if [[ ! -x "$camoufox_launcher" ]]; then
+	echo "Expected executable deployed Camoufox launcher: $camoufox_launcher" >&2
+	exit 1
+fi
+node - "$AGENT_DIR/mcp.json" "$camoufox_launcher" "$camoufox_browser" <<'NODE'
+const { readFileSync } = require("node:fs");
+const [configPath, expectedCommand, expectedBrowser] = process.argv.slice(2);
+const config = JSON.parse(readFileSync(configPath, "utf8"));
+const server = config.servers?.camoufox;
+if (!server) throw new Error("Missing servers.camoufox registration");
+if (server.transport !== "stdio") throw new Error(`Unexpected Camoufox transport: ${server.transport}`);
+if (server.command !== expectedCommand) {
+	throw new Error(`Unexpected Camoufox command; expected ${expectedCommand}, found ${server.command}`);
+}
+const args = Array.isArray(server.args) ? server.args : [];
+const executableIndex = args.indexOf("--executable-path");
+if (executableIndex < 0 || args[executableIndex + 1] !== expectedBrowser) {
+	throw new Error(`Camoufox browser path must be ${expectedBrowser}`);
+}
+if (server.enabled === false) throw new Error("Camoufox MCP is disabled");
+NODE
+
+(
+	cd "$camoufox_deploy/current"
+	npm run doctor
+)
+
 echo "==> Checking Pi command"
 expected_pi="$ROOT_DIR/build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"
 actual_pi="$(readlink -f "$(command -v pi)")"
