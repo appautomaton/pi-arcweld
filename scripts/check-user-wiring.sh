@@ -76,15 +76,17 @@ case "$(uname -s)" in
 	Darwin) camoufox_browser="$HOME/.local/camoufox/Camoufox.app/Contents/MacOS/camoufox" ;;
 	*) camoufox_browser="$HOME/.local/camoufox/camoufox-bin" ;;
 esac
-if [[ ! -L "$camoufox_deploy/current" ]]; then
-	echo "Expected deployed Camoufox current symlink: $camoufox_deploy/current" >&2
-	exit 1
-fi
-if [[ ! -x "$camoufox_launcher" ]]; then
-	echo "Expected executable deployed Camoufox launcher: $camoufox_launcher" >&2
-	exit 1
-fi
-node - "$AGENT_DIR/mcp.json" "$camoufox_launcher" "$camoufox_browser" <<'NODE'
+# Camoufox runs from a machine-local deployment whose runtime profile pulls a
+# multi-hundred-megabyte browser payload, so not every machine carries it. Treat
+# it like the other machine-specific integrations: validate the deployment
+# strictly wherever it exists, and report it as absent everywhere else instead
+# of forcing the download.
+if [[ -L "$camoufox_deploy/current" ]]; then
+	if [[ ! -x "$camoufox_launcher" ]]; then
+		echo "Expected executable deployed Camoufox launcher: $camoufox_launcher" >&2
+		exit 1
+	fi
+	node - "$AGENT_DIR/mcp.json" "$camoufox_launcher" "$camoufox_browser" <<'NODE'
 const { readFileSync } = require("node:fs");
 const [configPath, expectedCommand, expectedBrowser] = process.argv.slice(2);
 const config = JSON.parse(readFileSync(configPath, "utf8"));
@@ -102,10 +104,13 @@ if (executableIndex < 0 || args[executableIndex + 1] !== expectedBrowser) {
 if (server.enabled === false) throw new Error("Camoufox MCP is disabled");
 NODE
 
-(
-	cd "$camoufox_deploy/current"
-	npm run doctor
-)
+	(
+		cd "$camoufox_deploy/current"
+		npm run doctor
+	)
+else
+	echo "Camoufox MCP is not deployed on this machine: $camoufox_deploy/current"
+fi
 
 echo "==> Checking Pi command"
 expected_pi="$ROOT_DIR/build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"

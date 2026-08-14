@@ -101,6 +101,15 @@ for package_dir in extensions/plan-mode extensions/pi-arcweld-todos extensions/m
 done
 
 echo "==> Checking mcp-servers/camoufox"
+# Unlike the source-only extensions, this server has real third-party runtime
+# dependencies. Report the missing install directly instead of letting the test
+# run fail with a bare module-resolution stack trace. Installing dependencies
+# does not fetch the browser payload; that is a separate fetch:camoufox step.
+if [[ ! -d mcp-servers/camoufox/node_modules ]]; then
+	echo "mcp-servers/camoufox checks require its dependencies" >&2
+	echo "Run npm ci --ignore-scripts in mcp-servers/camoufox first" >&2
+	exit 1
+fi
 (
 	cd mcp-servers/camoufox
 	npm test

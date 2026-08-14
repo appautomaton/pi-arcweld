@@ -97,7 +97,7 @@ The active Pi configuration uses explicit user-level wiring: extensions point to
 - `~/.pi/agent/extensions/grok-search.ts` → `extensions/grok-search.ts` (optional; not enabled on this machine)
 - `~/.pi/agent/APPEND_SYSTEM.md` → `system-instruction/APPEND_SYSTEM.md`
 - `~/.pi/agent/settings.json` registers `extensions/mcp-extension/` as a local-path package
-- `~/.pi/agent/mcp.json` runs the deployed Camoufox MCP at `~/.local/mcps/camoufox/current/bin/camoufox-mcp`
+- `~/.pi/agent/mcp.json` runs the deployed Camoufox MCP at `~/.local/mcps/camoufox/current/bin/camoufox-mcp` (optional; its browser payload is machine-local, so `scripts/check-user-wiring.sh` validates the deployment where it exists and reports it as absent otherwise)
 - the user `pi` command resolves to `build/pi-agent/runtime/bin/pi`
 
 ### Secret boundary
