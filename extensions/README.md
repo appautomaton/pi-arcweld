@@ -14,11 +14,11 @@
 | `exa-search.ts` | Exa-backed `exa_search` tool | Symlink at `~/.pi/agent/extensions/exa-search.ts` |
 | `codex-web-search.ts` | Codex hosted `web_search` injection plus explicit `web_run` tool | Symlink at `~/.pi/agent/extensions/codex-web-search.ts` |
 | `claude-web-search/` | Cache-stable isolated Anthropic `WebSearch` tool | Symlink at `~/.pi/agent/extensions/claude-web-search` |
-| `grok-search.ts` | Grok-backed web/X `grok_search` tool | Symlink at `~/.pi/agent/extensions/grok-search.ts` |
+| `grok-search.ts` | Grok-backed web/X `grok_search` tool | Optional symlink at `~/.pi/agent/extensions/grok-search.ts` |
 
 The questionnaire started from Pi's upstream example and is maintained here as a self-contained local variant. Keeping its imports package-based makes it safe to load through the user-level symlink, while the local copy owns its model-facing clarification policy.
 
-The search extensions are also self-contained. `exa-search.ts` reads `exaApiKey` only from the machine-local `~/.pi/agent/exa-search.json`; never commit that credential file. `grok-search.ts` resolves `cli-proxy-api/grok-4.5` and its credential through Pi's model registry, so the machine must configure that provider and model separately.
+The search extensions are also self-contained. `exa-search.ts` reads `exaApiKey` only from the machine-local `~/.pi/agent/exa-search.json`; never commit that credential file. `grok-search.ts` resolves `cli-proxy-api/grok-4.5` and its credential through Pi's model registry, so the machine must configure that provider and model separately. Because that provider is machine-specific, the symlink is optional: `scripts/check-user-wiring.sh` validates its target when the link exists and reports it as not enabled when it is absent.
 
 `codex-web-search.ts` owns both Codex web-access modes. It appends Codex's provider-side `{ "type": "web_search" }` declaration to requests for the built-in `openai-codex` OAuth provider and `cli-proxy-api` GPT models using the OpenAI Responses API. In this hosted mode, OpenAI decides when to search or open pages while producing the response. Pi currently displays the final model text but does not surface intermediate `web_search_call` activity or preserve structured citation annotations.
 

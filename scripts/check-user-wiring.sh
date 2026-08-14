@@ -22,6 +22,17 @@ check_link() {
 	fi
 }
 
+check_optional_link() {
+	local link_path="$1"
+	local expected_target="$2"
+
+	if [[ ! -e "$link_path" && ! -L "$link_path" ]]; then
+		echo "Optional extension not enabled on this machine: $link_path"
+		return
+	fi
+	check_link "$link_path" "$expected_target"
+}
+
 check_absent() {
 	local path="$1"
 	if [[ -e "$path" || -L "$path" ]]; then
@@ -40,7 +51,8 @@ check_link "$AGENT_DIR/extensions/claude-web-search" "$ROOT_DIR/extensions/claud
 check_absent "$AGENT_DIR/extensions/claude-web-search.ts"
 check_absent "$AGENT_DIR/extensions/native-web-search.ts"
 check_absent "$AGENT_DIR/extensions/web-search.ts"
-check_link "$AGENT_DIR/extensions/grok-search.ts" "$ROOT_DIR/extensions/grok-search.ts"
+# Grok needs a machine-specific cli-proxy-api/grok-4.5 provider, so it stays optional.
+check_optional_link "$AGENT_DIR/extensions/grok-search.ts" "$ROOT_DIR/extensions/grok-search.ts"
 check_link "$AGENT_DIR/APPEND_SYSTEM.md" "$ROOT_DIR/system-instruction/APPEND_SYSTEM.md"
 
 echo "==> Checking MCP package registration"

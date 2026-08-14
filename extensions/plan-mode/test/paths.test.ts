@@ -54,13 +54,27 @@ test("rejects a symlinked parent directory", async () => {
 	});
 });
 
-test("rejects an existing hard-linked target", async () => {
+// Some sandboxes (Termux/PRoot, restricted containers) cannot create real hard
+// links, which breaks this fixture rather than the behavior under test. Skip
+// there instead of dropping the check on filesystems that do support them.
+const NO_HARD_LINK_CODES = new Set(["EACCES", "EPERM", "ENOSYS", "EMLINK", "EXDEV"]);
+
+test("rejects an existing hard-linked target", async (t) => {
 	await withProject(async (project) => {
 		const plans = join(project, ".pi", "plans");
 		const original = join(project, "original.md");
 		await mkdir(plans, { recursive: true });
 		await writeFile(original, "original\n");
-		await link(original, join(plans, "shared.md"));
+		try {
+			await link(original, join(plans, "shared.md"));
+		} catch (error) {
+			const code = (error as NodeJS.ErrnoException).code;
+			if (code !== undefined && NO_HARD_LINK_CODES.has(code)) {
+				t.skip(`hard links are unavailable in this environment (${code})`);
+				return;
+			}
+			throw error;
+		}
 
 		assert.equal(await isPlanDocumentPath(".pi/plans/shared.md", project, CONFIG_DIR), false);
 	});

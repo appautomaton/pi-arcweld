@@ -76,7 +76,7 @@ scripts/check-user-wiring.sh
 
 ## Updating Pi
 
-Fast-forward the local `pi-mono` checkout to upstream `main` and rebuild the runtime:
+Realign the local `pi-mono` checkout onto upstream `main` and rebuild the runtime. Upstream rewrites and force-pushes `main`, and this checkout is a `depth=1` shallow clone, so the helper falls back to resetting onto the fetched tip when a fast-forward is not possible. It re-verifies a clean `pi-mono` worktree before doing so, and never commits or pushes:
 
 ```bash
 scripts/update-pi-mono.sh
@@ -94,7 +94,7 @@ The active Pi configuration uses explicit user-level wiring: extensions point to
 - `~/.pi/agent/extensions/exa-search.ts` → `extensions/exa-search.ts`
 - `~/.pi/agent/extensions/codex-web-search.ts` → `extensions/codex-web-search.ts`
 - `~/.pi/agent/extensions/claude-web-search` → `extensions/claude-web-search/`
-- `~/.pi/agent/extensions/grok-search.ts` → `extensions/grok-search.ts`
+- `~/.pi/agent/extensions/grok-search.ts` → `extensions/grok-search.ts` (optional; not enabled on this machine)
 - `~/.pi/agent/APPEND_SYSTEM.md` → `system-instruction/APPEND_SYSTEM.md`
 - `~/.pi/agent/settings.json` registers `extensions/mcp-extension/` as a local-path package
 - `~/.pi/agent/mcp.json` runs the deployed Camoufox MCP at `~/.local/mcps/camoufox/current/bin/camoufox-mcp`
@@ -106,7 +106,7 @@ Machine-local settings, credentials, and unrelated user extensions are not store
 
 ## Development model
 
-The repository intentionally has no root `package.json` or shared npm workspace. Each local package owns its manifest, lockfile, dependencies, and checks, and upstream Pi retains its own build and release process. The root repository records the upstream URL and pinned Pi commit, not local Pi source changes. See [`AGENTS.md`](AGENTS.md) for workspace, build, and Git hygiene rules.
+The repository intentionally has no root `package.json` or shared npm workspace. Each local package owns its manifest and checks, and upstream Pi retains its own build and release process. Only packages with real third-party runtime dependencies carry a lockfile; source-only extensions declare Pi packages as wildcard peer dependencies and are type-checked and tested against the live built runtime, so no local manifest pins a Pi version that could go stale on an upstream update. The root repository records the upstream URL and pinned Pi commit, not local Pi source changes. See [`AGENTS.md`](AGENTS.md) for workspace, build, and Git hygiene rules.
 
 ## Links
 

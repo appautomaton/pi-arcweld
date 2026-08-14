@@ -35,6 +35,44 @@ for (const path of [
 ]) {
 	JSON.parse(readFileSync(path, "utf8"));
 }
+
+// Pi host packages are supplied by the locally built runtime under
+// build/pi-agent/runtime, not by npm. A pinned version would resolve a
+// different artifact than the one actually loaded, and would silently go stale
+// on every pi-mono update, so they must stay wildcard peer dependencies.
+const HOST_PACKAGES = [
+	"@earendil-works/pi-agent-core",
+	"@earendil-works/pi-ai",
+	"@earendil-works/pi-client",
+	"@earendil-works/pi-coding-agent",
+	"@earendil-works/pi-protocol",
+	"@earendil-works/pi-telemetry",
+	"@earendil-works/pi-tui",
+	"typebox",
+];
+const problems = [];
+for (const path of [
+	"extensions/mcp-extension/package.json",
+	"extensions/claude-web-search/package.json",
+	"extensions/plan-mode/package.json",
+	"extensions/pi-arcweld-todos/package.json",
+]) {
+	const manifest = JSON.parse(readFileSync(path, "utf8"));
+	for (const name of HOST_PACKAGES) {
+		for (const field of ["dependencies", "devDependencies"]) {
+			if (manifest[field]?.[name] !== undefined) {
+				problems.push(`${path}: ${name} must be a host-provided peer, not a pinned ${field} entry`);
+			}
+		}
+		const range = manifest.peerDependencies?.[name];
+		if (range !== undefined && range !== "*") {
+			problems.push(`${path}: peerDependencies["${name}"] must be "*", found "${range}"`);
+		}
+	}
+}
+if (problems.length > 0) {
+	throw new Error(`Pi host package boundary violations:\n  ${problems.join("\n  ")}`);
+}
 NODE
 
 echo "==> Checking landing-page anchors"

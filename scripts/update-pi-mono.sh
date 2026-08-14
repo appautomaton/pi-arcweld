@@ -39,7 +39,31 @@ fi
 git -C "$MONO_DIR" config --replace-all remote.origin.fetch "+refs/heads/main:refs/remotes/origin/main"
 git -C "$MONO_DIR" config --replace-all remote.origin.tagOpt "--no-tags"
 git -C "$MONO_DIR" fetch origin
-git -C "$MONO_DIR" merge --ff-only origin/main
+
+# Upstream rewrites and force-pushes main, and this checkout is intentionally a
+# depth=1 shallow clone, so the local tip and the fetched origin/main routinely
+# share no ancestor and --ff-only reports "unrelated histories". The root
+# repository never carries local pi-mono changes, so realigning onto the fetched
+# tip is the correct outcome; re-verify a clean worktree first so the fallback
+# can never discard work.
+if ! git -C "$MONO_DIR" merge --ff-only origin/main; then
+	if [[ -n "$(git -C "$MONO_DIR" status --porcelain)" ]]; then
+		fail "pi-mono has local changes after a failed fast-forward; resolve them manually"
+	fi
+	echo "==> Fast-forward unavailable (rewritten upstream history); resetting onto origin/main"
+	git -C "$MONO_DIR" reset --hard origin/main
+fi
+
+# Drop local branches left dangling by a rewritten upstream history so the
+# checkout stays lean and free of unreachable tips.
+while read -r stale_branch; do
+	[[ -n "$stale_branch" ]] || continue
+	[[ "$stale_branch" != "local-dev" ]] || continue
+	if ! git -C "$MONO_DIR" merge-base --is-ancestor "$stale_branch" origin/main 2>/dev/null; then
+		echo "==> Removing stale pi-mono branch $stale_branch"
+		git -C "$MONO_DIR" branch -D "$stale_branch"
+	fi
+done < <(git -C "$MONO_DIR" for-each-ref --format='%(refname:short)' refs/heads)
 
 "$ROOT_DIR/scripts/build-pi-agent.sh" --link-user-bin
 
