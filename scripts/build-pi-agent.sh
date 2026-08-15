@@ -77,7 +77,7 @@ TARBALL_DIR="$BUILD_DIR/artifacts/tarballs"
 # topological order, so upstream package additions and removals are picked up
 # without editing this script.
 PACKAGE_NAMES=()
-declare -A PACKAGE_NPM_NAMES=()
+PACKAGE_NPM_NAMES=()
 TYPESCRIPT_COMPILER=""
 TYPESCRIPT_COMPILER_ARGS=()
 
@@ -104,7 +104,7 @@ resolve_runtime_packages() {
 			continue
 		fi
 		PACKAGE_NAMES+=("$dir")
-		PACKAGE_NPM_NAMES["$dir"]="$npm_name"
+		PACKAGE_NPM_NAMES+=("$npm_name")
 	done <<< "$resolved"
 
 	if [[ ${#PACKAGE_NAMES[@]} -eq 0 ]]; then
@@ -137,9 +137,28 @@ link_source_dir() {
 	ln -s "$source" "$target"
 }
 
+remove_tree_with_retries() {
+	local target="$1"
+	local cleanup_attempt
+
+	# Finder may recreate .DS_Store while a directory tree is being removed.
+	# Retrying is harmless on Linux and Termux and keeps macOS cleanup reliable.
+	for cleanup_attempt in 1 2 3; do
+		if rm -rf "$target" && [[ ! -e "$target" && ! -L "$target" ]]; then
+			return 0
+		fi
+		sleep 1
+	done
+
+	echo "Failed to remove: $target" >&2
+	return 1
+}
+
 prepare_workdir() {
 	echo "==> Preparing external build workspace: $WORK_DIR"
-	rm -rf "$WORK_DIR" "$NEXT_RUNTIME_DIR" "$TARBALL_DIR"
+	remove_tree_with_retries "$WORK_DIR"
+	remove_tree_with_retries "$NEXT_RUNTIME_DIR"
+	remove_tree_with_retries "$TARBALL_DIR"
 	mkdir -p "$WORK_DIR/packages" "$TARBALL_DIR"
 
 	copy_file "$MONO_DIR/package.json" "$WORK_DIR/package.json"
@@ -207,7 +226,7 @@ build_typescript_packages() {
 				PATH="$WORK_DIR/node_modules/.bin:$PATH" node "$MONO_DIR/packages/ai/scripts/generate-models.ts"
 			)
 		fi
-		"$TYPESCRIPT_COMPILER" "${TYPESCRIPT_COMPILER_ARGS[@]}" -p "$WORK_DIR/packages/$package_name/tsconfig.build.json"
+		"$TYPESCRIPT_COMPILER" ${TYPESCRIPT_COMPILER_ARGS[@]+"${TYPESCRIPT_COMPILER_ARGS[@]}"} -p "$WORK_DIR/packages/$package_name/tsconfig.build.json"
 		if [[ "$package_name" == "ai" ]]; then
 			copy_dir "$WORK_DIR/packages/ai/src/providers/data" "$WORK_DIR/packages/ai/dist/providers/data"
 		fi
@@ -262,12 +281,13 @@ JSON
 }
 
 assemble_runtime() {
-	local package_name npm_name tarball spec deps_json
+	local package_index package_name npm_name tarball spec deps_json
 	local -a dep_lines=()
 
-	rm -rf "$NEXT_RUNTIME_DIR"
-	for package_name in "${PACKAGE_NAMES[@]}"; do
-		npm_name="${PACKAGE_NPM_NAMES[$package_name]}"
+	remove_tree_with_retries "$NEXT_RUNTIME_DIR"
+	for package_index in "${!PACKAGE_NAMES[@]}"; do
+		package_name="${PACKAGE_NAMES[$package_index]}"
+		npm_name="${PACKAGE_NPM_NAMES[$package_index]}"
 		tarball="$(pack_package "$package_name")"
 		spec="file:../artifacts/tarballs/$(basename "$tarball")"
 		dep_lines+=("$(printf '\t\t"%s": "%s"' "$npm_name" "$spec")")
@@ -306,7 +326,7 @@ smoke_check_runtime() {
 
 promote_runtime() {
 	echo "==> Promoting runtime"
-	rm -rf "$RUNTIME_DIR"
+	remove_tree_with_retries "$RUNTIME_DIR"
 	mv "$NEXT_RUNTIME_DIR" "$RUNTIME_DIR"
 	mkdir -p "$BUILD_DIR/bin"
 	ln -sfn ../runtime/bin/pi "$BUILD_DIR/bin/pi"
@@ -343,7 +363,7 @@ cleanup_stale_layout() {
 	mkdir -p "$BUILD_DIR/bin"
 	ln -sfn ../runtime/bin/pi "$BUILD_DIR/bin/pi"
 	if [[ "$KEEP_WORK" == "false" ]]; then
-		rm -rf "$WORK_DIR"
+		remove_tree_with_retries "$WORK_DIR"
 	fi
 }
 
