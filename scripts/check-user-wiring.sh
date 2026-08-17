@@ -53,6 +53,8 @@ check_absent "$AGENT_DIR/extensions/native-web-search.ts"
 check_absent "$AGENT_DIR/extensions/web-search.ts"
 # Grok needs a machine-specific cli-proxy-api/grok-4.5 provider, so it stays optional.
 check_optional_link "$AGENT_DIR/extensions/grok-search.ts" "$ROOT_DIR/extensions/grok-search.ts"
+# Gemini search uses Google Search Grounding for Gemini models.
+check_link "$AGENT_DIR/extensions/gemini-web-search.ts" "$ROOT_DIR/extensions/gemini-web-search.ts"
 check_link "$AGENT_DIR/APPEND_SYSTEM.md" "$ROOT_DIR/system-instruction/APPEND_SYSTEM.md"
 
 echo "==> Checking MCP package registration"
