@@ -4,20 +4,23 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "==> Checking shell scripts"
-bash -n scripts/*.sh
+tmp_dir="$(mktemp -d)"
+agent_dir="$(mktemp -d)"
+cleanup() {
+	rm -rf "$tmp_dir" "$agent_dir"
+}
+trap cleanup EXIT
 
-echo "==> Checking secret boundary"
+echo "==> [1/3] Checking static syntax, secrets, manifests, and rules"
+bash -n scripts/*.sh
 scripts/check-secret-boundary.sh
 
-echo "==> Checking repository references"
 if stale_references="$(git grep -n -E 'pi-mcp-client-local|/home/dev|href="#workshop"|id="workshop"' -- ':!pi-mono' ':!scripts/check-workspace.sh')"; then
 	printf '%s\n' "$stale_references" >&2
 	echo "Stale repository references found" >&2
 	exit 1
 fi
 
-echo "==> Checking package manifests"
 node <<'NODE'
 const { readFileSync } = require("node:fs");
 for (const path of [
@@ -73,11 +76,7 @@ for (const path of [
 if (problems.length > 0) {
 	throw new Error(`Pi host package boundary violations:\n  ${problems.join("\n  ")}`);
 }
-NODE
 
-echo "==> Checking landing-page anchors"
-node <<'NODE'
-const { readFileSync } = require("node:fs");
 const html = readFileSync("docs/index.html", "utf8");
 const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]));
 const missing = [...html.matchAll(/\bhref="#([^"]+)"/g)]
@@ -90,32 +89,7 @@ NODE
 
 node --check mcp-servers/camoufox/scripts/deploy-local.js
 
-for package_dir in extensions/plan-mode extensions/pi-arcweld-todos extensions/mcp-extension extensions/claude-web-search; do
-	echo "==> Checking $package_dir"
-	(
-		cd "$package_dir"
-		npm run check
-		npm test
-		npm run pack:check
-	)
-done
-
-echo "==> Checking mcp-servers/camoufox"
-# Unlike the source-only extensions, this server has real third-party runtime
-# dependencies. Report the missing install directly instead of letting the test
-# run fail with a bare module-resolution stack trace. Installing dependencies
-# does not fetch the browser payload; that is a separate fetch:camoufox step.
-if [[ ! -d mcp-servers/camoufox/node_modules ]]; then
-	echo "mcp-servers/camoufox checks require its dependencies" >&2
-	echo "Run npm ci --ignore-scripts in mcp-servers/camoufox first" >&2
-	exit 1
-fi
-(
-	cd mcp-servers/camoufox
-	npm test
-)
-
-echo "==> Checking self-contained extensions through their user-level loading shape"
+# Self-contained extensions static rule assertions
 grep -Fq 'promptSnippet: "Ask focused clarification questions when material decisions require user input"' extensions/questionnaire.ts
 grep -Fq 'Use questionnaire only when missing input would materially change the result' extensions/questionnaire.ts
 grep -Fq 'name: "exa_search"' extensions/exa-search.ts
@@ -135,14 +109,97 @@ if grep -Fq 'registerProvider' extensions/claude-web-search/index.ts; then
 	exit 1
 fi
 grep -Fq 'name: "grok_search"' extensions/grok-search.ts
-node --test extensions/test/codex-web-search.test.mts
-agent_dir="$(mktemp -d)"
-trap 'rm -rf "$agent_dir"' EXIT
+if [[ -f extensions/gemini-web-search.ts ]]; then
+	grep -Fq 'name: GOOGLE_SEARCH_TOOL_NAME' extensions/gemini-web-search.ts
+fi
+
+echo "==> [2/3] Checking packages and test suites in parallel"
+pids=()
+
+# 1. plan-mode
+(
+	cd "$ROOT_DIR/extensions/plan-mode"
+	"$ROOT_DIR/scripts/check-extension-package.sh" plan-mode all
+	npm pack --dry-run
+) > "$tmp_dir/plan-mode.log" 2>&1 &
+pids+=($!)
+
+# 2. pi-arcweld-todos
+(
+	cd "$ROOT_DIR/extensions/pi-arcweld-todos"
+	"$ROOT_DIR/scripts/check-extension-package.sh" pi-arcweld-todos all
+	npm pack --dry-run
+) > "$tmp_dir/todos.log" 2>&1 &
+pids+=($!)
+
+# 3. mcp-extension
+(
+	cd "$ROOT_DIR/extensions/mcp-extension"
+	"$ROOT_DIR/scripts/check-mcp-extension.sh" all
+	npm pack --dry-run
+) > "$tmp_dir/mcp.log" 2>&1 &
+pids+=($!)
+
+# 4. claude-web-search
+(
+	cd "$ROOT_DIR/extensions/claude-web-search"
+	"$ROOT_DIR/scripts/check-claude-web-search.sh" all
+	npm pack --dry-run
+) > "$tmp_dir/claude.log" 2>&1 &
+pids+=($!)
+
+# 5. camoufox
+(
+	if [[ ! -d "$ROOT_DIR/mcp-servers/camoufox/node_modules" ]]; then
+		echo "mcp-servers/camoufox checks require its dependencies" >&2
+		echo "Run npm ci --ignore-scripts in mcp-servers/camoufox first" >&2
+		exit 1
+	fi
+	cd "$ROOT_DIR/mcp-servers/camoufox"
+	npm test
+) > "$tmp_dir/camoufox.log" 2>&1 &
+pids+=($!)
+
+# 6. Standalone extension test suites
+(
+	cd "$ROOT_DIR"
+	standalone_tests=(extensions/test/codex-web-search.test.mts)
+	if [[ -f extensions/test/gemini-web-search.test.mts ]]; then
+		standalone_tests+=(extensions/test/gemini-web-search.test.mts)
+	fi
+	node --test "${standalone_tests[@]}"
+) > "$tmp_dir/standalone-tests.log" 2>&1 &
+pids+=($!)
+
+failed=0
+for pid in "${pids[@]}"; do
+	if ! wait "$pid"; then
+		failed=1
+	fi
+done
+
+if [[ "$failed" -ne 0 ]]; then
+	echo "Parallel check failed. Error logs below:" >&2
+	for log in "$tmp_dir"/*.log; do
+		if [[ -s "$log" ]]; then
+			echo "----------------------------------------" >&2
+			echo "Log: $(basename "$log")" >&2
+			echo "----------------------------------------" >&2
+			cat "$log" >&2
+		fi
+	done
+	exit 1
+fi
+
+echo "==> [3/3] Checking self-contained extensions through Pi runtime loading shape"
 mkdir -p "$agent_dir/extensions"
 for extension in questionnaire.ts exa-search.ts codex-web-search.ts grok-search.ts; do
 	ln -s "$ROOT_DIR/extensions/$extension" "$agent_dir/extensions/$extension"
 done
+if [[ -f "$ROOT_DIR/extensions/gemini-web-search.ts" ]]; then
+	ln -s "$ROOT_DIR/extensions/gemini-web-search.ts" "$agent_dir/extensions/gemini-web-search.ts"
+fi
 ln -s "$ROOT_DIR/extensions/claude-web-search" "$agent_dir/extensions/claude-web-search"
 PI_CODING_AGENT_DIR="$agent_dir" pi --list-models >/dev/null
 
-echo "==> Workspace checks passed"
+echo "==> All workspace checks passed in parallel!"
