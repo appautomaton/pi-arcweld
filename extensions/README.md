@@ -9,6 +9,7 @@
 | `mcp-extension/` | Package with runtime dependencies | Local-path package in `~/.pi/agent/settings.json` |
 | `plan-mode/` | Package directory | Symlink at `~/.pi/agent/extensions/plan-mode` |
 | `pi-arcweld-todos/` | Package directory | Symlink at `~/.pi/agent/extensions/pi-arcweld-todos` |
+| `cache-preserving-compaction/` | Cache-friendly custom compaction package | Symlink at `~/.pi/agent/extensions/cache-preserving-compaction` |
 | `questionnaire.ts` | Self-contained curated extension | Symlink at `~/.pi/agent/extensions/questionnaire.ts` |
 | `claude-cache-retention.ts` | Claude-only one-hour prompt-cache policy for the local CPA provider | Symlink at `~/.pi/agent/extensions/claude-cache-retention.ts` |
 | `exa-search.ts` | Exa-backed `exa_search` tool | Symlink at `~/.pi/agent/extensions/exa-search.ts` |
@@ -32,6 +33,8 @@ The explicit route is intentionally limited to the verified CPA path for now. Di
 `gemini-web-search.ts` exposes the cache-stable isolated `google_search` tool exclusively for Gemini models (e.g. `gemini-3.7-flash-high` under `cli-proxy-api-google` and upstream `google` provider models). Session-start and model-selection hooks dynamically activate `google_search` when a Gemini model is selected and deactivate it for non-Gemini models (such as GPT or Claude). When called, it executes an isolated sub-request via Pi's model registry with Google Search Grounding (`googleSearch`), returning structured factual synthesis and cited URLs while preserving the main agent conversation's prompt cache and tool stability. `/gemini-search-status` (and `/google-search-status`) inspects availability for the current model.
 
 `claude-cache-retention.ts` upgrades existing Anthropic `cache_control` markers to a one-hour TTL only for the `cli-proxy-api-anthropic` provider. This keeps `PI_CACHE_RETENTION` unset so OpenAI and other Pi providers retain their default cache policies.
+
+`cache-preserving-compaction/` intercepts Pi's default compaction summarization call. It replays the last native system prompt, conversation, tools, headers, reasoning level, and session ID, then appends one structured user checkpoint instruction. This preserves the existing provider prompt prefix when the provider still has it cached. Failed or invalid summaries cancel compaction instead of falling back to Pi's uncached standalone summarizer.
 
 `pi-arcweld-todos` and `plan-mode` are a decoupled pair. The todos package registers the always-on `update_todos` tool that tracks long-horizon work in every mode; plan mode is a policy layer that instructs the model to record its plan through that same tool. The only shared contract is the tool name `update_todos` and its `details.todos` shape, so either extension loads and runs without the other.
 
@@ -61,7 +64,7 @@ npm test
 npm run pack:check
 ```
 
-Use the same command sequence in `extensions/plan-mode/` and `extensions/claude-web-search/`. The Claude web-search package borrows the workspace's existing TypeScript/TSX toolchain and temporarily links only the built Pi runtime packages during checks; it keeps no extension-local dependency tree. Test the self-contained extensions through their user-level symlinks or explicitly with:
+Use the same command sequence in `extensions/plan-mode/`, `extensions/cache-preserving-compaction/`, and `extensions/claude-web-search/`. These source-only packages borrow the workspace's existing TypeScript/TSX toolchain and temporarily link only the built Pi runtime packages during checks; they keep no extension-local dependency tree. Test the self-contained extensions through their user-level symlinks or explicitly with:
 
 ```bash
 pi -e ./extensions/questionnaire.ts

@@ -44,6 +44,7 @@ check_absent() {
 echo "==> Checking user-level symlinks"
 check_link "$AGENT_DIR/extensions/plan-mode" "$ROOT_DIR/extensions/plan-mode"
 check_link "$AGENT_DIR/extensions/pi-arcweld-todos" "$ROOT_DIR/extensions/pi-arcweld-todos"
+check_link "$AGENT_DIR/extensions/cache-preserving-compaction" "$ROOT_DIR/extensions/cache-preserving-compaction"
 check_link "$AGENT_DIR/extensions/questionnaire.ts" "$ROOT_DIR/extensions/questionnaire.ts"
 check_link "$AGENT_DIR/extensions/exa-search.ts" "$ROOT_DIR/extensions/exa-search.ts"
 check_link "$AGENT_DIR/extensions/codex-web-search.ts" "$ROOT_DIR/extensions/codex-web-search.ts"

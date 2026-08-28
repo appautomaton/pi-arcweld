@@ -1,0 +1,34 @@
+{
+  "name": "pi-arcweld-cache-preserving-compaction",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cache-preserving compaction for Pi",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "compaction",
+    "prompt-cache"
+  ],
+  "files": [
+    "index.ts",
+    "LICENSE",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "scripts": {
+    "check": "../../scripts/check-extension-package.sh cache-preserving-compaction check",
+    "test": "../../scripts/check-extension-package.sh cache-preserving-compaction test",
+    "pack:check": "npm pack --dry-run"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-agent-core": "*",
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}
