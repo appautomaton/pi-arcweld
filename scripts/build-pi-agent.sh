@@ -165,6 +165,9 @@ prepare_workdir() {
 	copy_file "$MONO_DIR/package-lock.json" "$WORK_DIR/package-lock.json"
 	copy_file "$MONO_DIR/tsconfig.base.json" "$WORK_DIR/tsconfig.base.json"
 	copy_file "$MONO_DIR/.npmrc" "$WORK_DIR/.npmrc"
+	if [[ -f "$MONO_DIR/scripts/build-coding-agent-bundle.mjs" ]]; then
+		copy_file "$MONO_DIR/scripts/build-coding-agent-bundle.mjs" "$WORK_DIR/scripts/build-coding-agent-bundle.mjs"
+	fi
 
 	for package_name in "${PACKAGE_NAMES[@]}"; do
 		local source_package="$MONO_DIR/packages/$package_name"
@@ -250,6 +253,17 @@ copy_coding_agent_assets() {
 	cp "$source_dir/core/export-html/vendor/"*.js "$dist_dir/core/export-html/vendor/"
 }
 
+build_coding_agent_bundle() {
+	local bundle_script="$WORK_DIR/scripts/build-coding-agent-bundle.mjs"
+
+	if [[ ! -f "$bundle_script" ]]; then
+		return
+	fi
+
+	echo "==> Building coding-agent Node bundle"
+	node "$bundle_script"
+}
+
 pack_package() {
 	local package_name="$1"
 	local package_dir="$WORK_DIR/packages/$package_name"
@@ -311,9 +325,12 @@ assemble_runtime() {
 
 smoke_check_runtime() {
 	local pi_bin="$NEXT_RUNTIME_DIR/bin/pi"
+	local coding_agent_dir="$NEXT_RUNTIME_DIR/node_modules/@earendil-works/pi-coding-agent"
+	local cli_relative
+	cli_relative="$(node -e 'const packageJson = require(process.argv[1]); const bin = packageJson.bin; const cli = typeof bin === "string" ? bin : bin?.pi; if (!cli) process.exit(1); process.stdout.write(cli);' "$coding_agent_dir/package.json")"
 
 	echo "==> Smoke checking external runtime"
-	test -x "$NEXT_RUNTIME_DIR/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"
+	test -x "$coding_agent_dir/$cli_relative"
 	test -L "$pi_bin"
 	"$pi_bin" --version >/dev/null
 	"$pi_bin" --help >/dev/null
@@ -373,6 +390,7 @@ install_build_dependencies
 select_typescript_compiler
 build_typescript_packages
 copy_coding_agent_assets
+build_coding_agent_bundle
 assemble_runtime
 smoke_check_runtime
 promote_runtime

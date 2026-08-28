@@ -115,7 +115,8 @@ else
 fi
 
 echo "==> Checking Pi command"
-expected_pi="$ROOT_DIR/build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"
+coding_agent_dir="$ROOT_DIR/build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent"
+expected_pi="$(node -e 'const path = require("node:path"); const packageJson = require(process.argv[1]); const bin = packageJson.bin; const cli = typeof bin === "string" ? bin : bin?.pi; if (!cli) process.exit(1); process.stdout.write(path.resolve(path.dirname(process.argv[1]), cli));' "$coding_agent_dir/package.json")"
 actual_pi="$(readlink -f "$(command -v pi)")"
 if [[ "$actual_pi" != "$expected_pi" ]]; then
 	echo "Unexpected pi command target" >&2

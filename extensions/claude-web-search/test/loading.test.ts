@@ -1,16 +1,22 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp, rm, symlink } from "node:fs/promises";
+import { mkdtemp, readFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const piCli = resolve(
+const codingAgentRoot = resolve(
 	packageRoot,
-	"../../build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent/dist/cli.js",
+	"../../build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent",
 );
+const codingAgentPackage = JSON.parse(await readFile(join(codingAgentRoot, "package.json"), "utf8")) as {
+	bin: string | { pi?: string };
+};
+const piBin = typeof codingAgentPackage.bin === "string" ? codingAgentPackage.bin : codingAgentPackage.bin.pi;
+assert.ok(piBin, "Pi package does not declare bin.pi");
+const piCli = resolve(codingAgentRoot, piBin);
 
 interface ProcessResult {
 	code: number | null;

@@ -27,7 +27,7 @@ This repository wraps the upstream `pi-mono` source as a pinned Git submodule.
 
 ## User Pi Command
 
-- The user `pi` command should resolve to `build/pi-agent/runtime/bin/pi` and ultimately to `build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent/dist/cli.js`.
+- The user `pi` command should resolve to `build/pi-agent/runtime/bin/pi` and ultimately to the executable declared by `build/pi-agent/runtime/node_modules/@earendil-works/pi-coding-agent/package.json` (`bin.pi`).
 - `build/pi-agent/bin/pi` may exist as a compatibility shim to `runtime/bin/pi`.
 - Before repointing symlinks or deleting build state, verify the external artifact with `pi --version` or `build/pi-agent/runtime/bin/pi --version`.
 - After cleanup or relinking, verify `pi --version` again.
