@@ -20,7 +20,7 @@
 
 The questionnaire started from Pi's upstream example and is maintained here as a self-contained local variant. Keeping its imports package-based makes it safe to load through the user-level symlink, while the local copy owns its model-facing clarification policy.
 
-The search extensions are also self-contained. `exa-search.ts` reads `exaApiKey` only from the machine-local `~/.pi/agent/exa-search.json`; never commit that credential file. `grok-search.ts` resolves `cli-proxy-api/grok-4.5` and its credential through Pi's model registry, so the machine must configure that provider and model separately. Because that provider is machine-specific, the symlink is optional: `scripts/check-user-wiring.sh` validates its target when the link exists and reports it as not enabled when it is absent.
+The search extensions are also self-contained. `exa-search.ts` reads `exaApiKey` only from the machine-local `~/.pi/agent/exa-search.json`; never commit that credential file. `grok-search.ts` resolves `cli-proxy-api/grok-4.6` and its credential through Pi's model registry, so the machine must configure that provider and model separately. Because that provider is machine-specific, the symlink is optional: `scripts/check-user-wiring.sh` validates its target when the link exists and reports it as not enabled when it is absent.
 
 `codex-web-search.ts` owns both Codex web-access modes. It appends Codex's provider-side `{ "type": "web_search" }` declaration to requests for the built-in `openai-codex` OAuth provider and `cli-proxy-api` GPT models using the OpenAI Responses API. In this hosted mode, OpenAI decides when to search or open pages while producing the response. Pi currently displays the final model text but does not surface intermediate `web_search_call` activity or preserve structured citation annotations.
 
@@ -74,6 +74,6 @@ pi -e ./extensions/claude-web-search
 pi -e ./extensions/grok-search.ts
 ```
 
-For search configuration checks, run `/exa-search-status` for Exa, `/codex-web-search-status` to inspect both hosted `web_search` and explicit `web_run` availability for the selected model, `/claude-web-search-status` for the isolated cache-stable Anthropic route, and confirm `cli-proxy-api/grok-4.5` appears in `pi --list-models` for Grok.
+For search configuration checks, run `/exa-search-status` for Exa, `/codex-web-search-status` to inspect both hosted `web_search` and explicit `web_run` availability for the selected model, `/claude-web-search-status` for the isolated cache-stable Anthropic route, and confirm `cli-proxy-api/grok-4.6` appears in `pi --list-models` for Grok.
 
 After changing an auto-discovered extension, run `/reload` in an active Pi session. Restart Pi after changing package registration or dependencies.
