@@ -33,6 +33,7 @@ pinned upstream source, curated extensions, bounded MCP tooling, and a reproduci
 
 - **[External runtime builder](scripts/build-pi-agent.sh):** assembles and verifies Pi without writing build state into upstream source.
 - **[Cache-safe plan mode](extensions/plan-mode/):** appends plan state while preserving the provider prompt-cache prefix.
+- **[Model delegate](extensions/delegate/):** in-process scoped handoff to another model; only a structured contract returns.
 - **[MCP client](extensions/mcp-extension/):** discovers configured servers behind a fixed, bounded model-facing tool surface.
 - **[Questionnaire](extensions/questionnaire.ts):** presents explicit, keyboard-operable clarification flows.
 - **[System-instruction append](system-instruction/APPEND_SYSTEM.md):** refines response behavior without replacing Pi's generated system prompt.
@@ -90,6 +91,7 @@ The helper never commits or pushes. Review the resulting submodule pointer befor
 The active Pi configuration uses explicit user-level wiring: extensions point to canonical repository source, while the Camoufox MCP runs from a tested local deployment:
 
 - `~/.pi/agent/extensions/plan-mode` → `extensions/plan-mode/`
+- `~/.pi/agent/extensions/delegate` → `extensions/delegate/`
 - `~/.pi/agent/extensions/questionnaire.ts` → `extensions/questionnaire.ts`
 - `~/.pi/agent/extensions/exa-search.ts` → `extensions/exa-search.ts`
 - `~/.pi/agent/extensions/codex-web-search.ts` → `extensions/codex-web-search.ts`

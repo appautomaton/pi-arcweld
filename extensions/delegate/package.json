@@ -1,0 +1,38 @@
+{
+	"name": "pi-arcweld-delegate",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Scoped in-process model delegation for Pi",
+	"type": "module",
+	"license": "MIT",
+	"keywords": [
+		"pi-package",
+		"pi-extension",
+		"delegate"
+	],
+	"files": [
+		"index.ts",
+		"types.ts",
+		"aliases.ts",
+		"spawn.ts",
+		"ui.ts",
+		"LICENSE",
+		"README.md"
+	],
+	"pi": {
+		"extensions": [
+			"./index.ts"
+		]
+	},
+	"scripts": {
+		"check": "../../scripts/check-extension-package.sh delegate check",
+		"test": "../../scripts/check-extension-package.sh delegate test",
+		"pack:check": "npm pack --dry-run"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-ai": "*",
+		"@earendil-works/pi-coding-agent": "*",
+		"@earendil-works/pi-tui": "*",
+		"typebox": "*"
+	}
+}

@@ -9,6 +9,7 @@
 | `mcp-extension/` | Package with runtime dependencies | Local-path package in `~/.pi/agent/settings.json` |
 | `plan-mode/` | Package directory | Symlink at `~/.pi/agent/extensions/plan-mode` |
 | `pi-arcweld-todos/` | Package directory | Symlink at `~/.pi/agent/extensions/pi-arcweld-todos` |
+| `delegate/` | Package directory | Symlink at `~/.pi/agent/extensions/delegate` |
 | `cache-preserving-compaction/` | Cache-friendly custom compaction package | Symlink at `~/.pi/agent/extensions/cache-preserving-compaction` |
 | `questionnaire.ts` | Self-contained curated extension | Symlink at `~/.pi/agent/extensions/questionnaire.ts` |
 | `claude-cache-retention.ts` | Claude-only one-hour prompt-cache policy for the local CPA provider | Symlink at `~/.pi/agent/extensions/claude-cache-retention.ts` |
@@ -38,6 +39,8 @@ The explicit route is intentionally limited to the verified CPA path for now. Di
 
 `pi-arcweld-todos` and `plan-mode` are a decoupled pair. The todos package registers the always-on `update_todos` tool that tracks long-horizon work in every mode; plan mode is a policy layer that instructs the model to record its plan through that same tool. The only shared contract is the tool name `update_todos` and its `details.todos` shape, so either extension loads and runs without the other.
 
+`delegate/` registers a single `delegate` tool that hands a scoped job to another model in an in-process child session. The child is frozen to a tool allowlist (read-only by default), does not load parent extensions, and returns only a structured `delegate_result` contract. Aliases live in the machine-local `~/.pi/agent/delegate.json`.
+
 ## Loading model
 
 Pi auto-discovers global files and directories under `~/.pi/agent/extensions/`. Use symlinks there for extensions that should support `/reload` directly from this checkout.
@@ -64,7 +67,7 @@ npm test
 npm run pack:check
 ```
 
-Use the same command sequence in `extensions/plan-mode/`, `extensions/cache-preserving-compaction/`, and `extensions/claude-web-search/`. These source-only packages borrow the workspace's existing TypeScript/TSX toolchain and temporarily link only the built Pi runtime packages during checks; they keep no extension-local dependency tree. Test the self-contained extensions through their user-level symlinks or explicitly with:
+Use the same command sequence in `extensions/plan-mode/`, `extensions/pi-arcweld-todos/`, `extensions/delegate/`, `extensions/cache-preserving-compaction/`, and `extensions/claude-web-search/`. These source-only packages borrow the workspace's existing TypeScript/TSX toolchain and temporarily link only the built Pi runtime packages during checks; they keep no extension-local dependency tree. Test the self-contained extensions through their user-level symlinks or explicitly with:
 
 ```bash
 pi -e ./extensions/questionnaire.ts

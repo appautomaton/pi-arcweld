@@ -32,6 +32,8 @@ for (const path of [
 	"extensions/plan-mode/tsconfig.json",
 	"extensions/pi-arcweld-todos/package.json",
 	"extensions/pi-arcweld-todos/tsconfig.json",
+	"extensions/delegate/package.json",
+	"extensions/delegate/tsconfig.json",
 	"mcp-servers/camoufox/package.json",
 	"mcp-servers/camoufox/config/proot-arm64-runtime.json",
 	"mcp-servers/camoufox/config/darwin-arm64-runtime.json",
@@ -130,6 +132,14 @@ pids+=($!)
 	"$ROOT_DIR/scripts/check-extension-package.sh" pi-arcweld-todos all
 	npm pack --dry-run
 ) > "$tmp_dir/todos.log" 2>&1 &
+pids+=($!)
+
+# 2b. delegate
+(
+	cd "$ROOT_DIR/extensions/delegate"
+	"$ROOT_DIR/scripts/check-extension-package.sh" delegate all
+	npm pack --dry-run
+) > "$tmp_dir/delegate.log" 2>&1 &
 pids+=($!)
 
 # 3. mcp-extension

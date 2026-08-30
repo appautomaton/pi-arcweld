@@ -7,8 +7,8 @@
 /references/
 
 # Generated build and dependency state
-/build/
-**/node_modules/
+/build
+**/node_modules
 *.tgz
 *.tsbuildinfo
 **/coverage/
