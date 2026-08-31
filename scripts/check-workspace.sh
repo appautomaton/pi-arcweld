@@ -149,11 +149,12 @@ pids+=($!)
 pids+=($!)
 
 # 5. camoufox
+# Source checkout must stay free of node_modules; `npm test` lives in deploy:local's
+# staging tree. Skip here when the git tree has no install (the usual machine).
 (
 	if [[ ! -d "$ROOT_DIR/mcp-servers/camoufox/node_modules" ]]; then
-		echo "mcp-servers/camoufox checks require its dependencies" >&2
-		echo "Run npm ci --ignore-scripts in mcp-servers/camoufox first" >&2
-		exit 1
+		echo "skip camoufox npm test: no checkout node_modules (run via mcp-servers/camoufox npm run deploy:local)"
+		exit 0
 	fi
 	cd "$ROOT_DIR/mcp-servers/camoufox"
 	npm test
