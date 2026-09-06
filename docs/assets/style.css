@@ -905,14 +905,12 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
 
 .section-lede strong { color: var(--ink); font-weight: 500; }
 
-/* scroll reveal */
+/* Content remains readable before scripts run or sections enter view. */
 .reveal { opacity: 1; transform: none; }
 
 @media (prefers-reduced-motion: no-preference) {
   .js .reveal {
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 600ms ease, transform 600ms cubic-bezier(0.25, 0.6, 0.3, 1);
+    transition: transform 600ms cubic-bezier(0.25, 0.6, 0.3, 1);
   }
 
   .js .reveal.is-set { opacity: 1; transform: none; }
@@ -1006,6 +1004,10 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
   transition: background-color 160ms ease;
 }
 
+.js .pass-summary { cursor: pointer; }
+.pass-summary:disabled { cursor: default; }
+.pass-summary:disabled .pass-toggle { display: none; }
+
 .pass-summary:hover { background: color-mix(in srgb, var(--ink) 3%, transparent); }
 
 .pass-id { color: var(--ink-faint); transition: color 160ms ease; }
@@ -1058,11 +1060,12 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
 
 .pass-detail {
   display: grid;
-  grid-template-rows: 0fr;
+  grid-template-rows: 1fr;
   transition: grid-template-rows 420ms cubic-bezier(0.3, 0.7, 0.3, 1);
 }
 
 .pass-row[data-open="true"] .pass-detail { grid-template-rows: 1fr; }
+.js .pass-row[data-open="false"] .pass-detail { grid-template-rows: 0fr; }
 
 .pass-detail-inner { overflow: hidden; min-height: 0; }
 
@@ -1490,11 +1493,11 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
     .js .hero .tag,
     .js .hero h1 {
       transform: translateY(calc(var(--hero-p, 0) * -4.5rem));
-      opacity: calc(1 - var(--hero-p, 0) * 0.85);
+      opacity: 1;
     }
     .js .hero-under {
       transform: translateY(calc(var(--hero-p, 0) * -2.5rem));
-      opacity: calc(1 - var(--hero-p, 0) * 0.65);
+      opacity: 1;
     }
     .js .joint { transform: translateY(calc(var(--hero-p, 0) * -1.25rem)); }
     .js .spec-strip { transform: translateY(calc(var(--hero-p, 0) * -0.6rem)); }
@@ -1502,19 +1505,19 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
 }
 
 @keyframes hero-exit-fast {
-  to { transform: translateY(-4.5rem); opacity: 0.15; }
+  to { transform: translateY(-4.5rem); }
 }
 
 @keyframes hero-zoom {
   to {
     transform: translateY(-6rem) scale(1.22);
-    opacity: 0;
+    opacity: 1;
     letter-spacing: -0.035em;
   }
 }
 
 @keyframes hero-exit-mid {
-  to { transform: translateY(-2.5rem); opacity: 0.35; }
+  to { transform: translateY(-2.5rem); }
 }
 
 @keyframes joint-tilt {
@@ -1526,11 +1529,11 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
 }
 
 @keyframes cell-scatter-a {
-  to { transform: translateY(-2.75rem); opacity: 0; }
+  to { transform: translateY(-2.75rem); }
 }
 
 @keyframes cell-scatter-b {
-  to { transform: translateY(-1.5rem); opacity: 0; }
+  to { transform: translateY(-1.5rem); }
 }
 
 /* ---------- scrub reveals: tied to scroll, reversible ---------- */
@@ -1546,7 +1549,7 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
 }
 
 @keyframes reveal-scrub {
-  from { opacity: 0; transform: translateY(1.75rem); }
+  from { opacity: 1; transform: translateY(1.75rem); }
   to { opacity: 1; transform: none; }
 }
 
@@ -1566,7 +1569,7 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
 @keyframes title-rise {
   from {
     transform: translateY(2.5rem) scale(0.92);
-    opacity: 0;
+    opacity: 1;
     letter-spacing: 0.05em;
   }
   to { transform: none; opacity: 1; letter-spacing: normal; }
@@ -1611,12 +1614,12 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
   to { transform: translateY(-0.35rem); }
 }
 
-/* ---------- the weld log unzips as it enters ---------- */
+/* ---------- the weld log settles into position ---------- */
 
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     .weld-log {
-      will-change: clip-path, opacity;
+      will-change: transform;
       animation: log-unzip linear both;
       animation-timeline: view();
       animation-range: entry 10% entry 85%;
@@ -1625,98 +1628,9 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
 }
 
 @keyframes log-unzip {
-  from { clip-path: inset(0 48% 0 48%); opacity: 0.25; }
-  to { clip-path: inset(0 0 0 0); opacity: 1; }
+  from { transform: translateY(1rem); }
+  to { transform: none; }
 }
 
-/* ============================================================
-   The procedure gallery: vertical scroll drives a pinned
-   horizontal run of the five fill passes. Desktop only —
-   everywhere else the track collapses to the classic sheet.
-   ============================================================ */
-
-/* zero-impact base: the wrapper does not exist visually */
+/* Procedure panels stay in document flow at every viewport size. */
 .procedure-track { display: contents; }
-
-@media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    /* the reveal wrapper must not fade a 420vh pin container */
-    .js .procedure.reveal {
-      opacity: 1;
-      transform: none;
-      animation: none;
-    }
-
-    .procedure {
-      height: 420vh;
-      border-top: 0;
-      view-timeline-name: --proc;
-    }
-
-    .procedure-track {
-      display: flex;
-      align-items: stretch;
-      gap: clamp(1.25rem, 2.5vw, 2.5rem);
-      position: sticky;
-      top: var(--header-h);
-      height: calc(100vh - var(--header-h));
-      width: max-content;
-      padding-block: clamp(1.5rem, 4vh, 3rem);
-      will-change: transform;
-      animation: proc-scrub linear both;
-      animation-timeline: --proc;
-      /* pin window: subject covers the scrollport exactly while pinned */
-      animation-range: contain 0% contain 100%;
-    }
-
-    .procedure-track .pass-row {
-      flex: none;
-      width: clamp(28rem, 36vw, 36rem);
-      border: 1px solid var(--line-strong);
-      background: var(--steel-1);
-      padding: clamp(1.5rem, 2.5vw, 2.25rem);
-      overflow-y: auto;
-    }
-
-    /* gallery cards show the full pass; no accordion chrome */
-    .procedure-track .pass-summary {
-      grid-template-columns: 4.25rem minmax(0, 1fr);
-      padding: 0 0 1.25rem;
-      cursor: default;
-    }
-
-    .procedure-track .pass-summary:hover { background: transparent; }
-    .procedure-track .pass-toggle { display: none; }
-
-    .procedure-track .pass-detail { grid-template-rows: 1fr !important; }
-
-    .procedure-track .pass-detail-grid {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-
-    /* the heat edge becomes the card's top bead */
-    .procedure-track .pass-row::before {
-      top: 0;
-      bottom: auto;
-      left: 0;
-      right: 0;
-      width: auto;
-      height: 4px;
-      background: var(--heat-run);
-      transform-origin: left;
-      animation: card-bead linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 100%;
-    }
-  }
-}
-
-@keyframes proc-scrub {
-  to { transform: translateX(calc(100vw - 100% - var(--gutter))); }
-}
-
-@keyframes card-bead {
-  from { transform: scaleX(0); opacity: 0; }
-  to { transform: scaleX(1); opacity: 1; }
-}

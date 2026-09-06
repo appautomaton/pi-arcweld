@@ -143,37 +143,16 @@
     document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
   }
 
-  /* ---------- procedure sheet ----------
-     In gallery mode (pinned horizontal scrub) every card is fully
-     expanded and the accordion is inert; elsewhere it stays a sheet.
-     State is re-synced when crossing the gallery breakpoint. */
-
-  const galleryQuery = matchMedia("(min-width: 64rem)");
-  const galleryActive = () =>
-    cssViewTimeline && !reducedMotion.matches && galleryQuery.matches;
-
-  const passRows = [...document.querySelectorAll(".pass-row")];
-
-  const syncGalleryState = () => {
-    if (!galleryActive()) return;
-    passRows.forEach((row) => {
-      row.dataset.open = "true";
-      row.querySelector(".pass-summary")?.setAttribute("aria-expanded", "true");
-    });
-  };
-
-  passRows.forEach((row) => {
-    const btn = row.querySelector(".pass-summary");
-    btn?.addEventListener("click", () => {
-      if (galleryActive()) return;
+  /* Panels start open. Readers can collapse them after controls are ready. */
+  document.querySelectorAll(".pass-row").forEach((row) => {
+    const button = row.querySelector(".pass-summary");
+    button?.addEventListener("click", () => {
       const open = row.dataset.open !== "true";
       row.dataset.open = String(open);
-      btn.setAttribute("aria-expanded", String(open));
+      button.setAttribute("aria-expanded", String(open));
     });
+    if (button) button.disabled = false;
   });
-
-  syncGalleryState();
-  galleryQuery.addEventListener("change", syncGalleryState);
 
   /* ---------- copy the weld log ---------- */
 
