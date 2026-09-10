@@ -9,8 +9,8 @@
 An auditable local workspace for the [Pi](https://pi.dev) coding agent:<br>
 pinned upstream source, curated extensions, bounded MCP tooling, and a reproducible runtime.
 
-<a href="https://appautomaton.renocrypt.com/pi-arcweld/"><img alt="pi arcweld project site" src="https://img.shields.io/badge/site-pi--arcweld-1d5bd6"></a>
-<a href="https://appautomaton.renocrypt.com/"><img alt="appautomaton" src="https://img.shields.io/badge/by-appautomaton-e2894f"></a>
+<a href="https://appautomaton.com/pi-arcweld/"><img alt="pi arcweld project site" src="https://img.shields.io/badge/site-pi--arcweld-1d5bd6"></a>
+<a href="https://appautomaton.com/"><img alt="appautomaton" src="https://img.shields.io/badge/by-appautomaton-e2894f"></a>
 <a href="https://github.com/appautomaton"><img alt="App Automaton on GitHub" src="https://img.shields.io/badge/github-App_Automaton-0f1621?logo=github"></a>
 <a href="LICENSE"><img alt="pi-arcweld is MIT licensed" src="https://img.shields.io/badge/license-MIT-b76bd6"></a>
 <a href="https://github.com/earendil-works/pi"><img alt="tracks upstream Pi at earendil-works/pi" src="https://img.shields.io/badge/pi-upstream-7b7df2"></a>
@@ -110,10 +110,10 @@ The repository intentionally has no root `package.json` or shared npm workspace.
 
 ## Links
 
-- **Project site:** [appautomaton.renocrypt.com/pi-arcweld](https://appautomaton.renocrypt.com/pi-arcweld/)
+- **Project site:** [appautomaton.com/pi-arcweld](https://appautomaton.com/pi-arcweld/)
 - **Repository:** [github.com/appautomaton/pi-arcweld](https://github.com/appautomaton/pi-arcweld)
 - **Upstream Pi:** [pi.dev](https://pi.dev) · [github.com/earendil-works/pi](https://github.com/earendil-works/pi)
-- **Maintainer:** [App Automaton](https://github.com/appautomaton) · [appautomaton.renocrypt.com](https://appautomaton.renocrypt.com/)
+- **Maintainer:** [App Automaton](https://github.com/appautomaton) · [appautomaton.com](https://appautomaton.com/)
 
 ---
 
