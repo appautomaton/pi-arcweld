@@ -10,7 +10,7 @@ This repository wraps the upstream `pi-mono` source as a pinned Git submodule.
 - Chrome DevTools MCP is external to this repository. Its single canonical root is `~/.local/mcps/chrome-devtools/`; read its `AGENTS.md` and `README.md` before changing the integration. The Chrome browser remains under `~/.local/browsers/chrome/`.
 - `system-instruction/` contains the canonical `APPEND_SYSTEM.md`, symlinked from `~/.pi/agent/APPEND_SYSTEM.md`. Machine-specific reference captures under `baseline/` are local and ignored. Do not create a project-level `.pi/APPEND_SYSTEM.md`, because it would replace the global append file for this project rather than layer with it.
 - `scripts/` contains local runtime build, validation, and upstream-update scripts.
-- `docs/` contains the static GitHub Pages site; keep its claims and paths consistent with the repository documentation.
+- The public website is maintained in `sites/pi-arcweld/` in `appautomaton/appautomaton.github.io`. See `WEBSITE.md`; do not recreate a local website copy or Pages publisher. Runtime documentation remains in this repository.
 - `references/` contains local independent repositories retained for comparison or tooling. It is ignored and is not part of the public repository.
 - `build/pi-agent/runtime/` is the runnable local Pi artifact.
 - `build/pi-agent/work/` is temporary build state and is deleted by default after a successful build.

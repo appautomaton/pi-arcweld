@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/arcweld-mark.svg" width="96" alt="pi-arcweld logo: a Pi symbol whose crossbar is a titanium weld bead">
+<img src="https://appautomaton.com/pi-arcweld/arcweld-mark.svg" width="96" alt="pi-arcweld logo: a Pi symbol whose crossbar is a titanium weld bead">
 
 # pi-arcweld
 
@@ -14,7 +14,7 @@ pinned upstream source, curated extensions, bounded MCP tooling, and a reproduci
 <a href="https://github.com/appautomaton"><img alt="App Automaton on GitHub" src="https://img.shields.io/badge/github-App_Automaton-0f1621?logo=github"></a>
 <a href="LICENSE"><img alt="pi-arcweld is MIT licensed" src="https://img.shields.io/badge/license-MIT-b76bd6"></a>
 <a href="https://github.com/earendil-works/pi"><img alt="tracks upstream Pi at earendil-works/pi" src="https://img.shields.io/badge/pi-upstream-7b7df2"></a>
-<a href="https://github.com/appautomaton/pi-arcweld/actions/workflows/deploy-pages.yml"><img alt="Deploy landing page to GitHub Pages" src="https://github.com/appautomaton/pi-arcweld/actions/workflows/deploy-pages.yml/badge.svg"></a>
+<a href="https://github.com/appautomaton/appautomaton.github.io/actions/workflows/deploy.yml"><img alt="Website publication" src="https://github.com/appautomaton/appautomaton.github.io/actions/workflows/deploy.yml/badge.svg"></a>
 
 </div>
 
@@ -46,7 +46,7 @@ pinned upstream source, curated extensions, bounded MCP tooling, and a reproduci
 | [`mcp-servers/`](mcp-servers/README.md) | Canonical source for local MCP servers, deployed as tested versioned releases under `~/.local/mcps/` |
 | [`system-instruction/`](system-instruction/README.md) | The global `APPEND_SYSTEM.md` source and capture notes |
 | `scripts/` | Runtime build, upstream-update, and validation scripts |
-| [`docs/`](docs/index.html) | The pi arcweld landing page, `llms.txt`, and sitemap served by GitHub Pages |
+| [Website source](https://github.com/appautomaton/appautomaton.github.io/tree/main/sites/pi-arcweld) | Independent landing page, assets, and discovery files maintained in the frontend repository |
 | `build/` | Generated local runtime and package artifacts, intentionally untracked |
 
 ## Quickstart
