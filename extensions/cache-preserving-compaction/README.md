@@ -9,7 +9,7 @@ last native system prompt
 + one structured user checkpoint instruction
 ```
 
-It keeps the active model, tools and tool-choice payload, request headers, reasoning level, and session ID. The resulting summary is returned through `session_before_compact`, so Pi writes a normal `CompactionEntry` and retains its configured recent tail.
+It keeps the active model, tools and tool-choice payload, request headers, and session ID. Reasoning is disabled for the checkpoint request so the output budget is spent on summary text instead of hidden thinking. The resulting summary is returned through `session_before_compact`, so Pi writes a normal `CompactionEntry` and retains its configured recent tail.
 
 The extension is provider-agnostic and uses only Pi's public extension and provider APIs. It does not modify `pi-mono`.
 

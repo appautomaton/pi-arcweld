@@ -259,7 +259,6 @@ export default function cachePreservingCompaction(pi: ExtensionAPI) {
 				headers: snapshot.headers ?? auth.headers,
 				env: auth.env,
 				signal: event.signal,
-				reasoning: ctx.thinkingLevel === "off" ? undefined : ctx.thinkingLevel,
 				maxTokens: model.maxTokens,
 				sessionId: ctx.sessionManager.getSessionId(),
 				onPayload: (payload) => preserveToolPayload(snapshot!.payload, payload),

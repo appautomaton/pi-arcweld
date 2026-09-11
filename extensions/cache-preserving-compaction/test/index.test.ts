@@ -184,6 +184,7 @@ test("replays the last native request and returns a Pi compaction result", async
 	assert.equal(receivedContext.messages.at(-1).role, "user");
 	assert.equal(receivedOptions.sessionId, "session-1");
 	assert.equal(receivedOptions.maxTokens, 32768);
+	assert.equal(receivedOptions.reasoning, undefined);
 	assert.equal(receivedOptions.toolChoice, undefined);
 	assert.deepEqual(receivedOptions.headers, { "x-session-affinity": "session-1" });
 	assert.deepEqual(receivedOptions.onPayload({ tools: [] }).tools, [
