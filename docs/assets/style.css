@@ -1634,3 +1634,64 @@ section { scroll-margin-top: calc(var(--header-h) + 1rem); }
 
 /* Procedure panels stay in document flow at every viewport size. */
 .procedure-track { display: contents; }
+
+/* ---------- hero kicker: the H1 names the product, the slogan stays the display line ---------- */
+
+.hero h1 .hero-kicker {
+  display: flex;
+  line-height: 1.4;
+  text-shadow: none;
+  text-wrap: pretty;
+}
+
+.hero h1 .hero-kicker::before { flex: none; }
+
+/* ---------- faq ---------- */
+
+.faq-grid {
+  display: grid;
+  gap: 3rem;
+}
+
+@media (min-width: 64rem) {
+  .faq-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 4rem;
+    align-items: start;
+  }
+}
+
+.faq-list {
+  margin: 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.faq-row {
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-row dt {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.05rem, 0.5vw + 0.95rem, 1.25rem);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.faq-row dd {
+  margin: 0.75rem 0 0;
+  max-width: 40rem;
+  color: var(--ink-dim);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.inline-link {
+  color: var(--arc);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.inline-link:hover { color: var(--ink); }

@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="pi-arcweld welds a curated local layer to pinned upstream Pi: extensions, system guidance, MCP tooling, and a reproducible runtime, joined along one auditable seam.">
-  <meta name="keywords" content="pi-arcweld, Pi Arcweld, pi arcweld, Pi coding agent, AI agent workspace, agent extensions, MCP client, model context protocol, cache-safe plan mode, reproducible runtime, local AI tooling">
+  <meta name="description" content="Auditable local workspace for the Pi coding agent: pinned pi-mono source, extensions for plan mode, MCP and web search, and a reproducible runtime. Not a fork.">
+  <meta name="keywords" content="pi-arcweld, Pi Arcweld, Pi coding agent, pi-mono, Pi extensions, plan mode, MCP client, Model Context Protocol, web search tools, reproducible runtime, local AI coding agent">
   <meta name="author" content="appautomaton">
   <meta name="application-name" content="pi-arcweld">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
@@ -12,8 +12,8 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="pi-arcweld">
   <meta property="og:locale" content="en_US">
-  <meta property="og:title" content="pi-arcweld — Don't fork it. Weld it.">
-  <meta property="og:description" content="A curated local layer welded to pinned upstream Pi along one auditable seam. Upstream stays upstream. The workspace stays yours.">
+  <meta property="og:title" content="pi-arcweld: Auditable Local Workspace for the Pi Coding Agent">
+  <meta property="og:description" content="pi-arcweld welds a curated local layer to pinned upstream Pi: extensions, system guidance, MCP tooling, and a reproducible runtime. Don't fork it. Weld it.">
   <meta property="og:url" content="https://appautomaton.com/pi-arcweld/">
   <meta property="og:image" content="https://appautomaton.com/pi-arcweld/og-card.png">
   <meta property="og:image:type" content="image/png">
@@ -21,35 +21,163 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="pi-arcweld — Don't fork it. Weld it. A Pi symbol whose crossbar is a titanium weld bead.">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="pi-arcweld — Don't fork it. Weld it.">
-  <meta name="twitter:description" content="A curated local layer welded to pinned upstream Pi along one auditable seam. Upstream stays upstream. The workspace stays yours.">
+  <meta name="twitter:title" content="pi-arcweld: Auditable Local Workspace for the Pi Coding Agent">
+  <meta name="twitter:description" content="pi-arcweld welds a curated local layer to pinned upstream Pi: extensions, system guidance, MCP tooling, and a reproducible runtime. Don't fork it. Weld it.">
   <meta name="twitter:image" content="https://appautomaton.com/pi-arcweld/og-card.png">
   <meta name="twitter:image:alt" content="pi-arcweld — Don't fork it. Weld it. A Pi symbol whose crossbar is a titanium weld bead.">
-  <title>pi-arcweld — Don't fork it. Weld it.</title>
+  <title>pi-arcweld: Auditable Local Workspace for the Pi Coding Agent</title>
   <link rel="canonical" href="https://appautomaton.com/pi-arcweld/">
   <link rel="icon" type="image/svg+xml" href="arcweld-mark.svg">
 
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "SoftwareSourceCode",
-      "@id": "https://appautomaton.com/pi-arcweld/#project",
-      "name": "pi-arcweld",
-      "alternateName": ["Pi Arcweld", "pi arcweld"],
-      "description": "An auditable local workspace for Pi with pinned upstream source, curated extensions, bounded MCP tooling, and a reproducible external runtime.",
-      "url": "https://appautomaton.com/pi-arcweld/",
-      "dateModified": "2026-09-05",
-      "codeRepository": "https://github.com/appautomaton/pi-arcweld",
-      "license": "https://github.com/appautomaton/pi-arcweld/blob/main/LICENSE",
-      "programmingLanguage": ["TypeScript", "Shell", "HTML"],
-      "runtimePlatform": "Node.js",
-      "sameAs": [
-        "https://github.com/appautomaton/pi-arcweld",
-        "https://github.com/appautomaton",
-        "https://appautomaton.com/"
-      ],
-      "isPartOf": { "@type": "SoftwareApplication", "name": "Pi", "url": "https://pi.dev" },
-      "author": { "@id": "https://appautomaton.com/#org" }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://appautomaton.com/#org",
+          "name": "App Automaton",
+          "url": "https://appautomaton.com/",
+          "sameAs": [
+            "https://github.com/appautomaton"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://appautomaton.com/#website",
+          "name": "App Automaton",
+          "url": "https://appautomaton.com/",
+          "publisher": {
+            "@id": "https://appautomaton.com/#org"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://appautomaton.com/pi-arcweld/#webpage",
+          "url": "https://appautomaton.com/pi-arcweld/",
+          "name": "pi-arcweld: Auditable Local Workspace for the Pi Coding Agent",
+          "description": "Auditable local workspace for the Pi coding agent: pinned pi-mono source, extensions for plan mode, MCP and web search, and a reproducible runtime. Not a fork.",
+          "inLanguage": "en",
+          "isPartOf": {
+            "@id": "https://appautomaton.com/#website"
+          },
+          "about": {
+            "@id": "https://appautomaton.com/pi-arcweld/#project"
+          },
+          "primaryImageOfPage": {
+            "@id": "https://appautomaton.com/pi-arcweld/#primaryimage"
+          },
+          "breadcrumb": {
+            "@id": "https://appautomaton.com/pi-arcweld/#breadcrumb"
+          },
+          "datePublished": "2026-07-13",
+          "dateModified": "2026-09-10"
+        },
+        {
+          "@type": "ImageObject",
+          "@id": "https://appautomaton.com/pi-arcweld/#primaryimage",
+          "url": "https://appautomaton.com/pi-arcweld/og-card.png",
+          "contentUrl": "https://appautomaton.com/pi-arcweld/og-card.png",
+          "width": 1200,
+          "height": 630,
+          "caption": "pi-arcweld: Don't fork it. Weld it."
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://appautomaton.com/pi-arcweld/#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "App Automaton",
+              "item": "https://appautomaton.com/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "pi-arcweld",
+              "item": "https://appautomaton.com/pi-arcweld/"
+            }
+          ]
+        },
+        {
+          "@type": "SoftwareSourceCode",
+          "@id": "https://appautomaton.com/pi-arcweld/#project",
+          "name": "pi-arcweld",
+          "alternateName": [
+            "Pi Arcweld",
+            "pi arcweld"
+          ],
+          "description": "An auditable local workspace for the Pi coding agent: pinned upstream pi-mono source, curated extensions for plan mode, MCP, and web search, global system guidance, and a reproducible runtime built outside the upstream tree.",
+          "url": "https://appautomaton.com/pi-arcweld/",
+          "codeRepository": "https://github.com/appautomaton/pi-arcweld",
+          "license": "https://github.com/appautomaton/pi-arcweld/blob/main/LICENSE",
+          "programmingLanguage": [
+            "TypeScript",
+            "Shell",
+            "JavaScript"
+          ],
+          "runtimePlatform": "Node.js",
+          "isBasedOn": "https://github.com/earendil-works/pi",
+          "keywords": "Pi coding agent, pi-mono, Pi extensions, plan mode, MCP client, Model Context Protocol, web search tools, reproducible runtime",
+          "image": {
+            "@id": "https://appautomaton.com/pi-arcweld/#primaryimage"
+          },
+          "author": {
+            "@id": "https://appautomaton.com/#org"
+          },
+          "maintainer": {
+            "@id": "https://appautomaton.com/#org"
+          },
+          "dateModified": "2026-09-10"
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://appautomaton.com/pi-arcweld/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is pi-arcweld?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "pi-arcweld is an auditable local workspace for the Pi coding agent. It keeps the upstream pi-mono source pinned as a Git submodule and adds a curated local layer of Pi extensions, global system guidance, bounded MCP tooling, and a reproducible runtime build, all as plain files you can review in one repository."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is pi-arcweld a fork of Pi?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. Upstream Pi stays a pinned, unmodified submodule. Moving to a newer Pi is an explicit fast-forward of that pointer, and every local behavior lives outside the upstream tree, so upstream stays upstream and nothing drifts silently."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Which Pi extensions does pi-arcweld include?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A cache-safe plan mode with an always-on todo tracker, a bounded MCP client for Model Context Protocol servers, a keyboard-operable questionnaire, cache-preserving compaction, and isolated web-search tools for Claude, Codex, Gemini, Grok, and Exa. The repository also holds the source for a Camoufox browser-automation MCP server."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I install pi-arcweld?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Clone the repository with its submodule, run scripts/build-pi-agent.sh --link-user-bin to assemble and verify the Pi runtime outside the upstream tree, and confirm the build with pi --version. Node.js, npm, and Git are the prerequisites."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does pi-arcweld stay current with upstream Pi?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "scripts/update-pi-mono.sh fetches upstream main, realigns the pinned checkout, rebuilds the runtime, and leaves the submodule pointer modified for review. It never commits or pushes, so every upstream move is a reviewable diff."
+              }
+            }
+          ]
+        }
+      ]
     }
   </script>
 
@@ -98,6 +226,7 @@
       <li class="rail-pass"><a href="#root" data-pass="root"><span>01 · Root</span></a></li>
       <li class="rail-pass"><a href="#fill" data-pass="fill"><span>02 · Fill</span></a></li>
       <li class="rail-pass"><a href="#cap" data-pass="cap"><span>03 · Cap</span></a></li>
+      <li class="rail-pass"><a href="#faq" data-pass="faq"><span>FAQ</span></a></li>
       <li class="rail-pass"><a href="#inspect" data-pass="inspect"><span>Inspect</span></a></li>
     </ol>
   </nav>
@@ -145,6 +274,7 @@
     <a href="#root"><span class="pass-id">Pass 01</span><span class="pass-word">Root</span></a>
     <a href="#fill"><span class="pass-id">Pass 02</span><span class="pass-word">Fill</span></a>
     <a href="#cap"><span class="pass-id">Pass 03</span><span class="pass-word">Cap</span></a>
+    <a href="#faq"><span class="pass-id">Notes</span><span class="pass-word">FAQ</span></a>
     <a href="#inspect"><span class="pass-id">Final</span><span class="pass-word">Inspect</span></a>
     <a href="https://github.com/appautomaton/pi-arcweld"><span class="pass-id">Source</span><span class="pass-word">GitHub</span></a>
   </nav>
@@ -152,10 +282,8 @@
   <main id="main-content">
     <section class="hero" id="top" aria-labelledby="hero-title">
       <div class="shell">
-        <p class="tag">A local workspace for the Pi coding agent</p>
-
         <h1 id="hero-title">
-          <span class="visually-hidden">pi-arcweld: </span>
+          <span class="tag hero-kicker">pi-arcweld: an auditable local workspace for the Pi coding agent</span>
           <span>Don't fork it.</span>
           <span class="hero-line2">
             <span>Weld&nbsp;it.</span>
@@ -169,7 +297,7 @@
         </h1>
 
         <div class="hero-under">
-          <p class="hero-statement"><strong>pi-arcweld joins a curated local layer to pinned upstream Pi along one visible seam:</strong> extensions, system guidance, MCP tooling, and a reproducible runtime. Upstream stays upstream. The workspace stays yours.</p>
+          <p class="hero-statement"><strong>pi-arcweld welds a curated local layer to pinned upstream <code>pi-mono</code> source along one visible seam:</strong> Pi extensions for plan mode, MCP, and web search, global system guidance, and a reproducible runtime built outside the upstream tree. Upstream stays upstream. The workspace stays yours.</p>
           <div class="hero-actions">
             <a class="button" href="#cap">Assemble the workspace</a>
             <a class="button button--ghost" href="https://github.com/appautomaton/pi-arcweld">Inspect the source</a>
@@ -205,8 +333,8 @@
       <div class="shell root-grid">
         <div class="root-copy reveal">
           <p class="tag">Pass 01 · Root</p>
-          <h2 class="section-title" id="root-title">A sound weld starts at the root.</h2>
-          <p class="section-lede" style="margin-top:2rem"><strong>The root pass fuses the boundary and nothing else.</strong> Upstream Pi stays pinned in <code>pi-mono/</code>, and every local decision lives at an address you can audit in one pass.</p>
+          <h2 class="section-title" id="root-title">Pinned upstream Pi. One audited seam.</h2>
+          <p class="section-lede" style="margin-top:2rem"><strong>The root pass fuses the boundary and nothing else.</strong> Upstream Pi source stays pinned in the <code>pi-mono/</code> Git submodule, and every local decision, from extensions and system guidance to runtime scripts, lives at one address you can audit in a single <code>git diff</code>.</p>
           <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/AGENTS.md">Read the workspace rules
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
           </a>
@@ -226,9 +354,9 @@
         <div class="fill-head reveal">
           <div>
             <p class="tag">Pass 02 · Fill</p>
-            <h2 class="section-title" id="fill-title">Five fill passes. No private fork.</h2>
+            <h2 class="section-title" id="fill-title">Five curated components. No fork.</h2>
           </div>
-          <p class="section-lede">Each pass changes how Pi is assembled or extended, and leaves upstream legible, replaceable, and current.</p>
+          <p class="section-lede">Each component changes how the Pi coding agent is built or extended, and leaves upstream Pi legible, replaceable, and current.</p>
         </div>
 
         <div class="procedure reveal">
@@ -237,7 +365,7 @@
             <button class="pass-summary" id="fill-1-btn" disabled aria-expanded="true" aria-controls="fill-1">
               <span class="pass-id">F-01</span>
               <span class="pass-name-wrap">
-                <span class="pass-title">Reproducible runtime</span>
+                <span class="pass-title">Reproducible runtime build</span>
                 <span class="pass-hook">Build beside the source, never through it.</span>
               </span>
               <span class="pass-toggle" aria-hidden="true"></span>
@@ -246,7 +374,7 @@
               <div class="pass-detail-inner">
                 <div class="pass-detail-grid">
                   <div>
-                    <p class="pass-copy">The build helper stages packages, artifacts, and the runnable agent beneath <code>build/pi-agent/</code>. Upstream source is read; generated output lands elsewhere.</p>
+                    <p class="pass-copy"><code>scripts/build-pi-agent.sh</code> stages packages, artifacts, and the runnable Pi agent beneath <code>build/pi-agent/</code>. Upstream source is read; generated output lands elsewhere.</p>
                     <a class="text-link" href="https://github.com/appautomaton/pi-arcweld#user-level-integration">Trace the runtime wiring
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
                     </a>
@@ -265,7 +393,7 @@
             <button class="pass-summary" id="fill-2-btn" disabled aria-expanded="true" aria-controls="fill-2">
               <span class="pass-id">F-02</span>
               <span class="pass-name-wrap">
-                <span class="pass-title">Cache-safe plan mode</span>
+                <span class="pass-title">Cache-safe plan mode extension</span>
                 <span class="pass-hook">Change the state, preserve the prefix.</span>
               </span>
               <span class="pass-toggle" aria-hidden="true"></span>
@@ -274,7 +402,7 @@
               <div class="pass-detail-inner">
                 <div class="pass-detail-grid">
                   <div>
-                    <p class="pass-copy">Plan state is appended instead of rebuilding Pi's system prompt or tool inventory, preserving the provider cache prefix across mode transitions.</p>
+                    <p class="pass-copy">Plan state is appended instead of rebuilding Pi's system prompt or tool inventory, preserving the provider prompt-cache prefix across mode transitions. Plans are recorded through the always-on <code>update_todos</code> tool from the companion todos extension.</p>
                     <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/plan-mode/README.md">Read the plan-mode contract
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
                     </a>
@@ -293,7 +421,7 @@
             <button class="pass-summary" id="fill-3-btn" disabled aria-expanded="true" aria-controls="fill-3">
               <span class="pass-id">F-03</span>
               <span class="pass-name-wrap">
-                <span class="pass-title">Bounded MCP client</span>
+                <span class="pass-title">Bounded MCP client extension</span>
                 <span class="pass-hook">Discover widely. Expose narrowly.</span>
               </span>
               <span class="pass-toggle" aria-hidden="true"></span>
@@ -302,7 +430,7 @@
               <div class="pass-detail-inner">
                 <div class="pass-detail-grid">
                   <div>
-                    <p class="pass-copy">Configured servers are discovered in the background while the model sees a fixed two-tool surface. Connection details and secret values remain outside the prompt.</p>
+                    <p class="pass-copy">Configured Model Context Protocol (MCP) servers are discovered in the background while the model sees a fixed two-tool surface. Connection details and secret values remain outside the prompt.</p>
                     <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/mcp-extension/README.md">Inspect the MCP security model
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
                     </a>
@@ -321,7 +449,7 @@
             <button class="pass-summary" id="fill-4-btn" disabled aria-expanded="true" aria-controls="fill-4">
               <span class="pass-id">F-04</span>
               <span class="pass-name-wrap">
-                <span class="pass-title">Questionnaire</span>
+                <span class="pass-title">Questionnaire extension</span>
                 <span class="pass-hook">Give ambiguity a clean interface.</span>
               </span>
               <span class="pass-toggle" aria-hidden="true"></span>
@@ -349,7 +477,7 @@
             <button class="pass-summary" id="fill-5-btn" disabled aria-expanded="true" aria-controls="fill-5">
               <span class="pass-id">F-05</span>
               <span class="pass-name-wrap">
-                <span class="pass-title">Append layer</span>
+                <span class="pass-title">System-instruction append layer</span>
                 <span class="pass-hook">Refine the response, not the runtime truth.</span>
               </span>
               <span class="pass-toggle" aria-hidden="true"></span>
@@ -358,7 +486,7 @@
               <div class="pass-detail-inner">
                 <div class="pass-detail-grid">
                   <div>
-                    <p class="pass-copy">A canonical global append file improves response behavior without replacing Pi's generated system prompt, active tool guidance, or discovered project context.</p>
+                    <p class="pass-copy">A canonical global <code>APPEND_SYSTEM.md</code> improves response behavior without replacing Pi's generated system prompt, active tool guidance, or discovered project context.</p>
                     <a class="text-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/system-instruction/README.md">See the instruction model
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
                     </a>
@@ -374,6 +502,8 @@
           </div>
           </div>
         </div>
+
+        <p class="section-lede reveal" style="margin-top:3rem">Also welded in: isolated web-search tools for Claude, Codex, Gemini, Grok, and Exa; cache-preserving compaction; an always-on todo tracker; and the source for a Camoufox browser-automation MCP server. <a class="inline-link" href="https://github.com/appautomaton/pi-arcweld/blob/main/extensions/README.md">See the full extension inventory</a>.</p>
       </div>
     </section>
 
@@ -381,8 +511,8 @@
       <div class="shell cap-grid">
         <div class="reveal">
           <p class="tag">Pass 03 · Cap</p>
-          <h2 class="section-title" id="cap-title">From clone to a verified <code style="font-size:.72em;font-weight:600">pi</code>.</h2>
-          <p class="section-lede" style="margin-top:2rem">Clone the pinned source, assemble the runtime outside upstream, and confirm the <code>pi</code> on your PATH is the artifact you just built.</p>
+          <h2 class="section-title" id="cap-title">Install pi-arcweld. Verify your <code style="font-size:.72em;font-weight:600">pi</code>.</h2>
+          <p class="section-lede" style="margin-top:2rem">Clone the repository with its pinned Pi source, build the runtime outside the upstream tree with Node.js and npm, and confirm the <code>pi</code> on your PATH is the artifact you just built.</p>
         </div>
 
         <div class="reveal">
@@ -411,11 +541,43 @@
       </div>
     </section>
 
+    <section class="pass-section faq" id="faq" aria-labelledby="faq-title">
+      <div class="shell faq-grid">
+        <div class="faq-copy reveal">
+          <p class="tag">Inspection · Questions</p>
+          <h2 class="section-title" id="faq-title">Questions before you strike the arc.</h2>
+          <p class="section-lede" style="margin-top:2rem">Straight answers about what pi-arcweld is, what it ships, and how it tracks upstream Pi.</p>
+        </div>
+        <dl class="faq-list reveal">
+        <div class="faq-row">
+          <dt>What is pi-arcweld?</dt>
+          <dd>pi-arcweld is an auditable local workspace for the Pi coding agent. It keeps the upstream pi-mono source pinned as a Git submodule and adds a curated local layer of Pi extensions, global system guidance, bounded MCP tooling, and a reproducible runtime build, all as plain files you can review in one repository.</dd>
+        </div>
+        <div class="faq-row">
+          <dt>Is pi-arcweld a fork of Pi?</dt>
+          <dd>No. Upstream Pi stays a pinned, unmodified submodule. Moving to a newer Pi is an explicit fast-forward of that pointer, and every local behavior lives outside the upstream tree, so upstream stays upstream and nothing drifts silently.</dd>
+        </div>
+        <div class="faq-row">
+          <dt>Which Pi extensions does pi-arcweld include?</dt>
+          <dd>A cache-safe plan mode with an always-on todo tracker, a bounded MCP client for Model Context Protocol servers, a keyboard-operable questionnaire, cache-preserving compaction, and isolated web-search tools for Claude, Codex, Gemini, Grok, and Exa. The repository also holds the source for a Camoufox browser-automation MCP server.</dd>
+        </div>
+        <div class="faq-row">
+          <dt>How do I install pi-arcweld?</dt>
+          <dd>Clone the repository with its submodule, run scripts/build-pi-agent.sh --link-user-bin to assemble and verify the Pi runtime outside the upstream tree, and confirm the build with pi --version. Node.js, npm, and Git are the prerequisites.</dd>
+        </div>
+        <div class="faq-row">
+          <dt>How does pi-arcweld stay current with upstream Pi?</dt>
+          <dd>scripts/update-pi-mono.sh fetches upstream main, realigns the pinned checkout, rebuilds the runtime, and leaves the submodule pointer modified for review. It never commits or pushes, so every upstream move is a reviewable diff.</dd>
+        </div>
+        </dl>
+      </div>
+    </section>
+
     <section class="inspection" id="inspect" aria-labelledby="inspect-title">
       <div class="shell inspection-inner reveal">
         <p class="tag">Final · Inspection</p>
-        <h2 class="section-title" id="inspect-title">Every weld gets inspected. Every choice stays visible.</h2>
-        <p>That is the whole architecture: preserve the source boundary, give curated behavior one owner, and verify the runtime that reaches your shell.</p>
+        <h2 class="section-title" id="inspect-title">Every change to your Pi agent stays inspectable.</h2>
+        <p>That is the whole architecture: preserve the upstream source boundary, give every curated Pi extension one reviewable owner, and verify the runtime that reaches your shell. The source, the workspace rules, and each extension's README are on GitHub.</p>
         <div class="hero-actions">
           <a class="button" href="https://github.com/appautomaton/pi-arcweld">Open on GitHub</a>
         </div>
