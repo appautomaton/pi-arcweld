@@ -16,6 +16,11 @@
 
 # Machine-local Claude Code settings (keep shared skills and project instructions trackable)
 **/.claude/settings.local.json
+**/.claude/.cc-writes/
+**/.playwright-mcp/
+
+# Local agent planning scratch (plan drafts, mailboxes); not part of the public repository.
+/.agents/
 
 # Local environment and credentials
 .env
