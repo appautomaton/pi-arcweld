@@ -1,6 +1,0 @@
-# Informational copy. Crawlers only honor robots.txt at the host root,
-# https://appautomaton.com/robots.txt, which already lists this sitemap.
-User-agent: *
-Allow: /
-
-Sitemap: https://appautomaton.com/pi-arcweld/sitemap.xml

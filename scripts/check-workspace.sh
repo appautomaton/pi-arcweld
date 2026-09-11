@@ -77,14 +77,8 @@ if (problems.length > 0) {
 	throw new Error(`Pi host package boundary violations:\n  ${problems.join("\n  ")}`);
 }
 
-const html = readFileSync("docs/index.html", "utf8");
-const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]));
-const missing = [...html.matchAll(/\bhref="#([^"]+)"/g)]
-	.map((match) => match[1])
-	.filter((id) => !ids.has(id));
-if (missing.length > 0) {
-	throw new Error(`Missing landing-page anchors: ${[...new Set(missing)].join(", ")}`);
-}
+// Website anchors and assets are checked in the frontend repository.
+
 NODE
 
 node --check mcp-servers/camoufox/scripts/deploy-local.js
