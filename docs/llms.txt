@@ -1,22 +1,39 @@
 # pi-arcweld
 
-> An auditable local workspace for Pi: pinned upstream source, curated extensions, deliberate system guidance, bounded MCP tooling, and a reproducible external runtime.
+> pi-arcweld is an auditable local workspace for the Pi coding agent: pinned upstream pi-mono source, curated Pi extensions, global system guidance, bounded MCP tooling, and a reproducible runtime built outside the upstream tree. It is not a fork of Pi.
 
-pi-arcweld keeps local agent behavior visible without turning Pi into a private fork. The name is also written Pi Arcweld or pi arcweld. The upstream `pi-mono` source remains pinned and clean. Maintained extensions live under `extensions/`, global response guidance is appended from `system-instruction/`, and generated packages plus the runnable Pi artifact stay under the untracked `build/pi-agent/` tree.
+pi-arcweld keeps local agent behavior visible without turning Pi into a private fork. The name is also written Pi Arcweld or pi arcweld. The upstream `pi-mono` source remains a pinned, unmodified Git submodule. Maintained extensions live under `extensions/`, MCP server source under `mcp-servers/`, global response guidance is appended from `system-instruction/`, and generated packages plus the runnable Pi artifact stay under the untracked `build/pi-agent/` tree.
 
 ## Canonical links
 
 - Project site: https://appautomaton.com/pi-arcweld/
 - Source repository: https://github.com/appautomaton/pi-arcweld
-- Upstream Pi: https://pi.dev
+- Upstream Pi: https://pi.dev and https://github.com/earendil-works/pi
 - Workspace overview: https://github.com/appautomaton/pi-arcweld/blob/main/README.md
 - Workspace rules: https://github.com/appautomaton/pi-arcweld/blob/main/AGENTS.md
+- Extension inventory: https://github.com/appautomaton/pi-arcweld/blob/main/extensions/README.md
 - Maintainer: https://github.com/appautomaton and https://appautomaton.com/
 
-## Curated components
+## Curated extensions
 
-- External runtime builder: assembles and verifies Pi without writing build state into upstream source.
-- Cache-safe plan mode: appends plan state while preserving the provider prompt-cache prefix.
-- MCP client: discovers configured servers behind a fixed, bounded model-facing tool surface.
-- Questionnaire: presents explicit, keyboard-operable clarification flows.
-- System instruction append: refines response behavior without replacing Pi's generated system prompt.
+- Plan mode (`extensions/plan-mode/`): cache-safe plan mode that appends plan state while preserving the provider prompt-cache prefix; restricts built-in write and edit to canonical plan files and blocks built-in Bash while active.
+- Todos (`extensions/pi-arcweld-todos/`): always-on `update_todos` tool for tracking long-horizon work in every mode.
+- MCP client (`extensions/mcp-extension/`): discovers configured Model Context Protocol servers behind a fixed, bounded two-tool model-facing surface; connection details and secrets stay outside the prompt.
+- Questionnaire (`extensions/questionnaire.ts`): explicit, keyboard-operable clarification flows with single and multiple selection.
+- Cache-preserving compaction (`extensions/cache-preserving-compaction/`): replays the native prompt prefix for the compaction summary request so the provider cache stays warm.
+- Web search: isolated, cache-stable search tools for Claude (`claude-web-search/`), Codex (`codex-web-search.ts`), Gemini (`gemini-web-search.ts`), Grok (`grok-search.ts`), and Exa (`exa-search.ts`).
+- Claude cache retention (`extensions/claude-cache-retention.ts`): one-hour prompt-cache TTL policy scoped to a local proxy provider.
+
+## MCP servers
+
+- Camoufox (`mcp-servers/camoufox/`): bounded Camoufox browser-automation MCP server over stdio, deployed as tested versioned releases rather than run from the checkout.
+
+## Runtime and scripts
+
+- `scripts/build-pi-agent.sh`: assembles, smoke-checks, and links the Pi runtime under `build/pi-agent/` without writing build state into `pi-mono/`.
+- `scripts/update-pi-mono.sh`: realigns the pinned submodule onto upstream main and rebuilds; never commits or pushes.
+- `scripts/check-workspace.sh`, `scripts/check-user-wiring.sh`, `scripts/check-secret-boundary.sh`: repository, user-level wiring, and credential-boundary validation.
+
+## System instruction
+
+- `system-instruction/APPEND_SYSTEM.md`: global append file that refines response behavior without replacing Pi's generated system prompt, tool guidance, or project context.
