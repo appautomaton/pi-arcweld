@@ -172,6 +172,8 @@ export default function todosExtension(pi: ExtensionAPI): void {
 
 	pi.registerTool({
 		name: "update_todos",
+		// State lives in direct tool-result history; nested calls do not persist their details.
+		exposure: "model-only",
 		label: "Todos",
 		description: TOOL_DESCRIPTION,
 		promptSnippet: "Track and update the shared todo list for multi-step work",

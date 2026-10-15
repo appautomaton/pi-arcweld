@@ -66,6 +66,7 @@ while read -r stale_branch; do
 done < <(git -C "$MONO_DIR" for-each-ref --format='%(refname:short)' refs/heads)
 
 "$ROOT_DIR/scripts/build-pi-agent.sh" --link-user-bin
+"$ROOT_DIR/scripts/check-workspace.sh"
 
 echo "==> pi-mono updated to $(git -C "$MONO_DIR" rev-parse --short HEAD)"
 echo "==> Review the root gitlink with: git diff --submodule=log -- pi-mono"

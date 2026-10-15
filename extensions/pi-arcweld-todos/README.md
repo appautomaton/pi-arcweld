@@ -5,6 +5,7 @@ An always-on todo tool for [Pi](https://github.com/earendil-works/pi). It gives 
 ## What it does
 
 - Registers one model-facing tool, `update_todos`, that maintains an ordered task list with whole-list-replace semantics. One call submits the complete list and replaces the previous one, so a single call can add, remove, reorder, rename, or re-scope items. There are no item IDs; position is identity.
+- Uses native `model-only` exposure so updates always enter session history as direct tool results. Codemode scripts cannot update this state: nested calls do not persist their result details. This keeps task progress durable when Multica starts a fresh Pi process to resume a task.
 - Each item carries `content` (imperative, e.g. "Run the test suite"), `activeForm` (present-continuous, e.g. "Running the test suite", shown live while in progress), and `status` (`pending` | `in_progress` | `completed`).
 - Renders a live footer badge (`📋 2/5` plus the active item) and a progress widget above the editor while work remains, and offers a `/todos` overlay. A final all-completed update stays in session history but automatically clears the live badge and widget, so finished work does not look stale.
 

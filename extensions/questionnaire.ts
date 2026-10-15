@@ -74,8 +74,9 @@ const QuestionnaireParams = Type.Object({
 function errorResult(
 	message: string,
 	questions: Question[] = [],
-): { content: { type: "text"; text: string }[]; details: QuestionnaireResult } {
+): { isError: true; content: { type: "text"; text: string }[]; details: QuestionnaireResult } {
 	return {
+		isError: true,
 		content: [{ type: "text", text: message }],
 		details: { questions, answers: [], cancelled: true },
 	};
@@ -84,6 +85,7 @@ function errorResult(
 export default function questionnaire(pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "questionnaire",
+		exposure: "model-only",
 		label: "Questionnaire",
 		description:
 			"Ask the user for focused decisions when missing information would materially affect correctness, scope, safety, cost, or the chosen approach.",

@@ -33,7 +33,7 @@ pinned upstream source, curated extensions, bounded MCP tooling, and a reproduci
 
 - **[External runtime builder](scripts/build-pi-agent.sh):** assembles and verifies Pi without writing build state into upstream source.
 - **[Cache-safe plan mode](extensions/plan-mode/):** appends plan state while preserving the provider prompt-cache prefix.
-- **[MCP client](extensions/mcp-extension/):** discovers configured servers behind a fixed, bounded model-facing tool surface.
+- **[Native Pi MCP](pi-mono/packages/coding-agent/docs/mcp.md):** discovers tools on demand through codemode, with fixed server descriptions and stable model-facing declarations.
 - **[Questionnaire](extensions/questionnaire.ts):** presents explicit, keyboard-operable clarification flows.
 - **[System-instruction append](system-instruction/APPEND_SYSTEM.md):** refines response behavior without replacing Pi's generated system prompt.
 
@@ -67,16 +67,17 @@ pi --version
 
 The build prefers the repository's pinned native `tsgo` compiler when it is runnable and otherwise falls back to the pinned `tsc` compiler, targeting ES2024 because the TUI source uses the RegExp `v` flag. Compiler selection is capability-based and requires no platform-specific source branches.
 
-Validate the repository and machine wiring:
+Restore the existing check tools, then validate the repository and machine wiring:
 
 ```bash
+npm ci --ignore-scripts --prefix scripts/checks
 scripts/check-workspace.sh
 scripts/check-user-wiring.sh
 ```
 
 ## Updating Pi
 
-Realign the local `pi-mono` checkout onto upstream `main` and rebuild the runtime. Upstream rewrites and force-pushes `main`, and this checkout is a `depth=1` shallow clone, so the helper falls back to resetting onto the fetched tip when a fast-forward is not possible. It re-verifies a clean `pi-mono` worktree before doing so, and never commits or pushes:
+Read the upstream [coding-agent changelog](pi-mono/packages/coding-agent/CHANGELOG.md) and [model API changelog](pi-mono/packages/ai/CHANGELOG.md) for changes to extension events, tool exposure, provider protocols, and usage accounting. The update helper realigns `pi-mono` onto upstream `main`, rebuilds the runtime, and runs the existing extension compatibility checks. Upstream rewrites and force-pushes `main`, and this checkout is a `depth=1` shallow clone, so the helper falls back to resetting onto the fetched tip when a fast-forward is not possible. It re-verifies a clean `pi-mono` worktree before doing so, and never commits or pushes:
 
 ```bash
 scripts/update-pi-mono.sh
@@ -91,14 +92,19 @@ The active Pi configuration uses explicit user-level wiring: extensions point to
 
 - `~/.pi/agent/extensions/plan-mode` → `extensions/plan-mode/`
 - `~/.pi/agent/extensions/questionnaire.ts` → `extensions/questionnaire.ts`
+- `~/.pi/agent/extensions/vibrant-footer.ts` → `extensions/vibrant-footer.ts`
 - `~/.pi/agent/extensions/exa-search.ts` → `extensions/exa-search.ts`
 - `~/.pi/agent/extensions/codex-web-search.ts` → `extensions/codex-web-search.ts`
 - `~/.pi/agent/extensions/claude-web-search` → `extensions/claude-web-search/`
-- `~/.pi/agent/extensions/grok-search.ts` → `extensions/grok-search.ts` (optional; not enabled on this machine)
+- `~/.pi/agent/extensions/grok-search.ts` → `extensions/grok-search.ts` (optional)
 - `~/.pi/agent/APPEND_SYSTEM.md` → `system-instruction/APPEND_SYSTEM.md`
-- `~/.pi/agent/settings.json` registers `extensions/mcp-extension/` as a local-path package
+- Native Pi MCP reads `mcpServers` in `~/.pi/agent/mcp.json`; no local MCP client package is registered
 - `~/.pi/agent/mcp.json` runs the deployed Camoufox MCP at `~/.local/mcps/camoufox/current/bin/camoufox-mcp` (optional; its browser payload is machine-local, so `scripts/check-user-wiring.sh` validates the deployment where it exists and reports it as absent otherwise)
 - the user `pi` command resolves to `build/pi-agent/runtime/bin/pi`
+
+MCP servers use `exposure: "codemode"` and fixed one-line descriptions. Tools are discovered with `searchTools()` and called inside codemode scripts; they are not added individually to the main request. Fixed descriptions prevent startup discovery from rewriting the leading prompt on providers without mid-conversation system-message support. Native MCP inherits the Pi process environment; the former client used a restricted environment and private `mcp.env` interpolation.
+
+The default model provider is the local CPA server at `http://127.0.0.1:5233/`: GPT uses `/v1`, and Gemini uses `/v1beta`. Credentials remain machine-local. Registering MCP servers does not change model routing.
 
 ### Secret boundary
 

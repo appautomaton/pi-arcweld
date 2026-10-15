@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXT_DIR="$ROOT_DIR/extensions/claude-web-search"
 RUNTIME_MODULES="$ROOT_DIR/build/pi-agent/runtime/node_modules"
-TOOLCHAIN_MODULES="$ROOT_DIR/extensions/mcp-extension/node_modules"
+TOOLCHAIN_MODULES="$ROOT_DIR/scripts/checks/node_modules"
 MODE="${1:-all}"
 
 if [[ ! -d "$RUNTIME_MODULES/@earendil-works/pi-ai" || ! -d "$RUNTIME_MODULES/@earendil-works/pi-coding-agent" ]]; then

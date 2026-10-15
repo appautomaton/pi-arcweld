@@ -5,11 +5,11 @@ import {
 	truncateHead,
 	type ExtensionAPI,
 } from "@earendil-works/pi-coding-agent";
-import { StringEnum } from "@earendil-works/pi-ai";
+import { calculateCost, StringEnum, type Api, type Model, type Usage } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
 const PROVIDER_ID = "cli-proxy-api";
-const MODEL_ID = "grok-4.6";
+const MODEL_ID = "grok-4.7";
 const REQUEST_TIMEOUT_MS = 120_000;
 
 const GrokSearchParams = Type.Object({
@@ -102,6 +102,36 @@ interface SearchActivity {
 
 function record(value: unknown): Record<string, unknown> | undefined {
 	return value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+}
+
+function tokenCount(value: unknown): number {
+	return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
+}
+
+/** Responses input includes cached tokens; reasoning is already part of output. */
+function parseUsage(value: unknown, model: Model<Api>): Usage | undefined {
+	const raw = record(value);
+	if (!raw || (raw.input_tokens === undefined && raw.output_tokens === undefined)) return undefined;
+	const inputDetails = record(raw.input_tokens_details);
+	const outputDetails = record(raw.output_tokens_details);
+	const input = tokenCount(raw.input_tokens);
+	const output = tokenCount(raw.output_tokens);
+	const cacheRead = tokenCount(inputDetails?.cached_tokens);
+	const cacheWrite = tokenCount(inputDetails?.cache_write_tokens);
+	const usage: Usage = {
+		input: Math.max(0, input - cacheRead - cacheWrite),
+		output,
+		cacheRead,
+		cacheWrite,
+		...(typeof outputDetails?.reasoning_tokens === "number"
+			? { reasoning: tokenCount(outputDetails.reasoning_tokens) }
+			: {}),
+		totalTokens: tokenCount(raw.total_tokens) || input + output,
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+	};
+	// Pi prices model tokens from configured rates; it has no search-tool tariff.
+	calculateCost(model, usage);
+	return usage;
 }
 
 function parseToolInput(value: unknown): Record<string, unknown> | undefined {
@@ -221,8 +251,8 @@ export default function grokSearchExtension(pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "grok_search",
 		label: "Grok Search",
-		description: "Premium paid research tool: agentic search with Grok 4.6 through CLI-Proxy-API over the public web, X, or both, returning Grok's answer, server-side search activity, and source URLs. Each call carries meaningful per-call cost and latency — reserve it for queries that need X/Twitter content, real-time social sentiment, breaking-news discussion, or deep multi-source research synthesis. Do not use it for routine web lookups that a standard web search can answer.",
-		promptSnippet: "Premium Grok 4.6 agentic search over the web and/or X — reserve for X content or deep research, not routine lookups",
+		description: "Premium paid research tool: agentic search with Grok 4.7 through CLI-Proxy-API over the public web, X, or both, returning Grok's answer, server-side search activity, and source URLs. Each call carries meaningful per-call cost and latency — reserve it for queries that need X/Twitter content, real-time social sentiment, breaking-news discussion, or deep multi-source research synthesis. Do not use it for routine web lookups that a standard web search can answer.",
+		promptSnippet: "Premium Grok 4.7 agentic search over the web and/or X — reserve for X content or deep research, not routine lookups",
 		promptGuidelines: [
 			"grok_search is a premium tool with meaningful per-call cost. Use it only when the query needs X/Twitter posts, real-time social discussion or sentiment, breaking news, or multi-source research synthesis that a standard web search cannot answer. Set source to x or both only when X is relevant.",
 			"For routine web lookups — documentation, recent releases, error messages, general facts — prefer a cheaper general web search tool when one is available, and escalate to grok_search only when those results prove insufficient.",
@@ -242,8 +272,14 @@ export default function grokSearchExtension(pi: ExtensionAPI) {
 
 			const model = ctx.modelRegistry.find(PROVIDER_ID, MODEL_ID);
 			if (!model) throw new Error(`${PROVIDER_ID}/${MODEL_ID} is not configured.`);
-			const apiKey = await ctx.modelRegistry.getApiKeyForProvider(PROVIDER_ID);
-			if (!apiKey) throw new Error(`No credential is configured for ${PROVIDER_ID}.`);
+			const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
+			if (!auth.ok) throw new Error(auth.error);
+			const headers = new Headers({ "Content-Type": "application/json" });
+			if (auth.apiKey) headers.set("Authorization", `Bearer ${auth.apiKey}`);
+			for (const [name, value] of Object.entries(auth.headers ?? {})) {
+				if (value === null) headers.delete(name);
+				else headers.set(name, value);
+			}
 
 			const source = params.source ?? "web";
 			const tools: Record<string, unknown>[] = [];
@@ -280,6 +316,7 @@ export default function grokSearchExtension(pi: ExtensionAPI) {
 				model: MODEL_ID,
 				input: prompt,
 				tools,
+				reasoning: { effort: "low" },
 				max_output_tokens: 4_096,
 			};
 			if (source !== "x") requestBody.include = ["web_search_call.action.sources"];
@@ -288,9 +325,9 @@ export default function grokSearchExtension(pi: ExtensionAPI) {
 			const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
 			let response: Response;
 			try {
-				response = await fetch(`${model.baseUrl.replace(/\/$/, "")}/responses`, {
+				response = await fetch(`${(auth.baseUrl ?? model.baseUrl).replace(/\/$/, "")}/responses`, {
 					method: "POST",
-					headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+					headers,
 					body: JSON.stringify(requestBody),
 					signal: requestSignal,
 				});
@@ -304,17 +341,35 @@ export default function grokSearchExtension(pi: ExtensionAPI) {
 			if (!payload) throw new Error(`${PROVIDER_ID} returned an invalid Responses API payload.`);
 
 			const { answer, citations, activity } = parseResponse(payload);
-			const usage = record(payload.usage);
-			const toolCalls = typeof usage?.num_server_side_tools_used === "number" ? usage.num_server_side_tools_used : undefined;
-			const fullOutput = formatResult(params.query, source, answer, citations, activity, toolCalls);
+			let failure: string | undefined;
+			if (payload.error) {
+				const error = record(payload.error);
+				failure = typeof error?.message === "string" ? error.message : "provider returned an error";
+			} else if (payload.status !== "completed") {
+				const reason = record(payload.incomplete_details)?.reason;
+				failure = `response ${String(payload.status ?? "has no completion status")}${typeof reason === "string" ? `: ${reason}` : ""}`;
+			} else if (!answer) {
+				failure = "response contained no answer text";
+			}
+			const rawUsage = record(payload.usage);
+			const usage = parseUsage(rawUsage, model);
+			const toolCalls = typeof rawUsage?.num_server_side_tools_used === "number" ? rawUsage.num_server_side_tools_used : undefined;
+			const costNote = usage
+				? usage.cost.total > 0
+					? "Model-token estimate from configured rates; server-side search charges are unavailable."
+					: "Model-token cost unavailable from configured rates; server-side search charges are unavailable."
+				: "Provider token usage was not reported; server-side search charges are unavailable.";
+			const fullOutput = `${failure ? `Grok Search failed: ${failure}\n\n` : ""}${formatResult(params.query, source, answer, citations, activity, toolCalls)}`;
 			const truncation = truncateHead(fullOutput, { maxLines: DEFAULT_MAX_LINES, maxBytes: DEFAULT_MAX_BYTES });
 			const output = truncation.truncated
 				? `${truncation.content}\n\n[Output truncated to ${truncation.outputLines} lines / ${formatSize(truncation.outputBytes)}.]`
 				: fullOutput;
 
 			return {
+				...(failure ? { isError: true } : {}),
 				content: [{ type: "text", text: output }],
-				details: { provider: PROVIDER_ID, model: MODEL_ID, query: params.query, source, toolCalls, citations, activity },
+				details: { provider: PROVIDER_ID, model: MODEL_ID, query: params.query, source, toolCalls, citations, activity, costNote },
+				usage,
 			};
 		},
 	});

@@ -8,7 +8,7 @@ Two runtime profiles are selected automatically by `scripts/runtime-profile.js`:
 
 | Profile | System | Status |
 | --- | --- | --- |
-| `proot-arm64` | Debian 13 AArch64 under PRoot | Verified |
+| `proot-arm64` | Debian 13 AArch64 under PRoot | Pending revalidation |
 | `darwin-arm64` | macOS on Apple Silicon | Pending revalidation |
 
 [docs/runtime-support.md](docs/runtime-support.md) is the single source of truth for the support boundary and roadmap. Each `config/<profile>-runtime.json` records that profile's configured pins, artifact hashes, and current verification status.
@@ -31,23 +31,23 @@ Pi / MCP host
   -> ~/.local/mcps/camoufox/current/bin/camoufox-mcp
   -> deployed src/index.js (@modelcontextprotocol/sdk)
   -> guarded tools, compact/full snapshots, completion, sessions, queue, cleanup
-  -> camoufox-js 0.12.0
-  -> playwright-core 1.60.0
-  -> profile-pinned Camoufox ARM64 (152.0.4-beta.28 on PRoot Linux)
+  -> camoufox 0.5.8
+  -> playwright-core 1.62.0
+  -> profile-pinned Camoufox ARM64 (v156.0.1-beta.36 on both platforms)
 ```
 
-`playwright-core` is held below 1.61.0 because `camoufox-js` 0.12.0 declares that upper bound; see [docs/runtime-support.md](docs/runtime-support.md).
+`playwright-core` stays below 1.63 because `camoufox` 0.5.8 declares that peer range, and 1.62.0 is the version that package tests against. See [docs/runtime-support.md](docs/runtime-support.md).
 
-`camoufox-js` launches and configures Camoufox. `playwright-core` performs navigation and browser actions. The local server translates MCP calls into a deliberately bounded tool surface and adds URL policy, output control, completion observation, cancellation, and cleanup.
+`camoufox` is the TypeScript launcher shipped with the browser. It draws the fingerprint and writes the launch config. `playwright-core` performs navigation and browser actions. The local server translates MCP calls into a deliberately bounded tool surface and adds URL policy, output control, completion observation, cancellation, and cleanup. Apify `camoufox-js` is not a dependency.
 
 The server does not contain host-side confirmation prompts; those belong to the MCP client.
 
 ## Prerequisites
 
-- Pi's MCP client extension must be installed or registered; see [`../../extensions/mcp-extension/README.md`](../../extensions/mcp-extension/README.md).
+- Use Pi's native MCP support; see [`../../pi-mono/packages/coding-agent/docs/mcp.md`](../../pi-mono/packages/coding-agent/docs/mcp.md). Do not register the retired local MCP client.
 - Use Node.js 24 or newer.
-- The verified PRoot workflow requires Debian 13 AArch64 plus `curl`, `sha256sum`, `unzip`, and `Xvfb`.
-- Keep at least 3 GiB of free space available under `$HOME/.local` during first installation; the compressed archive and extracted browser coexist there while verification runs.
+- The PRoot workflow requires Debian 13 AArch64 plus `curl`, `sha256sum`, `unzip`, and `Xvfb`.
+- Keep at least 4 GiB of free space available under `$HOME/.local` during first installation; the compressed archive and extracted browser coexist there while verification runs.
 - Use absolute paths in `~/.pi/agent/mcp.json`; the config does not expand `$HOME` or `~`.
 
 ## First-time setup
@@ -70,7 +70,7 @@ The Apple Silicon command also exists:
 npm run bootstrap:darwin-arm64
 ```
 
-However, the macOS profile is currently **pending revalidation**. Treat only the PRoot ARM64 workflow as verified until the macOS checks are rerun.
+Both profiles are **pending revalidation** on `v156.0.1-beta.36`. The previous PRoot verification was for `152.0.4-beta.28` and does not cover this pin.
 
 The bootstrap:
 
@@ -83,7 +83,7 @@ The bootstrap:
 
 `npm run deploy:local` then copies the MCP source into a staging release, installs that release's dependencies, runs doctor, unit tests, and real-browser integration tests, and changes `current` only after all checks pass.
 
-The browser archive (roughly 624 MiB for Linux ARM64, 297 MiB for macOS ARM64) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide. To use an already downloaded copy of the exact pinned archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap; the installer still checks its recorded byte size and SHA-256.
+The browser archive (roughly 1.2 GiB for each ARM64 platform) is downloaded from the official Camoufox GitHub release. Runtime artifacts are not stored in this source tree, and nothing is installed system-wide. To use an already downloaded copy of the exact pinned archive, set `CAMOUFOX_ARCHIVE=/path/to/the-pinned.zip` when running the bootstrap; the installer still checks its recorded byte size and SHA-256.
 
 The browser installer never overwrites `$HOME/.local/camoufox`. For an upgrade, keep or move the existing directory first, install and validate the pinned replacement, then remove the old copy only after the new browser works.
 
@@ -93,13 +93,15 @@ General Debian AArch64 is a planned follow-up target but is not yet validated. W
 
 ## Pi configuration
 
-Merge the `camoufox` entry below into the existing `servers` object in `~/.pi/agent/mcp.json`; do not replace unrelated server entries. Pass both the deployed launcher and installed browser as absolute paths:
+Merge the `camoufox` entry below into the existing `mcpServers` object in `~/.pi/agent/mcp.json`; do not replace unrelated server entries. Pass both the deployed launcher and installed browser as absolute paths:
 
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "camoufox": {
-      "transport": "stdio",
+      "type": "stdio",
+      "exposure": "codemode",
+      "description": "Bounded browser automation with isolated sessions and compact snapshots.",
       "command": "<absolute-home>/.local/mcps/camoufox/current/bin/camoufox-mcp",
       "args": [
         "--executable-path",

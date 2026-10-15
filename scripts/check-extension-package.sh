@@ -19,7 +19,7 @@ usage() {
 
 EXT_DIR="$ROOT_DIR/extensions/$PACKAGE"
 RUNTIME_MODULES="${PI_ARCWELD_RUNTIME_NODE_MODULES:-$ROOT_DIR/build/pi-agent/runtime/node_modules}"
-TOOLCHAIN_MODULES="$ROOT_DIR/extensions/mcp-extension/node_modules"
+TOOLCHAIN_MODULES="$ROOT_DIR/scripts/checks/node_modules"
 
 if [[ ! -d "$EXT_DIR" ]]; then
 	echo "Unknown extension package: $EXT_DIR" >&2
@@ -32,7 +32,7 @@ if [[ ! -d "$RUNTIME_MODULES/@earendil-works/pi-coding-agent" ]]; then
 fi
 if [[ ! -x "$TOOLCHAIN_MODULES/.bin/tsc" || ! -f "$TOOLCHAIN_MODULES/tsx/dist/loader.mjs" ]]; then
 	echo "$PACKAGE checks require the shared workspace TypeScript/TSX toolchain" >&2
-	echo "Run npm ci --ignore-scripts in extensions/mcp-extension first" >&2
+	echo "Run npm ci --ignore-scripts --prefix scripts/checks first" >&2
 	exit 1
 fi
 
