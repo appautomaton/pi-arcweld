@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { AssistantMessage, Provider, Tool, Usage } from "@earendil-works/pi-ai";
+import {
+	getCurrentSystemPrompt,
+	getCurrentTools,
+	normalizeContext,
+	type AssistantMessage,
+	type Message,
+	type Provider,
+	type Tool,
+	type Usage,
+} from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import extension, {
 	buildSummaryContext,
@@ -95,6 +104,10 @@ function createContext(provider: Provider, notifications: string[] = [], session
 	} as unknown as ExtensionContext;
 }
 
+function transcript(messages: Message[] = []): Message[] {
+	return normalizeContext({ systemPrompt: "system", tools: new FakePi().tools, messages }).messages;
+}
+
 function compactionEvent(customInstructions?: string) {
 	return {
 		preparation: { firstKeptEntryId: "keep-1", tokensBefore: 180000 },
@@ -110,18 +123,44 @@ test("builds an append-only structured checkpoint request", () => {
 	const snapshot: RequestSnapshot = {
 		modelKey: "test-provider/test-model",
 		systemPrompt: "system",
-		messages: [{ role: "user", content: [{ type: "text", text: "work" }], timestamp: 1 }],
+		messages: transcript([{ role: "user", content: [{ type: "text", text: "work" }], timestamp: 1 }]),
 		tools: [{ name: "read", description: "read", parameters: { type: "object", properties: {} } as Tool["parameters"] }],
 	};
 	const context = buildSummaryContext(snapshot, assistant({ content: [{ type: "text", text: "done" }] }), "keep cache data");
-	assert.equal(context.systemPrompt, "system");
-	assert.equal(context.messages.length, 3);
-	assert.equal(context.messages[0].role, "user");
-	assert.equal(context.messages[1].role, "assistant");
-	assert.equal(context.messages[2].role, "user");
-	assert.match(JSON.stringify(context.messages[2]), /Additional user focus/);
-	assert.match(JSON.stringify(context.messages[2]), /keep cache data/);
-	assert.deepEqual(context.tools, snapshot.tools);
+	assert.equal(getCurrentSystemPrompt(context.messages), "system");
+	assert.equal(context.messages.length, 4);
+	assert.equal(context.messages[0].role, "system");
+	assert.equal(context.messages[1].role, "user");
+	assert.equal(context.messages[2].role, "assistant");
+	assert.equal(context.messages[3].role, "user");
+	assert.match(JSON.stringify(context.messages[3]), /Additional user focus/);
+	assert.match(JSON.stringify(context.messages[3]), /keep cache data/);
+	assert.deepEqual(getCurrentTools(context.messages), snapshot.tools);
+});
+
+test("preserves system and tool deltas in the exact request prefix", () => {
+	const initial = transcript([{ role: "user", content: "work", timestamp: 1 }]);
+	const delta: Message = {
+		role: "system",
+		content: "Additional guidance",
+		toolsRemoved: [{ name: "read" }],
+		toolsAdded: [{ name: "search", description: "search", parameters: { type: "object", properties: {} } as Tool["parameters"] }],
+		timestamp: 2,
+	};
+	const snapshot: RequestSnapshot = {
+		modelKey: "test-provider/test-model",
+		systemPrompt: "system\n\nAdditional guidance",
+		messages: [...initial, delta],
+		tools: delta.toolsAdded!,
+	};
+	const before = structuredClone(snapshot.messages);
+	const response = assistant({ content: [{ type: "text", text: "done" }] });
+	const context = buildSummaryContext(snapshot, response);
+	assert.deepEqual(context.messages.slice(0, before.length), before);
+	assert.deepEqual(snapshot.messages, before);
+	assert.equal(context.messages.filter((message) => message.role === "system").length, 2);
+	assert.deepEqual(getCurrentTools(context.messages).map((tool) => tool.name), ["search"]);
+	assert.deepEqual(context.messages.at(-2), response);
 });
 
 test("preserves provider-added tool declarations without rewriting the request", () => {
@@ -167,8 +206,8 @@ test("replays the last native request and returns a Pi compaction result", async
 	extension(fake as unknown as ExtensionAPI);
 	const ctx = createContext(provider);
 
-	await fake.handler("context")(
-		{ messages: [{ role: "user", content: [{ type: "text", text: "work" }], timestamp: 1 }] },
+	await fake.handler("context_with_system")(
+		{ messages: transcript([{ role: "user", content: [{ type: "text", text: "work" }], timestamp: 1 }]) },
 		ctx,
 	);
 	await fake.handler("before_provider_headers")({ headers: { "x-session-affinity": "session-1" } }, ctx);
@@ -180,11 +219,12 @@ test("replays the last native request and returns a Pi compaction result", async
 
 	const result = (await fake.handler("session_before_compact")(compactionEvent(), ctx)) as any;
 	assert.equal(receivedModel.baseUrl, "http://resolved.invalid/v1");
-	assert.equal(receivedContext.systemPrompt, "system");
+	assert.equal(getCurrentSystemPrompt(receivedContext.messages), "system");
+	assert.deepEqual(getCurrentTools(receivedContext.messages), fake.tools);
 	assert.equal(receivedContext.messages.at(-1).role, "user");
 	assert.equal(receivedOptions.sessionId, "session-1");
 	assert.equal(receivedOptions.maxTokens, 32768);
-	assert.equal(receivedOptions.reasoning, undefined);
+	assert.equal(receivedOptions.reasoning, "high");
 	assert.equal(receivedOptions.toolChoice, undefined);
 	assert.deepEqual(receivedOptions.headers, { "x-session-affinity": "session-1" });
 	assert.deepEqual(receivedOptions.onPayload({ tools: [] }).tools, [
@@ -210,8 +250,8 @@ test("restores the exact request snapshot across an in-process resume", async ()
 	extension(first as unknown as ExtensionAPI);
 	const firstContext = createContext(provider, [], sessionId);
 	await first.handler("session_start")({ reason: "startup" }, firstContext);
-	await first.handler("context")(
-		{ messages: [{ role: "user", content: [{ type: "text", text: "work" }], timestamp: 1 }] },
+	await first.handler("context_with_system")(
+		{ messages: transcript([{ role: "user", content: [{ type: "text", text: "work" }], timestamp: 1 }]) },
 		firstContext,
 	);
 	await first.handler("before_provider_request")({ payload: { messages: ["native"], tools: [] } }, firstContext);
@@ -224,9 +264,10 @@ test("restores the exact request snapshot across an in-process resume", async ()
 	const result = (await resumed.handler("session_before_compact")(compactionEvent(), resumedContext)) as any;
 
 	assert.equal(result.compaction.summary, "summary");
-	assert.equal(receivedContext.messages.length, 2);
-	assert.equal(receivedContext.messages[0].role, "user");
+	assert.equal(receivedContext.messages.length, 3);
+	assert.equal(receivedContext.messages[0].role, "system");
 	assert.equal(receivedContext.messages[1].role, "user");
+	assert.equal(receivedContext.messages[2].role, "user");
 });
 
 test("clears an in-flight snapshot when user input changes the pending request", async () => {
@@ -241,7 +282,7 @@ test("clears an in-flight snapshot when user input changes the pending request",
 	extension(fake as unknown as ExtensionAPI);
 	const ctx = createContext(provider) as any;
 	ctx.isIdle = () => false;
-	await fake.handler("context")({ messages: [] }, ctx);
+	await fake.handler("context_with_system")({ messages: transcript() }, ctx);
 	await fake.handler("input")({ source: "interactive", text: "steer" }, ctx);
 	await fake.handler("message_end")({ message: assistant() }, ctx);
 	assert.deepEqual(await fake.handler("session_before_compact")(compactionEvent(), ctx), { cancel: true });
@@ -276,7 +317,7 @@ test("rejects tool calls, truncated summaries, and empty summaries", async () =>
 		const fake = new FakePi();
 		extension(fake as unknown as ExtensionAPI);
 		const ctx = createContext(provider);
-		await fake.handler("context")({ messages: [] }, ctx);
+		await fake.handler("context_with_system")({ messages: transcript() }, ctx);
 		await fake.handler("before_provider_request")({ payload: {} }, ctx);
 		await fake.handler("message_end")({ message: assistant() }, ctx);
 		assert.deepEqual(await fake.handler("session_before_compact")(compactionEvent(), ctx), { cancel: true });

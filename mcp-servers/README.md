@@ -50,9 +50,11 @@ The active Pi registration uses an absolute path:
 
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "camoufox": {
-      "transport": "stdio",
+      "type": "stdio",
+      "exposure": "codemode",
+      "description": "Bounded browser automation with isolated sessions and compact snapshots.",
       "command": "<absolute-home>/.local/mcps/camoufox/current/bin/camoufox-mcp",
       "args": [
         "--executable-path",

@@ -1,0 +1,10 @@
+{
+  "name": "pi-arcweld-checks",
+  "private": true,
+  "description": "Development tools for checking local Pi extensions",
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "tsx": "4.23.0",
+    "typescript": "5.9.3"
+  }
+}

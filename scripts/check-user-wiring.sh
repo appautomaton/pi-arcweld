@@ -46,6 +46,7 @@ check_link "$AGENT_DIR/extensions/plan-mode" "$ROOT_DIR/extensions/plan-mode"
 check_link "$AGENT_DIR/extensions/pi-arcweld-todos" "$ROOT_DIR/extensions/pi-arcweld-todos"
 check_link "$AGENT_DIR/extensions/cache-preserving-compaction" "$ROOT_DIR/extensions/cache-preserving-compaction"
 check_link "$AGENT_DIR/extensions/questionnaire.ts" "$ROOT_DIR/extensions/questionnaire.ts"
+check_link "$AGENT_DIR/extensions/vibrant-footer.ts" "$ROOT_DIR/extensions/vibrant-footer.ts"
 check_link "$AGENT_DIR/extensions/exa-search.ts" "$ROOT_DIR/extensions/exa-search.ts"
 check_link "$AGENT_DIR/extensions/codex-web-search.ts" "$ROOT_DIR/extensions/codex-web-search.ts"
 check_link "$AGENT_DIR/extensions/claude-web-search" "$ROOT_DIR/extensions/claude-web-search"
@@ -58,7 +59,7 @@ check_optional_link "$AGENT_DIR/extensions/grok-search.ts" "$ROOT_DIR/extensions
 check_optional_link "$AGENT_DIR/extensions/gemini-web-search.ts" "$ROOT_DIR/extensions/gemini-web-search.ts"
 check_link "$AGENT_DIR/APPEND_SYSTEM.md" "$ROOT_DIR/system-instruction/APPEND_SYSTEM.md"
 
-echo "==> Checking MCP package registration"
+echo "==> Checking native MCP selection"
 node - "$AGENT_DIR/settings.json" "$ROOT_DIR/extensions/mcp-extension" <<'NODE'
 const { readFileSync } = require("node:fs");
 const { dirname, resolve } = require("node:path");
@@ -67,8 +68,11 @@ const settings = JSON.parse(readFileSync(settingsPath, "utf8"));
 const packages = (settings.packages ?? [])
 	.filter((entry) => typeof entry === "string")
 	.map((entry) => resolve(dirname(settingsPath), entry));
-if (!packages.includes(expectedPath)) {
-	throw new Error(`Missing local MCP package registration for ${expectedPath}`);
+if (packages.includes(expectedPath)) {
+	throw new Error(`Retired MCP package is still registered: ${expectedPath}`);
+}
+if ((settings.extensions ?? []).some((entry) => entry === "-builtin:mcp")) {
+	throw new Error("Native MCP is explicitly disabled");
 }
 NODE
 
@@ -93,9 +97,13 @@ if [[ -L "$camoufox_deploy/current" ]]; then
 const { readFileSync } = require("node:fs");
 const [configPath, expectedCommand, expectedBrowser] = process.argv.slice(2);
 const config = JSON.parse(readFileSync(configPath, "utf8"));
-const server = config.servers?.camoufox;
-if (!server) throw new Error("Missing servers.camoufox registration");
-if (server.transport !== "stdio") throw new Error(`Unexpected Camoufox transport: ${server.transport}`);
+const server = config.mcpServers?.camoufox;
+if (!server) throw new Error("Missing mcpServers.camoufox registration");
+if (config.servers !== undefined) throw new Error("Legacy servers configuration must be migrated to mcpServers");
+if (server.type !== "stdio") throw new Error(`Unexpected Camoufox type: ${server.type}`);
+if (server.exposure !== "codemode" || !server.description?.trim()) {
+	throw new Error("Camoufox must use codemode exposure and a fixed description");
+}
 if (server.command !== expectedCommand) {
 	throw new Error(`Unexpected Camoufox command; expected ${expectedCommand}, found ${server.command}`);
 }

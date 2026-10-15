@@ -24,8 +24,7 @@ fi
 node <<'NODE'
 const { readFileSync } = require("node:fs");
 for (const path of [
-	"extensions/mcp-extension/package.json",
-	"extensions/mcp-extension/tsconfig.json",
+	"scripts/checks/package.json",
 	"extensions/claude-web-search/package.json",
 	"extensions/claude-web-search/tsconfig.json",
 	"extensions/plan-mode/package.json",
@@ -55,7 +54,6 @@ const HOST_PACKAGES = [
 ];
 const problems = [];
 for (const path of [
-	"extensions/mcp-extension/package.json",
 	"extensions/claude-web-search/package.json",
 	"extensions/plan-mode/package.json",
 	"extensions/pi-arcweld-todos/package.json",
@@ -126,15 +124,7 @@ pids+=($!)
 ) > "$tmp_dir/todos.log" 2>&1 &
 pids+=($!)
 
-# 3. mcp-extension
-(
-	cd "$ROOT_DIR/extensions/mcp-extension"
-	"$ROOT_DIR/scripts/check-mcp-extension.sh" all
-	npm pack --dry-run
-) > "$tmp_dir/mcp.log" 2>&1 &
-pids+=($!)
-
-# 4. claude-web-search
+# 3. claude-web-search
 (
 	cd "$ROOT_DIR/extensions/claude-web-search"
 	"$ROOT_DIR/scripts/check-claude-web-search.sh" all
@@ -142,7 +132,7 @@ pids+=($!)
 ) > "$tmp_dir/claude.log" 2>&1 &
 pids+=($!)
 
-# 5. camoufox
+# 4. camoufox
 # Source checkout must stay free of node_modules; `npm test` lives in deploy:local's
 # staging tree. Skip here when the git tree has no install (the usual machine).
 (
@@ -155,10 +145,10 @@ pids+=($!)
 ) > "$tmp_dir/camoufox.log" 2>&1 &
 pids+=($!)
 
-# 6. Standalone extension test suites
+# 5. Standalone extensions and native MCP integration
 (
 	cd "$ROOT_DIR"
-	standalone_tests=(extensions/test/codex-web-search.test.mts)
+	standalone_tests=(extensions/test/codex-web-search.test.mts extensions/test/native-mcp.test.mjs extensions/test/usage-accounting.test.mts extensions/test/questionnaire.test.mts)
 	if [[ -f extensions/test/gemini-web-search.test.mts ]]; then
 		standalone_tests+=(extensions/test/gemini-web-search.test.mts)
 	fi
@@ -186,9 +176,11 @@ if [[ "$failed" -ne 0 ]]; then
 	exit 1
 fi
 
+"$ROOT_DIR/scripts/check-extension-package.sh" cache-preserving-compaction all
+
 echo "==> [3/3] Checking self-contained extensions through Pi runtime loading shape"
 mkdir -p "$agent_dir/extensions"
-for extension in questionnaire.ts exa-search.ts codex-web-search.ts grok-search.ts; do
+for extension in questionnaire.ts vibrant-footer.ts exa-search.ts codex-web-search.ts grok-search.ts; do
 	ln -s "$ROOT_DIR/extensions/$extension" "$agent_dir/extensions/$extension"
 done
 if [[ -f "$ROOT_DIR/extensions/gemini-web-search.ts" ]]; then

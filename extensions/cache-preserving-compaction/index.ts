@@ -2,12 +2,13 @@ import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type {
 	Api,
 	AssistantMessage,
-	Context,
 	Model,
 	ProviderHeaders,
 	SimpleStreamOptions,
 	Tool,
+	TranscriptContext,
 } from "@earendil-works/pi-ai";
+import { normalizeContext } from "@earendil-works/pi-ai";
 import { convertToLlm, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 export const SUMMARY_PROMPT = `This is a compaction checkpoint request for the conversation above.
@@ -63,6 +64,7 @@ Do not mention this checkpoint request.`;
 
 export interface RequestSnapshot {
 	modelKey: string;
+	reasoning?: SimpleStreamOptions["reasoning"];
 	systemPrompt: string;
 	messages: AgentMessage[];
 	tools: Tool[];
@@ -122,7 +124,7 @@ export function buildSummaryContext(
 	snapshot: RequestSnapshot,
 	latestAssistant: AssistantMessage,
 	customInstructions?: string,
-): Context {
+): TranscriptContext {
 	const messages = convertToLlm(snapshot.messages);
 	if (
 		(latestAssistant.stopReason === "stop" || latestAssistant.stopReason === "length") &&
@@ -135,11 +137,9 @@ export function buildSummaryContext(
 		content: [{ type: "text", text: summaryPrompt(customInstructions) }],
 		timestamp: Date.now(),
 	});
-	return {
-		systemPrompt: snapshot.systemPrompt,
-		messages,
-		tools: snapshot.tools.length > 0 ? snapshot.tools : undefined,
-	};
+	// Replay the full transcript, including its original system and tool deltas.
+	// Adding the current prompt or tools again would change the cached prefix.
+	return normalizeContext({ messages });
 }
 
 export function preserveToolPayload(previousPayload: unknown, payload: unknown): unknown {
@@ -200,12 +200,13 @@ export default function cachePreservingCompaction(pi: ExtensionAPI) {
 		if (!ctx.isIdle()) forget(ctx);
 	});
 
-	pi.on("context", (event, ctx) => {
+	pi.on("context_with_system", (event, ctx) => {
 		if (summaryRequest || !ctx.model) return;
 		latestAssistant = undefined;
 		try {
 			snapshot = {
 				modelKey: modelKey(ctx.model)!,
+				reasoning: ctx.thinkingLevel === "off" ? undefined : ctx.thinkingLevel,
 				systemPrompt: ctx.getSystemPrompt(),
 				messages: clone(event.messages),
 				tools: snapshotTools(pi),
@@ -260,6 +261,7 @@ export default function cachePreservingCompaction(pi: ExtensionAPI) {
 				env: auth.env,
 				signal: event.signal,
 				maxTokens: model.maxTokens,
+				reasoning: snapshot.reasoning,
 				sessionId: ctx.sessionManager.getSessionId(),
 				onPayload: (payload) => preserveToolPayload(snapshot!.payload, payload),
 			};
