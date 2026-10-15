@@ -16,9 +16,8 @@ const browserExecutable = process.env.CAMOUFOX_EXECUTABLE_PATH ?? join(
 // Strict MCP clients close the connection on any stdout line that is not a
 // JSON-RPC frame, so this drives a real browser launch through the launcher
 // with raw pipes and asserts byte-level stdout purity. The SDK test client
-// tolerates polluted lines via an ignored onerror, which is exactly how the
-// camoufox-js "Skipping addon download" console.log regression slipped past
-// the tool-level integration tests.
+// tolerates polluted lines via an ignored onerror, which is how an earlier
+// launcher console.log regression slipped past the tool-level integration tests.
 test("stdout carries only JSON-RPC frames through a real browser launch", { skip: !runIntegration, timeout: 120_000 }, async () => {
   const launcher = new URL("../bin/camoufox-mcp", import.meta.url).pathname;
   const child = spawn(launcher, ["--executable-path", browserExecutable], { stdio: ["pipe", "pipe", "pipe"] });

@@ -13,7 +13,7 @@ const browserExecutable = process.env.CAMOUFOX_EXECUTABLE_PATH ?? join(
   ...(platform() === "darwin" ? ["Camoufox.app", "Contents", "MacOS", "camoufox"] : ["camoufox-bin"]),
 );
 
-test("direct server entry derives the browser install directory before loading camoufox-js", { skip: !runIntegration, timeout: 120_000 }, async () => {
+test("direct server entry launches with an explicit executable and no install-dir override", { skip: !runIntegration, timeout: 120_000 }, async () => {
   const env = {
     ...getDefaultEnvironment(),
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1",

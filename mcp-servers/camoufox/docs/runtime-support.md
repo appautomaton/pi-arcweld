@@ -4,11 +4,11 @@ This document is the single source of truth for the support boundary: which syst
 
 ## Runtime profiles
 
-This local server has two profiled environments: PRoot ARM64 is verified, while Apple Silicon macOS is pending revalidation. Profile selection is centralized in `scripts/runtime-profile.js`, which the installer and doctor share.
+This local server has two profiled environments. Both pin the same Camoufox release and the same launcher, and both are pending revalidation after that pin moved. Profile selection is centralized in `scripts/runtime-profile.js`, which the installer and doctor share.
 
 ### PRoot ARM64 (`proot-arm64`)
 
-**Status: verified on 2026-08-13.** `npm test` (33 passed), `npm run doctor`, `npm run test:integration` (3 passed, including direct-entry browser launch, cancellation cleanup, and stdout purity), and live Pi MCP browsing and SSRF-blocking checks all pass with the pins below.
+**Status: pending revalidation.** The previous verification, on 2026-08-13, covered `152.0.4-beta.28` with `camoufox-js` 0.12.0 and `playwright-core` 1.60.0. It does not cover the pins below.
 
 | Component | Pinned value |
 |---|---|
@@ -16,15 +16,15 @@ This local server has two profiled environments: PRoot ARM64 is verified, while 
 | Architecture | AArch64 (`aarch64`) |
 | Node | 24.13.0 |
 | npm | 11.17.0 |
-| Camoufox | 152.0.4-beta.28 Linux ARM64 |
-| `camoufox-js` | 0.12.0 |
-| `playwright-core` | 1.60.0 |
+| Camoufox | 156.0.1-beta.36 Linux ARM64 |
+| `camoufox` | 0.5.8 |
+| `playwright-core` | 1.62.0 |
 
 The machine-readable baseline is `config/proot-arm64-runtime.json`.
 
 ### Apple Silicon macOS (`darwin-arm64`)
 
-**Status: pending revalidation.** The npm pins were advanced on the PRoot machine on 2026-08-12 and have not been re-run on macOS. The configured browser artifact remains the previously used macOS build, but the full configured combination below is not currently verified.
+**Status: pending revalidation.** This profile now uses the same browser release and the same npm pins as PRoot. The combination has not been re-run here.
 
 | Component | Configured value |
 |---|---|
@@ -32,13 +32,11 @@ The machine-readable baseline is `config/proot-arm64-runtime.json`.
 | Architecture | `arm64` |
 | Node | 24.14.0 |
 | npm | 11.17.0 |
-| Camoufox | 150.0.2-beta.25 macOS ARM64 |
-| `camoufox-js` | 0.12.0 |
-| `playwright-core` | 1.60.0 |
+| Camoufox | 156.0.1-beta.36 macOS ARM64 |
+| `camoufox` | 0.5.8 |
+| `playwright-core` | 1.62.0 |
 
 The machine-readable baseline is `config/darwin-arm64-runtime.json`.
-
-Note on upstream naming: the macOS profile remains pinned to the `v150.0.2-beta.25` GitHub release, whose asset files are named `camoufox-150.0.2-alpha.25-*`. The manifests record the actual download filenames; the `release` field follows the release tag.
 
 ## Artifact split
 
@@ -56,17 +54,11 @@ The browser binary, npm dependency trees, deployed releases, and user configurat
 
 ## Browser install directory
 
-From `camoufox-js` 0.12.0 onward, the library reads the installed browser's `version.json` from its own install directory even when an explicit `executable_path` is supplied. That directory defaults to `~/.cache/camoufox`, but this project installs the browser into `$HOME/.local/camoufox`, so an unadjusted launch fails with:
-
-```text
-FileNotFoundError: Version information not found at ~/.cache/camoufox/version.json
-```
-
-`src/browser.js` derives the install root from the configured `--executable-path` by walking up to the directory that contains `version.json`, then sets `CAMOUFOX_INSTALL_DIR` before dynamically importing `camoufox-js`. This keeps launcher-based and direct `src/index.js` starts correct without hard-coding `$HOME/.local/camoufox`. An externally supplied `CAMOUFOX_INSTALL_DIR` always wins.
+The `camoufox` launcher reads the Firefox version from `application.ini` next to the executable given as `executable_path`. It does not consult `CAMOUFOX_INSTALL_DIR`. This project still installs the browser under `$HOME/.local/camoufox` and passes that executable on the command line, so the launcher's own cache directory is not the browser install.
 
 ## `playwright-core` upper bound
 
-`camoufox-js` 0.12.0 declares `playwright-core: <1.61.0` as a peer dependency; 0.11.x accepted any version. Camoufox is a Firefox fork tied to a specific Playwright/Juggler protocol generation, so the newest `playwright-core` is deliberately not the correct choice. Pin the highest release below the declared bound, currently 1.60.0, and recheck the peer range whenever `camoufox-js` is upgraded.
+`camoufox` 0.5.8 declares `playwright-core: <1.63` as a peer dependency and tests against 1.62.0. Camoufox is a Firefox fork tied to a specific Playwright/Juggler protocol generation, so a newer `playwright-core` is not the correct choice. Pin 1.62.0, and recheck the peer range whenever `camoufox` is upgraded. `camoufox` 0.5.8 records browser pin `v156.0.1-beta.36`; both profiles use that release. Apify `camoufox-js` capped Firefox 156 and is no longer used.
 
 ## PRoot-specific behavior
 

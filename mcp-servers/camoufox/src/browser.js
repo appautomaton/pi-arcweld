@@ -1,5 +1,4 @@
-import { accessSync, constants, existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { accessSync, constants } from "node:fs";
 import { validateBrowserRequest, validateUrl } from "./policy.js";
 import { redactUrl } from "./redact.js";
 import { boundedEnv } from "./env.js";
@@ -18,34 +17,13 @@ const queue = [];
 const activeBrowsers = new Set();
 const launchingOwners = new Set();
 
-// camoufox-js >= 0.12.0 reads the installed browser's version.json from its own
-// install directory (CAMOUFOX_INSTALL_DIR, default ~/.cache/camoufox) even when an
-// explicit executable path is supplied. This installation lives elsewhere, so derive
-// the install root by walking up from the executable to the directory holding
-// version.json. On Linux that is the executable's own directory; on macOS the
-// executable sits inside Camoufox.app/Contents/MacOS.
-function adoptInstallDir(executablePath) {
-  if (process.env.CAMOUFOX_INSTALL_DIR) return;
-  let directory = dirname(executablePath);
-  for (let depth = 0; depth < 4; depth += 1) {
-    if (existsSync(join(directory, "version.json"))) {
-      process.env.CAMOUFOX_INSTALL_DIR = directory;
-      return;
-    }
-    const parent = dirname(directory);
-    if (parent === directory) return;
-    directory = parent;
-  }
-}
-
 async function loadCamoufox() {
-  camoufoxImport ??= import("camoufox-js");
+  camoufoxImport ??= import("camoufox");
   return (await camoufoxImport).Camoufox;
 }
 
 export function configureBrowser({ executablePath }) {
   browserExecutablePath = executablePath;
-  if (executablePath) adoptInstallDir(executablePath);
 }
 
 function requireBrowserExecutable() {
