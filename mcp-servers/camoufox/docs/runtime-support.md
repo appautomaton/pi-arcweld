@@ -4,11 +4,11 @@ This document is the single source of truth for the support boundary: which syst
 
 ## Runtime profiles
 
-This local server has two profiled environments. Both pin the same Camoufox release and the same launcher, and both are pending revalidation after that pin moved. Profile selection is centralized in `scripts/runtime-profile.js`, which the installer and doctor share.
+This local server has two profiled environments. Both pin the same Camoufox release and the same launcher. The macOS profile was reverified against those pins on 2026-10-15; the PRoot profile still awaits its own run. Profile selection is centralized in `scripts/runtime-profile.js`, which the installer and doctor share.
 
 ### PRoot ARM64 (`proot-arm64`)
 
-**Status: pending revalidation.** The previous verification, on 2026-08-13, covered `152.0.4-beta.28` with `camoufox-js` 0.12.0 and `playwright-core` 1.60.0. It does not cover the pins below.
+**Status: pending revalidation.** The previous verification, on 2026-08-13, covered `152.0.4-beta.28` with `camoufox-js` 0.12.0 and `playwright-core` 1.60.0. It does not cover the pins below. The launcher precondition that this revision establishes — `application.ini` beside the executable — is satisfied by the installer on this profile too, but no run has confirmed it here.
 
 | Component | Pinned value |
 |---|---|
@@ -24,7 +24,7 @@ The machine-readable baseline is `config/proot-arm64-runtime.json`.
 
 ### Apple Silicon macOS (`darwin-arm64`)
 
-**Status: pending revalidation.** This profile now uses the same browser release and the same npm pins as PRoot. The combination has not been re-run here.
+**Status: verified.** Revalidated on 2026-10-15 against the pins below by the deployment gates in `scripts/deploy-local.js` — doctor, the unit suite, and the three browser integration tests that launch the pinned browser and browse a real page — followed by a deployment that Pi loads.
 
 | Component | Configured value |
 |---|---|
@@ -54,7 +54,7 @@ The browser binary, npm dependency trees, deployed releases, and user configurat
 
 ## Browser install directory
 
-The `camoufox` launcher reads the Firefox version from `application.ini` next to the executable given as `executable_path`. It does not consult `CAMOUFOX_INSTALL_DIR`. This project still installs the browser under `$HOME/.local/camoufox` and passes that executable on the command line, so the launcher's own cache directory is not the browser install.
+The `camoufox` launcher reads the Firefox version from `application.ini` next to the executable given as `executable_path`. It does not consult `CAMOUFOX_INSTALL_DIR`. Linux tarballs keep that file beside the executable already; the macOS bundle holds it under `Contents/Resources/`, so `scripts/install-camoufox-browser.js` stamps a copy beside the binary and `scripts/doctor.js` asserts both its presence and its version. This project still installs the browser under `$HOME/.local/camoufox` and passes that executable on the command line, so the launcher's own cache directory is not the browser install.
 
 ## `playwright-core` upper bound
 

@@ -10,8 +10,8 @@ test("runtime profile verification follows the manifest status", () => {
 
   const macos = resolveProfile({ runtimePlatform: "darwin", runtimeArch: "arm64", proot: false });
   assert.equal(macos.name, "darwin-arm64");
-  assert.equal(macos.manifest.support.status, "pending-revalidation");
-  assert.equal(macos.verified, false);
+  assert.equal(macos.manifest.support.status, "verified");
+  assert.equal(macos.verified, true);
 
   const genericLinux = resolveProfile({ runtimePlatform: "linux", runtimeArch: "arm64", proot: false });
   assert.equal(genericLinux.name, "generic-unverified");

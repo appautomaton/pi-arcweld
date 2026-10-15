@@ -9,7 +9,7 @@ Two runtime profiles are selected automatically by `scripts/runtime-profile.js`:
 | Profile | System | Status |
 | --- | --- | --- |
 | `proot-arm64` | Debian 13 AArch64 under PRoot | Pending revalidation |
-| `darwin-arm64` | macOS on Apple Silicon | Pending revalidation |
+| `darwin-arm64` | macOS on Apple Silicon | Verified |
 
 [docs/runtime-support.md](docs/runtime-support.md) is the single source of truth for the support boundary and roadmap. Each `config/<profile>-runtime.json` records that profile's configured pins, artifact hashes, and current verification status.
 
@@ -70,7 +70,7 @@ The Apple Silicon command also exists:
 npm run bootstrap:darwin-arm64
 ```
 
-Both profiles are **pending revalidation** on `v156.0.1-beta.36`. The previous PRoot verification was for `152.0.4-beta.28` and does not cover this pin.
+macOS on Apple Silicon is **verified** on `v156.0.1-beta.36`. PRoot remains **pending revalidation**; its previous verification was for `152.0.4-beta.28` and does not cover this pin.
 
 The bootstrap:
 

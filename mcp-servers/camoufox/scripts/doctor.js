@@ -32,14 +32,28 @@ for (const [name, version] of Object.entries(expected)) {
   }
 }
 
+const executable = join(profile.installDir, ...profile.manifest.browser.executablePath.split("/"));
 try {
-  const path = join(profile.installDir, ...profile.manifest.browser.executablePath.split("/"));
   const installed = JSON.parse(readFileSync(join(profile.installDir, "version.json"), "utf8"));
-  accessSync(path, constants.X_OK);
+  accessSync(executable, constants.X_OK);
   const installedBrowser = `${installed.version}-${installed.release}`;
-  check(installedBrowser === expectedBrowser, `browser ${installedBrowser} at ${path}`);
+  check(installedBrowser === expectedBrowser, `browser ${installedBrowser} at ${executable}`);
 } catch (error) {
   check(false, `browser ${error instanceof Error ? error.message : error}`);
+}
+
+// The launcher reads the Firefox version from application.ini beside the
+// executable it is told to launch, and every launch fails when that file is
+// absent, so assert the stamp the installer writes for bundle layouts. Checking
+// the version too catches a stamp left behind by a previous browser install.
+try {
+  const versionLine = readFileSync(join(dirname(executable), "application.ini"), "utf8")
+    .split(/\r\n|\r|\n/)
+    .find((line) => line.startsWith("Version="));
+  const stampedBrowser = versionLine?.slice("Version=".length).trim();
+  check(stampedBrowser === expectedBrowser, `application.ini ${stampedBrowser ?? "missing"} beside the executable (expected ${expectedBrowser})`);
+} catch (error) {
+  check(false, `application.ini ${error instanceof Error ? error.message : error}`);
 }
 
 for (const command of profile.requiredCommands) {

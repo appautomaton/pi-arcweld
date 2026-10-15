@@ -33,8 +33,31 @@ async function sha256(path) {
   return hash.digest("hex");
 }
 
+// The `camoufox` launcher resolves the Firefox version from application.ini
+// beside the executable it is told to launch, and aborts with "the browser this
+// camoufox release pairs with is not installed" when the file is absent. Linux
+// tarballs keep the two together; the macOS bundle holds application.ini under
+// Contents/Resources/, so it must be stamped beside the binary. Returns whether
+// this call stamped a missing copy.
+function stampApplicationIni(executable) {
+  const beside = join(dirname(executable), "application.ini");
+  if (existsSync(beside)) return false;
+
+  const bundled = join(dirname(dirname(executable)), "Resources", "application.ini");
+  if (!existsSync(bundled)) {
+    throw new Error(
+      `application.ini is missing both beside ${executable} and in its bundle Resources directory; the camoufox launcher cannot resolve the browser version without it.`,
+    );
+  }
+
+  copyFileSync(bundled, beside);
+  return true;
+}
+
 if (installedMatches()) {
-  console.log(`ok Camoufox ${browser.version}-${browser.release} already installed at ${installDir}`);
+  const repaired = stampApplicationIni(join(installDir, ...executableRelPath.split("/")));
+  const suffix = repaired ? ", stamped application.ini beside the executable" : "";
+  console.log(`ok Camoufox ${browser.version}-${browser.release} already installed at ${installDir}${suffix}`);
   process.exit(0);
 }
 
@@ -78,6 +101,7 @@ try {
     throw new Error(`${executableRelPath} SHA-256 ${executableHash} did not match expected ${browser.executableSha256}`);
   }
 
+  stampApplicationIni(executable);
   writeFileSync(join(extracted, "version.json"), JSON.stringify({ version: browser.version, release: browser.release }));
 
   const chmod = spawnSync("chmod", ["-R", "u+rwX,go+rX", extracted], { stdio: "inherit" });

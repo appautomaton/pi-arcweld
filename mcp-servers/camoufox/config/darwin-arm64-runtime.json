@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "support": {
-    "status": "pending-revalidation",
+    "status": "verified",
     "environment": "macOS on Apple Silicon (Darwin 25)",
     "architecture": "arm64",
     "kernelMarker": "Darwin",
