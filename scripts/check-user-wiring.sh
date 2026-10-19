@@ -53,7 +53,7 @@ check_link "$AGENT_DIR/extensions/claude-web-search" "$ROOT_DIR/extensions/claud
 check_absent "$AGENT_DIR/extensions/claude-web-search.ts"
 check_absent "$AGENT_DIR/extensions/native-web-search.ts"
 check_absent "$AGENT_DIR/extensions/web-search.ts"
-# Grok needs a machine-specific cli-proxy-api/grok-4.6 provider, so it stays optional.
+# Grok needs a machine-specific grok-4.20-multi-agent-0309 model behind the local CPA gateway, so it stays optional.
 check_optional_link "$AGENT_DIR/extensions/grok-search.ts" "$ROOT_DIR/extensions/grok-search.ts"
 # Gemini search needs a machine-specific Google/Gemini provider, so it stays optional.
 check_optional_link "$AGENT_DIR/extensions/gemini-web-search.ts" "$ROOT_DIR/extensions/gemini-web-search.ts"

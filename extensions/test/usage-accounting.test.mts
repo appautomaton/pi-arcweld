@@ -45,14 +45,19 @@ const providerUsage = {
 	num_server_side_tools_used: 7,
 };
 
-async function grokResult(rawUsage: unknown = providerUsage, cost = tokenRates, responseOverrides: Record<string, unknown> = {}) {
+async function grokResult(
+	rawUsage: unknown = providerUsage,
+	cost = tokenRates,
+	responseOverrides: Record<string, unknown> = {},
+	callParams: Record<string, unknown> = {},
+) {
 	const savedFetch = globalThis.fetch;
 	globalThis.fetch = async (url, options) => {
 		assert.equal(url, "https://grok-fixture.invalid/v1/responses");
 		assert.equal(options?.method, "POST");
 		const request = JSON.parse(String(options?.body));
-		assert.equal(request.model, "grok-4.7");
-		assert.deepEqual(request.reasoning, { effort: "low" });
+		assert.equal(request.model, callParams.model ?? "grok-4.20-multi-agent-0309");
+		assert.deepEqual(request.reasoning, { effort: "medium" });
 		assert.equal(new Headers(options?.headers).get("X-Search-Route"), "fixture-route");
 		return new Response(JSON.stringify({
 			status: "completed",
@@ -62,9 +67,25 @@ async function grokResult(rawUsage: unknown = providerUsage, cost = tokenRates, 
 		}));
 	};
 	try {
-		return await grokTool.execute("fixture-search", { query: "fixture query" }, undefined, undefined, {
+		return await grokTool.execute("fixture-search", { query: "fixture query", ...callParams }, undefined, undefined, {
 			modelRegistry: {
-				find: () => ({ baseUrl: "https://configured-fixture.invalid/v1", cost }),
+				getAll: () => [
+					{
+						provider: "fixture-provider",
+						id: "grok-4.20-multi-agent-0309",
+						api: "openai-responses",
+						baseUrl: "https://configured-fixture.invalid/v1",
+						cost,
+					},
+					{
+						provider: "fixture-provider",
+						id: "grok-4.6",
+						api: "openai-responses",
+						baseUrl: "https://configured-fixture.invalid/v1",
+						cost,
+					},
+				],
+				getProviderAuthStatus: () => ({ configured: true }),
 				getApiKeyAndHeaders: async () => ({
 					ok: true,
 					apiKey: "fixture-key",
@@ -91,6 +112,15 @@ test("Grok returns native token/cache/reasoning usage and only configured token 
 	assert.deepEqual(moreSearches.usage, result.usage, "search counts must not fabricate fees");
 	const noTotal = await grokResult({ ...providerUsage, total_tokens: undefined });
 	assert.equal(noTotal.usage?.totalTokens, 900);
+});
+
+test("Grok switches models per call at the same medium effort and reports which it used", async () => {
+	const standard = await grokResult(providerUsage, tokenRates, {}, { model: "grok-4.6" });
+	assert.equal((standard.details as any).model, "grok-4.6");
+	assert.equal(standard.usage?.totalTokens, 900);
+
+	const byDefault = await grokResult();
+	assert.equal((byDefault.details as any).model, "grok-4.20-multi-agent-0309");
 });
 
 test("Grok retains tokens when configured rates are zero and omits absent usage", async () => {
