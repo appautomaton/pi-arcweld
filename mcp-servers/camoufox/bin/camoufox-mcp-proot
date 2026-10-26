@@ -3,9 +3,12 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
+NODE=$(ls -d "$HOME"/.nvm/versions/node/v24.*/bin/node 2>/dev/null | sort -V | tail -n 1)
+: "${NODE:=node}"
+
 export MOZ_FAKE_NO_SANDBOX=1
 export MOZ_DISABLE_CONTENT_SANDBOX=1
 export LIBGL_ALWAYS_SOFTWARE=1
 export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
-exec node "$ROOT/src/index.js" "$@"
+exec "$NODE" "$ROOT/src/index.js" "$@"

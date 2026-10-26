@@ -115,3 +115,22 @@ test("cancelled MCP call reaches the handler and returns promptly", async () => 
   assert.equal(code, 0, stderr);
   assert.match(stdout, /local cancellation check|cancel/i);
 });
+
+test("launcher resolves Node under a minimal PATH without nvm", async () => {
+  const launcher = new URL("../bin/camoufox-mcp", import.meta.url).pathname;
+  const transport = new StdioClientTransport({
+    command: launcher,
+    args: ["--executable-path", process.execPath],
+    env: { HOME: process.env.HOME, PATH: "/usr/bin:/bin" },
+    stderr: "pipe",
+  });
+  const client = new Client({ name: "launcher-path-test", version: "1.0.0" });
+  try {
+    await client.connect(transport);
+    const listed = await client.listTools();
+    assert.equal(listed.tools.length, 10);
+  } finally {
+    await client.close();
+  }
+});
+
