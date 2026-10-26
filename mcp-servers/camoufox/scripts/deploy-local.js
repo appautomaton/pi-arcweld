@@ -152,7 +152,6 @@ function printLink(name) {
 function status() {
   console.log(`deploy root: ${deployRoot}`);
   printLink("current");
-  printLink("previous");
   if (!existsSync(releasesRoot)) {
     console.log("releases: 0");
     return;
@@ -160,6 +159,19 @@ function status() {
   const releases = readdirSync(releasesRoot).filter((name) => existsSync(join(releasesRoot, name))).sort();
   console.log(`releases: ${releases.length}`);
   for (const name of releases) console.log(`  ${name}`);
+}
+
+// One active release is the whole deployment state. A superseded release is
+// deleted as soon as the new one is live, because the canonical source checkout
+// plus a single deploy command is the recovery path.
+function pruneSupersededReleases(keep) {
+  if (!existsSync(releasesRoot)) return;
+  for (const name of readdirSync(releasesRoot)) {
+    const path = join(releasesRoot, name);
+    if (path === keep) continue;
+    rmSync(path, { recursive: true, force: true });
+    console.log(`pruned ${name}`);
+  }
 }
 
 function deploy() {
@@ -194,14 +206,12 @@ function deploy() {
     run("npm", ["run", "test:integration"], staging);
 
     renameSync(staging, release);
-    const oldCurrent = linkTarget("current");
-    if (oldCurrent) replaceLink("previous", oldCurrent);
     replaceLink("current", release);
+    pruneSupersededReleases(release);
 
     console.log(`ok deployed ${packageJson.name} ${packageJson.version}`);
     console.log(`release: ${release}`);
     console.log(`current: ${join(deployRoot, "current")}`);
-    if (oldCurrent) console.log(`previous: ${oldCurrent}`);
     console.log(`Pi command: ${join(deployRoot, "current", "bin", "camoufox-mcp")}`);
   } catch (error) {
     rmSync(staging, { recursive: true, force: true });
@@ -209,28 +219,16 @@ function deploy() {
   }
 }
 
-function rollback() {
-  const current = linkTarget("current");
-  const previous = linkTarget("previous");
-  if (!previous) fail("no previous deployment is available");
-  replaceLink("current", previous);
-  if (current) replaceLink("previous", current);
-  console.log(`ok current -> ${previous}`);
-  if (current) console.log(`previous -> ${current}`);
-  console.log("Restart or reconnect the Camoufox MCP server for the change to take effect.");
-}
-
 try {
   if (action === "status") status();
-  else if (action === "deploy" || action === "rollback") {
+  else if (action === "deploy") {
     const releaseLock = acquireDeployLock();
     try {
-      if (action === "deploy") deploy();
-      else rollback();
+      deploy();
     } finally {
       releaseLock();
     }
-  } else fail("usage: node scripts/deploy-local.js [deploy|status|rollback]");
+  } else fail("usage: node scripts/deploy-local.js [deploy|status]");
 } catch (error) {
   console.error(`FAIL ${error instanceof Error ? error.message : String(error)}`);
   process.exitCode = 1;

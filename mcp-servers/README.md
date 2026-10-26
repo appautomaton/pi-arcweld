@@ -30,20 +30,18 @@ npm run deploy:local
 
 For first-time browser installation, platform support, Pi registration, and verification, follow [`camoufox/README.md`](camoufox/README.md).
 
-The deployment command creates and tests a new versioned release before atomically changing `current`:
+The deployment command creates and tests a new versioned release before atomically changing `current`, then deletes the release it replaced:
 
 ```text
 ~/.local/mcps/camoufox/
 ├── releases/<version>-<timestamp>-<source-fingerprint>/
-├── current  -> releases/<active-release>/
-└── previous -> releases/<previous-release>/
+└── current  -> releases/<active-release>/
 ```
 
 Useful commands:
 
 ```bash
 npm run deploy:status
-npm run deploy:rollback
 ```
 
 The active Pi registration uses an absolute path:
@@ -66,4 +64,4 @@ The active Pi registration uses an absolute path:
 }
 ```
 
-`~/.pi/agent/mcp.json` is machine-local and is not tracked in this repository. Restart Pi after first adding the registration. After a later deploy or rollback, run `/mcp reconnect camoufox` or restart Pi so the active server process uses the new `current` release.
+`~/.pi/agent/mcp.json` is machine-local and is not tracked in this repository. Restart Pi after first adding the registration. After a later deploy, run `/mcp reconnect camoufox` or restart Pi so the active server process uses the new `current` release.

@@ -44,11 +44,11 @@ The working installation is deliberately split into five parts:
 
 1. Canonical project source, lockfile, bootstraps, tests, and documentation in this directory.
 2. Source-checkout dependencies restored into `node_modules/` with `npm ci` for development and validation.
-3. Separate tested MCP releases under `$HOME/.local/mcps/camoufox/releases/`, with `current` and `previous` symbolic links for activation and rollback. Each release owns the dependencies installed from the lockfile and is treated as read-only operational state after deployment.
+3. Separate tested MCP releases under `$HOME/.local/mcps/camoufox/releases/`, with a `current` symbolic link that activates exactly one of them. Each release owns the dependencies installed from the lockfile and is treated as read-only operational state after deployment; the release a deploy replaces is deleted.
 4. The pinned Camoufox browser installed separately into `$HOME/.local/camoufox`.
 5. Pi's external MCP registration, which points to `$HOME/.local/mcps/camoufox/current/bin/camoufox-mcp` and passes the browser through `--executable-path`.
 
-Deploy with `npm run deploy:local`; inspect or roll back with `npm run deploy:status` and `npm run deploy:rollback`. A source edit does not affect Pi until a tested deployment succeeds and Pi reconnects to the MCP server.
+Deploy with `npm run deploy:local`; inspect the active release with `npm run deploy:status`. A source edit does not affect Pi until a tested deployment succeeds and Pi reconnects to the MCP server.
 
 The browser binary, npm dependency trees, deployed releases, and user configuration are runtime state and must not be committed to Git. Nothing is installed system-wide and no system package manager is involved. For repeatable or offline browser installs, `CAMOUFOX_ARCHIVE=/path/to/the-exact-pinned.zip` may be supplied to the installer; the same recorded byte size and SHA-256 checks still apply.
 

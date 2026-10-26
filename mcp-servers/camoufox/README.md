@@ -115,7 +115,7 @@ Merge the `camoufox` entry below into the existing `mcpServers` object in `~/.pi
 
 On macOS, use `<absolute-home>/.local/camoufox/Camoufox.app/Contents/MacOS/camoufox`. Replace the placeholders with absolute paths; MCP configuration does not expand `$HOME` or `~`.
 
-The deploy command does not edit `mcp.json` and does not restart an existing MCP process. After first adding the registration, restart Pi. After a later deploy or rollback, run:
+The deploy command does not edit `mcp.json` and does not restart an existing MCP process. After first adding the registration, restart Pi. After a later deploy, run:
 
 ```text
 /mcp reconnect camoufox
@@ -131,9 +131,12 @@ A full Pi restart is also valid. Then verify:
 
 ```bash
 npm run deploy:local      # test and deploy a new versioned release
-npm run deploy:status     # show current, previous, and all releases
-npm run deploy:rollback   # swap current and previous; reconnect Pi afterward
+npm run deploy:status     # show the active release and every release on disk
 ```
+
+One release is live at a time: a successful deploy repoints `current` and deletes
+the release it replaced. Recovery from a bad deploy is the same command as any
+other deploy, run from the canonical source checkout.
 
 Pi should run the deployed launcher:
 

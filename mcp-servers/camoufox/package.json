@@ -17,7 +17,6 @@
     "fetch:camoufox": "node scripts/install-camoufox-browser.js",
     "deploy:local": "node scripts/deploy-local.js deploy",
     "deploy:status": "node scripts/deploy-local.js status",
-    "deploy:rollback": "node scripts/deploy-local.js rollback",
     "test": "node --test --test-concurrency=1 test/*.test.js",
     "test:integration": "CAMOUFOX_INTEGRATION=1 node --test --test-concurrency=1 test/*integration.test.js",
     "doctor": "node scripts/doctor.js"
