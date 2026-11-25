@@ -7,9 +7,13 @@ if [ "$(uname -s)" = Linux ] && { grep -qi 'PRoot' /proc/version 2>/dev/null || 
   exec "$ROOT/bin/camoufox-mcp-proot" "$@"
 fi
 
-# Pin the major, not the patch: take the newest installed nvm Node 24 so routine
-# upgrades never strand the launcher; fall back to PATH if none is installed.
-NODE=$(ls -d "$HOME"/.nvm/versions/node/v24.*/bin/node 2>/dev/null | sort -V | tail -n 1)
+# Pin the major, not the patch: resolve XDG nvm Node 24 (`current` or newest v24.*),
+# falling back to legacy ~/.nvm and finally PATH if none is installed.
+NVM_BASE="${NVM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nvm}"
+NODE="$NVM_BASE/current/bin/node"
+if [ ! -x "$NODE" ]; then
+  NODE=$(ls -d "$NVM_BASE"/versions/node/v24.*/bin/node "$HOME"/.nvm/versions/node/v24.*/bin/node 2>/dev/null | sort -V | tail -n 1 || true)
+fi
 : "${NODE:=node}"
 
 export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1

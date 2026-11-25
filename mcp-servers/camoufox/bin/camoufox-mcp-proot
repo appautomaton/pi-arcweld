@@ -3,7 +3,11 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
-NODE=$(ls -d "$HOME"/.nvm/versions/node/v24.*/bin/node 2>/dev/null | sort -V | tail -n 1)
+NVM_BASE="${NVM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nvm}"
+NODE="$NVM_BASE/current/bin/node"
+if [ ! -x "$NODE" ]; then
+  NODE=$(ls -d "$NVM_BASE"/versions/node/v24.*/bin/node "$HOME"/.nvm/versions/node/v24.*/bin/node 2>/dev/null | sort -V | tail -n 1 || true)
+fi
 : "${NODE:=node}"
 
 export MOZ_FAKE_NO_SANDBOX=1
