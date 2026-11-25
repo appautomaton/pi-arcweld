@@ -6,7 +6,7 @@
   "private": true,
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",
-    "camoufox": "0.5.8",
+    "camoufox": "0.5.10-beta.2",
     "playwright-core": "1.62.0",
     "zod": "4.4.3"
   },

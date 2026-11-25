@@ -31,12 +31,12 @@ Pi / MCP host
   -> ~/.local/mcps/camoufox/current/bin/camoufox-mcp
   -> deployed src/index.js (@modelcontextprotocol/sdk)
   -> guarded tools, compact/full snapshots, completion, sessions, queue, cleanup
-  -> camoufox 0.5.8
+  -> camoufox 0.5.10-beta.2
   -> playwright-core 1.62.0
-  -> profile-pinned Camoufox ARM64 (v156.0.1-beta.36 on both platforms)
+  -> profile-pinned Camoufox ARM64 (v159.0-beta.43 on both platforms)
 ```
 
-`playwright-core` stays below 1.63 because `camoufox` 0.5.8 declares that peer range, and 1.62.0 is the version that package tests against. See [docs/runtime-support.md](docs/runtime-support.md).
+`playwright-core` stays below 1.63 because `camoufox` 0.5.10-beta.2 declares that peer range, and 1.62.0 is the version that package tests against. See [docs/runtime-support.md](docs/runtime-support.md).
 
 `camoufox` is the TypeScript launcher shipped with the browser. It draws the fingerprint and writes the launch config. `playwright-core` performs navigation and browser actions. The local server translates MCP calls into a deliberately bounded tool surface and adds URL policy, output control, completion observation, cancellation, and cleanup. Apify `camoufox-js` is not a dependency.
 
@@ -70,7 +70,7 @@ The Apple Silicon command also exists:
 npm run bootstrap:darwin-arm64
 ```
 
-macOS on Apple Silicon is **verified** on `v156.0.1-beta.36`. PRoot remains **pending revalidation**; its previous verification was for `152.0.4-beta.28` and does not cover this pin.
+macOS on Apple Silicon is **verified** on `v159.0-beta.43`. PRoot remains **pending revalidation**; its previous verification was for `152.0.4-beta.28` and does not cover this pin.
 
 The bootstrap:
 

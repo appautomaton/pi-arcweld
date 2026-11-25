@@ -4,7 +4,7 @@ This document is the single source of truth for the support boundary: which syst
 
 ## Runtime profiles
 
-This local server has two profiled environments. Both pin the same Camoufox release and the same launcher. The macOS profile was reverified against those pins on 2026-10-15; the PRoot profile still awaits its own run. Profile selection is centralized in `scripts/runtime-profile.js`, which the installer and doctor share.
+This local server has two profiled environments. Both pin the same Camoufox release and the same launcher. The macOS profile was reverified against those pins on 2026-11-25; the PRoot profile still awaits its own run. Profile selection is centralized in `scripts/runtime-profile.js`, which the installer and doctor share.
 
 ### PRoot ARM64 (`proot-arm64`)
 
@@ -16,24 +16,24 @@ This local server has two profiled environments. Both pin the same Camoufox rele
 | Architecture | AArch64 (`aarch64`) |
 | Node | 24.13.0 |
 | npm | 11.17.0 |
-| Camoufox | 156.0.1-beta.36 Linux ARM64 |
-| `camoufox` | 0.5.8 |
+| Camoufox | 159.0-beta.43 Linux ARM64 |
+| `camoufox` | 0.5.10-beta.2 |
 | `playwright-core` | 1.62.0 |
 
 The machine-readable baseline is `config/proot-arm64-runtime.json`.
 
 ### Apple Silicon macOS (`darwin-arm64`)
 
-**Status: verified.** Revalidated on 2026-10-15 against the pins below by the deployment gates in `scripts/deploy-local.js` — doctor, the unit suite, and the three browser integration tests that launch the pinned browser and browse a real page — followed by a deployment that Pi loads.
+**Status: verified.** Revalidated on 2026-11-25 against the pins below by the deployment gates in `scripts/deploy-local.js` — doctor, the unit suite, and the three browser integration tests that launch the pinned browser and browse a real page — followed by a deployment that Pi loads.
 
 | Component | Configured value |
 |---|---|
 | Environment | macOS on Apple Silicon (Darwin 25) |
 | Architecture | `arm64` |
-| Node | 24.14.0 |
+| Node | 24.22.3 |
 | npm | 11.17.0 |
-| Camoufox | 156.0.1-beta.36 macOS ARM64 |
-| `camoufox` | 0.5.8 |
+| Camoufox | 159.0-beta.43 macOS ARM64 |
+| `camoufox` | 0.5.10-beta.2 |
 | `playwright-core` | 1.62.0 |
 
 The machine-readable baseline is `config/darwin-arm64-runtime.json`.
@@ -58,7 +58,7 @@ The `camoufox` launcher reads the Firefox version from `application.ini` next to
 
 ## `playwright-core` upper bound
 
-`camoufox` 0.5.8 declares `playwright-core: <1.63` as a peer dependency and tests against 1.62.0. Camoufox is a Firefox fork tied to a specific Playwright/Juggler protocol generation, so a newer `playwright-core` is not the correct choice. Pin 1.62.0, and recheck the peer range whenever `camoufox` is upgraded. `camoufox` 0.5.8 records browser pin `v156.0.1-beta.36`; both profiles use that release. Apify `camoufox-js` capped Firefox 156 and is no longer used.
+`camoufox` 0.5.10-beta.2 declares `playwright-core: <1.63` as a peer dependency and tests against 1.62.0. Camoufox is a Firefox fork tied to a specific Playwright/Juggler protocol generation, so a newer `playwright-core` is not the correct choice. Pin 1.62.0, and recheck the peer range whenever `camoufox` is upgraded. `camoufox` 0.5.10-beta.2 pairs with browser pin `v159.0-beta.43`; both profiles use that release. Apify `camoufox-js` capped Firefox 156 and is no longer used.
 
 ## PRoot-specific behavior
 

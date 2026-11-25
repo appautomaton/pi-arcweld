@@ -5,22 +5,22 @@
     "environment": "macOS on Apple Silicon (Darwin 25)",
     "architecture": "arm64",
     "kernelMarker": "Darwin",
-    "testedNode": "24.14.0",
+    "testedNode": "24.22.3",
     "testedNpm": "11.17.0"
   },
   "browser": {
-    "version": "156.0.1",
-    "release": "beta.36",
-    "asset": "camoufox-156.0.1-beta.36-mac.arm64.zip",
-    "url": "https://github.com/daijro/camoufox/releases/download/v156.0.1-beta.36/camoufox-156.0.1-beta.36-mac.arm64.zip",
-    "bytes": 1289762241,
-    "archiveSha256": "0ad5663e40f4a2a836e28747256b79f39a5105905f1b244139a7a391f85fda32",
+    "version": "159.0",
+    "release": "beta.43",
+    "asset": "camoufox-159.0-beta.43-mac.arm64.zip",
+    "url": "https://github.com/daijro/camoufox/releases/download/v159.0-beta.43/camoufox-159.0-beta.43-mac.arm64.zip",
+    "bytes": 1303552990,
+    "archiveSha256": "7a9e73d261912566ba29170fdaf9d8d98be6b15e228727b3f72ad7a69ef89bdc",
     "executablePath": "Camoufox.app/Contents/MacOS/camoufox",
-    "executableSha256": "bfcf2fc3053173f20850584a99c913924a276ee84410c2b7d2fb240bb0e8a062"
+    "executableSha256": "ccdfb0a80bf2245ea32a17cbe14adb39cad8a4fa25c9b5b714ae4bd35e84d69d"
   },
   "npm": {
     "@modelcontextprotocol/sdk": "1.30.0",
-    "camoufox": "0.5.8",
+    "camoufox": "0.5.10-beta.2",
     "playwright-core": "1.62.0",
     "zod": "4.4.3"
   },

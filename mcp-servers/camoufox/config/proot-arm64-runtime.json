@@ -9,18 +9,18 @@
     "testedNpm": "11.17.0"
   },
   "browser": {
-    "version": "156.0.1",
-    "release": "beta.36",
-    "asset": "camoufox-156.0.1-beta.36-lin.arm64.zip",
-    "url": "https://github.com/daijro/camoufox/releases/download/v156.0.1-beta.36/camoufox-156.0.1-beta.36-lin.arm64.zip",
-    "bytes": 1284863246,
-    "archiveSha256": "8b5fd083721c807ee2a752265683482477105052fa0e21739388b527ae067c15",
+    "version": "159.0",
+    "release": "beta.43",
+    "asset": "camoufox-159.0-beta.43-lin.arm64.zip",
+    "url": "https://github.com/daijro/camoufox/releases/download/v159.0-beta.43/camoufox-159.0-beta.43-lin.arm64.zip",
+    "bytes": 1305557894,
+    "archiveSha256": "4b57cba5ae88388c2440200daf2257be240cf1eac2c2b3adff1e2ecda1900c16",
     "executablePath": "camoufox-bin",
-    "executableSha256": "358d094c00621fe9f2b031062262dc1e14a7300f2fd3debe5eec20a9bcbac633"
+    "executableSha256": "1a9607e7449d87f017c34783af608c18805801eb0e6776060ad88b49fef96831"
   },
   "npm": {
     "@modelcontextprotocol/sdk": "1.30.0",
-    "camoufox": "0.5.8",
+    "camoufox": "0.5.10-beta.2",
     "playwright-core": "1.62.0",
     "zod": "4.4.3"
   },
