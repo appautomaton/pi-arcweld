@@ -176,7 +176,20 @@ prepare_workdir() {
 		mkdir -p "$build_package"
 		copy_file "$source_package/package.json" "$build_package/package.json"
 		copy_file "$source_package/tsconfig.build.json" "$build_package/tsconfig.build.json"
-		link_source_dir "$source_package/src" "$build_package/src"
+		if [[ "$package_name" == "ai" ]]; then
+			# Copy ai's source tree into WORK_DIR so model catalog hydration writes
+			# only into the external build workspace and never mutates pi-mono.
+			copy_dir "$source_package/src" "$build_package/src"
+			rm -rf "$build_package/src/providers/data"
+			if [[ -d "$source_package/catalog" ]]; then
+				copy_dir "$source_package/catalog" "$build_package/catalog"
+			fi
+			if [[ -d "$source_package/scripts" ]]; then
+				copy_dir "$source_package/scripts" "$build_package/scripts"
+			fi
+		else
+			link_source_dir "$source_package/src" "$build_package/src"
+		fi
 
 		if [[ -f "$source_package/README.md" ]]; then
 			copy_file "$source_package/README.md" "$build_package/README.md"
@@ -184,9 +197,21 @@ prepare_workdir() {
 		if [[ -f "$source_package/CHANGELOG.md" ]]; then
 			copy_file "$source_package/CHANGELOG.md" "$build_package/CHANGELOG.md"
 		fi
+		if [[ -d "$source_package/THIRD_PARTY_NOTICES" ]]; then
+			copy_dir "$source_package/THIRD_PARTY_NOTICES" "$build_package/THIRD_PARTY_NOTICES"
+		fi
+		if [[ "$package_name" == "tui" && -d "$source_package/native" ]]; then
+			copy_dir "$source_package/native" "$build_package/native"
+		fi
 		if [[ "$package_name" == "coding-agent" ]]; then
 			copy_dir "$source_package/docs" "$build_package/docs"
 			copy_dir "$source_package/examples" "$build_package/examples"
+			if [[ -d "$source_package/schemas" ]]; then
+				copy_dir "$source_package/schemas" "$build_package/schemas"
+			fi
+			if [[ -f "$source_package/containerization.md" ]]; then
+				copy_file "$source_package/containerization.md" "$build_package/containerization.md"
+			fi
 			if [[ -f "$source_package/npm-shrinkwrap.json" ]]; then
 				copy_file "$source_package/npm-shrinkwrap.json" "$build_package/npm-shrinkwrap.json"
 			fi
@@ -226,7 +251,14 @@ build_typescript_packages() {
 		if [[ "$package_name" == "ai" ]]; then
 			(
 				cd "$WORK_DIR/packages/ai"
-				PATH="$WORK_DIR/node_modules/.bin:$PATH" node "$MONO_DIR/packages/ai/scripts/generate-models.ts"
+				if [[ -f "$WORK_DIR/packages/ai/catalog/generate.ts" ]]; then
+					PATH="$WORK_DIR/node_modules/.bin:$PATH" node "$WORK_DIR/packages/ai/catalog/generate.ts" --strict --data-only
+				elif [[ -f "$WORK_DIR/packages/ai/scripts/generate-models.ts" ]]; then
+					PATH="$WORK_DIR/node_modules/.bin:$PATH" node "$WORK_DIR/packages/ai/scripts/generate-models.ts"
+				else
+					echo "Missing model catalog generator in $WORK_DIR/packages/ai" >&2
+					exit 1
+				fi
 			)
 		fi
 		"$TYPESCRIPT_COMPILER" ${TYPESCRIPT_COMPILER_ARGS[@]+"${TYPESCRIPT_COMPILER_ARGS[@]}"} -p "$WORK_DIR/packages/$package_name/tsconfig.build.json"
@@ -350,11 +382,15 @@ promote_runtime() {
 }
 
 link_user_bin() {
-	local user_pi_bin node_prefix global_package_link
+	local user_pi_bin
 	user_pi_bin="$(command -v pi || true)"
 	if [[ -z "$user_pi_bin" ]]; then
-		echo "Cannot link user pi bin: pi is not currently on PATH." >&2
-		exit 1
+		if [[ -d "$HOME/.local/bin" && ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+			user_pi_bin="$HOME/.local/bin/pi"
+		else
+			echo "Cannot link user pi bin: pi is not currently on PATH." >&2
+			exit 1
+		fi
 	fi
 	if [[ -e "$user_pi_bin" && ! -L "$user_pi_bin" ]]; then
 		echo "Refusing to replace non-symlink pi command: $user_pi_bin" >&2
@@ -362,16 +398,6 @@ link_user_bin() {
 	fi
 	ln -sfn "$RUNTIME_DIR/bin/pi" "$user_pi_bin"
 	echo "==> Linked $user_pi_bin -> $RUNTIME_DIR/bin/pi"
-
-	node_prefix="$(cd "$(dirname "$user_pi_bin")/.." && pwd)"
-	global_package_link="$node_prefix/lib/node_modules/@mariozechner/pi-coding-agent"
-	if [[ -L "$global_package_link" || ! -e "$global_package_link" ]]; then
-		mkdir -p "$(dirname "$global_package_link")"
-		ln -sfn "$RUNTIME_DIR/node_modules/@earendil-works/pi-coding-agent" "$global_package_link"
-		echo "==> Linked $global_package_link -> $RUNTIME_DIR/node_modules/@earendil-works/pi-coding-agent"
-	else
-		echo "Skipping non-symlink global package path: $global_package_link" >&2
-	fi
 }
 
 cleanup_stale_layout() {
